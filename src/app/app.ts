@@ -4,6 +4,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterOutlet } from '@angular/router';
 import * as bcrypt from 'bcryptjs';
 import { Title } from '@angular/platform-browser';
+import Swal from 'sweetalert2';
 
 // Importamos los componentes y servicios necesarios
 import { Header } from './header/header';
@@ -83,10 +84,24 @@ export class App implements OnInit {
       try {
         await this.userService.addUser(adminUser);
         console.log('Usuario administrador creado con éxito.');
-        console.log('Email: admin@admin.com');
-        console.log('Contraseña: admin123');
+        await Swal.fire({
+          icon: 'info',
+          title: 'Usuario administrador creado',
+          html: `
+            <p>Se ha creado un usuario administrador por defecto:</p>
+            <p><strong>Email:</strong> admin@admin.com</p>
+            <p><strong>Contraseña:</strong> admin123</p>
+          `,
+          confirmButtonText: 'Entendido'
+        });
       } catch (error) {
         console.error('Error al crear el usuario administrador:', error);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al crear el usuario administrador',
+          confirmButtonText: 'Entendido'
+        });
       }
     } else {
       // La colección ya tiene usuarios.

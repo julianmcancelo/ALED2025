@@ -70,8 +70,9 @@ export class UserService {
     if (querySnapshot.empty) {
       return null;
     }
-    // Devuelve los datos del primer documento encontrado.
-    return querySnapshot.docs[0].data();
+    // Devuelve los datos del primer documento encontrado incluyendo el ID.
+    const doc = querySnapshot.docs[0];
+    return { id: doc.id, ...doc.data() };
   }
 
   /**

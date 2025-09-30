@@ -1,8 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user';
-import { CommonModule } from '@angular/common';
+import Swal from 'sweetalert2';
 
 // Importaciones de Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -49,11 +50,21 @@ export class PrimerUsuario {
       // y luego guardaríamos los datos en Firestore. Por simplicidad,
       // solo guardamos en Firestore como lo pide la estructura actual.
       await this.userService.createAdminUser({ nombre, email, password });
-      alert('¡Usuario administrador creado con éxito!');
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Administrador creado!',
+        text: 'Usuario administrador creado con éxito',
+        confirmButtonText: 'Continuar'
+      });
       this.router.navigate(['/']); // Redirige a la página principal
     } catch (error) {
       console.error('Error al crear el primer usuario:', error);
-      alert('Hubo un error al crear el usuario. Revisa la consola.');
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Hubo un error al crear el usuario. Revisa la consola.',
+        confirmButtonText: 'Entendido'
+      });
     }
   }
 }

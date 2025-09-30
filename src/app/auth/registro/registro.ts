@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import * as bcrypt from 'bcryptjs';
+import Swal from 'sweetalert2';
 
 // Importaciones de Angular Material
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -89,8 +90,13 @@ export class Registro implements OnInit {
 
     const esUnico = await this.userService.verificarUsuarioUnico(dni, email);
     if (!esUnico) {
-      this.registrationError = 'El DNI o el correo electrónico ya están registrados.';
       this.isLoading = false;
+      await Swal.fire({
+        icon: 'error',
+        title: 'Usuario ya existe',
+        text: 'El DNI o el correo electrónico ya están registrados.',
+        confirmButtonText: 'Entendido'
+      });
       return;
     }
 
@@ -102,13 +108,24 @@ export class Registro implements OnInit {
 
     this.userService
       .addUser(userData)
-      .then(() => {
-        this.snackBar.open('¡Usuario registrado con éxito!', 'Cerrar', { duration: 3000 });
+      .then(async () => {
+        await Swal.fire({
+          icon: 'success',
+          title: '¡Registro exitoso!',
+          text: 'Usuario registrado con éxito',
+          timer: 2000,
+          showConfirmButton: false
+        });
         this.dialogRef.close();
       })
-      .catch((error: any) => {
+      .catch(async (error: any) => {
         console.error('Error al registrar el usuario:', error);
-        this.registrationError = 'Ocurrió un error inesperado. Intente más tarde.';
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error en el registro',
+          text: 'Ocurrió un error inesperado. Intente más tarde.',
+          confirmButtonText: 'Entendido'
+        });
       })
       .finally(() => {
         this.isLoading = false;

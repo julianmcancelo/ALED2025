@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import Swal from 'sweetalert2';
 
 // Importaciones de Angular Material
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -59,12 +60,23 @@ export class InicioDeSesion implements OnInit {
       // Simplemente llamamos al método de login del servicio.
       await this.authService.login(email, password);
       // Si la promesa se resuelve, el login fue exitoso y cerramos el diálogo.
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Bienvenido!',
+        text: 'Has iniciado sesión correctamente',
+        timer: 2000,
+        showConfirmButton: false
+      });
       this.dialogRef.close();
     } catch (error: any) {
       // Si la promesa se rechaza, hubo un error.
       console.error('Error de inicio de sesión:', error);
-      // Aquí podrías poner mensajes más específicos según el 'error.code' de Firebase
-      this.loginError = 'El correo o la contraseña son incorrectos.';
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error de autenticación',
+        text: error.message || 'El correo o la contraseña son incorrectos.',
+        confirmButtonText: 'Intentar de nuevo'
+      });
     } finally {
       this.isLoading = false;
     }
