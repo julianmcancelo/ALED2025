@@ -3,11 +3,8 @@
 
   <span style="flex: 1 1 auto"></span>
 
-  <!--
-    Usamos la nueva sintaxis de control de flujo de Angular (@if).
-    Este bloque se muestra SÓLO si 'currentUser()' es null (nadie ha iniciado sesión).
-  -->
-  @if (!currentUser()) {
+  <!-- Bloque que se muestra si NADIE ha iniciado sesión -->
+  @if (currentUser() === null) {
   <button mat-stroked-button class="header-button" (click)="openRegisterDialog()">
     <mat-icon>person_add</mat-icon>
     <span>Registrarse</span>
@@ -19,11 +16,17 @@
   </button>
   }
 
-  <!--
-    Este bloque se muestra SÓLO si 'currentUser()' tiene un valor (un usuario ha iniciado sesión).
-  -->
+  <!-- Bloque que se muestra si un USUARIO ha iniciado sesión -->
   @if (currentUser()) {
   <span class="welcome-message"> ¡Hola, {{ currentUser()?.nombre }}! </span>
+
+  <!-- Botón de Administración: se muestra SÓLO si isAdmin() es true -->
+  @if (isAdmin()) {
+  <button mat-stroked-button class="header-button" routerLink="/administracion">
+    <mat-icon>admin_panel_settings</mat-icon>
+    <span>Administración</span>
+  </button>
+  }
 
   <button mat-stroked-button class="header-button" (click)="logout()">
     <mat-icon>logout</mat-icon>

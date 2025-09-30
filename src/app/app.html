@@ -1,53 +1,13 @@
+<!-- El header y el footer son fijos en la estructura de la página -->
+<app-header></app-header>
+
 <!--
-  Este contenedor principal utiliza Flexbox para organizar la aplicación
-  y asegurar que el footer se mantenga en la parte inferior.
+  <router-outlet> es el marcador de posición donde Angular
+  cargará dinámicamente los componentes definidos en nuestras rutas
+  (como HomeComponent o AdminComponent).
 -->
-<div class="app-container">
-  <!-- Carga el componente de la barra de navegación. -->
-  <app-header></app-header>
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>
 
-  <!--
-    Este div envuelve el contenido principal y se expande para ocupar
-    el espacio vertical disponible, empujando el footer hacia abajo.
-  -->
-  <div class="main-content">
-    <!-- Contenedor de Bootstrap para centrar y añadir márgenes laterales. -->
-    <main class="container mt-5">
-      <!--
-        Componente "Hero" o "Jumbotron" estilizado con clases de Bootstrap.
-      -->
-      <div class="p-5 mb-4 bg-light rounded-3 text-center">
-        <div class="container-fluid py-4">
-          <!--
-            Título principal de la página.
-          -->
-          <h1 class="display-5 fw-bold">Proyecto Final: Algoritmos y Estructura de Datos III</h1>
-
-          <!--
-            Párrafo de introducción con información de los autores.
-          -->
-          <p class="fs-4">Una aplicación de demostración desarrollada por:</p>
-          <p class="lead fw-bold">Cancelo Julian y Nicolas Otero</p>
-          <p>Bajo la supervisión del profesor Sebastian Saldivar.</p>
-
-          <hr class="my-4" />
-
-          <p>
-            El proyecto integra Angular para el frontend, Firebase para la base de datos y
-            autenticación, y Bootstrap junto a Angular Material para el diseño.
-          </p>
-
-          <!--
-            Botón de "Llamada a la acción" que invita al usuario a registrarse.
-          -->
-          <button class="btn btn-primary btn-lg mt-3" type="button" (click)="openRegisterDialog()">
-            ¡Crea tu cuenta!
-          </button>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <!-- Carga el componente del pie de página. -->
-  <app-footer></app-footer>
-</div>
+<app-footer></app-footer>

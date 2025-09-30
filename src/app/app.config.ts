@@ -1,10 +1,23 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-// Importaciones necesarias para inicializar Firebase en un proyecto de Angular.
+import {
+  ApplicationConfig,
+  provideZoneChangeDetection,
+  APP_INITIALIZER,
+  inject,
+} from '@angular/core';
+import { provideRouter, Router } from '@angular/router';
+import { UserService } from './services/user';
+
+// Importamos los componentes y el nuevo guardia
+import { Home } from './home/home';
+import { Admin } from './admin/admin';
+import { adminGuard } from './auth/admin-guard';
+import { PrimerUsuario } from './auth/primer-usuario/primer-usuario';
+
+// Importaciones de Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { provideAuth, getAuth } from '@angular/fire/auth'; // <-- AÑADIDO
 
-// Objeto de configuración de Firebase, obtenido desde la consola de Firebase.
-// Contiene las claves y endpoints necesarios para que la aplicación se conecte al proyecto correcto.
 const firebaseConfig = {
   apiKey: 'AIzaSyAJncpI42BQRSh_c4hjsxZv5q_esZFG4pk',
   authDomain: 'aled3-6b4ee.firebaseapp.com',
@@ -15,19 +28,50 @@ const firebaseConfig = {
   measurementId: 'G-9KW8V43530',
 };
 
-/**
- * Configuración a nivel de aplicación.
- * Aquí se registran los "proveedores" de servicios que estarán disponibles para toda la aplicación.
- */
+// Función Factory para el APP_INITIALIZER
+const initializeAppFactory = () => {
+  const userService = inject(UserService);
+  const router = inject(Router);
+
+  return async () => {
+    try {
+      const usersExist = await userService.checkIfUsersExist();
+      if (!usersExist) {
+        // Si no hay usuarios, redirigimos a la página de creación del primer usuario
+        await router.navigate(['/primer-usuario']);
+      }
+    } catch (error) {
+      console.error('Error durante la inicialización de la app:', error);
+      // Opcional: redirigir a una página de error
+    }
+  };
+};
+
 export const appConfig: ApplicationConfig = {
   providers: [
-    // Configuración estándar de Angular para la detección de cambios.
     provideZoneChangeDetection({ eventCoalescing: true }),
 
-    // Inicializa la conexión con Firebase usando la configuración proporcionada.
-    provideFirebaseApp(() => initializeApp(firebaseConfig)),
+    // Proveedor para ejecutar lógica ANTES de que la app se inicie
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeAppFactory,
+      multi: true,
+    },
 
-    // Habilita y provee el servicio de Firestore (la base de datos).
+    // Proveemos las rutas a la aplicación
+    provideRouter([
+      { path: '', component: Home, pathMatch: 'full' },
+      { path: 'primer-usuario', component: PrimerUsuario },
+      {
+        path: 'administracion',
+        component: Admin,
+        canActivate: [adminGuard], // ¡Aquí aplicamos el guardia!
+      },
+    ]),
+
+    // Proveedores de Firebase
+    provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideFirestore(() => getFirestore()),
+    provideAuth(() => getAuth()), // <-- AÑADIDO
   ],
 };

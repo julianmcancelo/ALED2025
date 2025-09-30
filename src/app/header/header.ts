@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Necesario para el @if en el template
+import { Component, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 // Importaciones de Angular Material
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -17,7 +18,8 @@ import { AuthService } from '../auth/auth';
   selector: 'app-header',
   standalone: true,
   imports: [
-    CommonModule, // Necesario para directivas como @if
+    CommonModule,
+    RouterLink, // Importamos RouterLink para los botones de navegación
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
@@ -28,17 +30,16 @@ import { AuthService } from '../auth/auth';
   styleUrl: './header.css',
 })
 export class Header {
-  // Propiedad para almacenar el signal del usuario actual.
-  currentUser;
+  // Inyectamos los servicios necesarios.
+  private dialog = inject(MatDialog);
+  private authService = inject(AuthService);
 
-  // Inyectamos los servicios necesarios en el constructor.
-  constructor(
-    public dialog: MatDialog,
-    private authService: AuthService,
-  ) {
-    // Asignamos el signal del servicio a nuestra propiedad local.
-    this.currentUser = this.authService.currentUserSignal;
-  }
+  // Exponemos el signal del usuario directamente a la plantilla.
+  currentUser = this.authService.currentUserSignal;
+
+  // Creamos un 'computed signal' que deriva del currentUser.
+  // Se actualizará automáticamente si 'currentUser' cambia.
+  isAdmin = computed(() => this.currentUser()?.rol === 'admin');
 
   /** Abre el diálogo modal de registro. */
   openRegisterDialog(): void {

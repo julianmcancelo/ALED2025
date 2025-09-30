@@ -1,5 +1,15 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, addDoc, query, where, getDocs } from '@angular/fire/firestore';
+import {
+  Firestore,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  limit,
+  collectionData,
+} from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +23,43 @@ export class UserService {
   addUser(user: any) {
     const userCollectionRef = collection(this.firestore, 'users');
     return addDoc(userCollectionRef, user);
+  }
+
+  /**
+   * Crea el primer usuario administrador en la base de datos.
+   * @param user - Los datos del usuario (nombre, email, contraseña).
+   */
+  createAdminUser(user: any) {
+    const userWithRole = { ...user, rol: 'admin' };
+    return this.addUser(userWithRole);
+  }
+
+  /**
+   * Verifica si ya existe algún usuario en la base de datos.
+   * @returns Una promesa que se resuelve a 'true' si existen usuarios, 'false' si no.
+   */
+  async checkIfUsersExist(): Promise<boolean> {
+    const userCollectionRef = collection(this.firestore, 'users');
+    const q = query(userCollectionRef, limit(1));
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
+  }
+
+  /**
+   * Obtiene los datos de un usuario de Firestore a partir de su email.
+   * @param email - El email del usuario a buscar.
+   * @returns Una promesa que se resuelve con los datos del usuario o null si no se encuentra.
+   */
+  async getUserByEmail(email: string): Promise<any | null> {
+    const userCollectionRef = collection(this.firestore, 'users');
+    const q = query(userCollectionRef, where('email', '==', email));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return null;
+    }
+    // Devuelve los datos del primer documento encontrado.
+    return querySnapshot.docs[0].data();
   }
 
   /**

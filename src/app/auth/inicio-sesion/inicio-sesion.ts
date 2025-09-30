@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit, inject } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
 
 // Importaciones de Angular Material
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -31,19 +30,15 @@ import { AuthService } from '../auth';
   styleUrls: ['./inicio-sesion.css'],
 })
 export class InicioDeSesion implements OnInit {
-  // Propiedades de la clase que faltaban
   loginForm!: FormGroup;
   loginError: string | null = null;
   isLoading = false;
 
-  // Constructor completo con las inyecciones de dependencias
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    public dialogRef: MatDialogRef<InicioDeSesion>,
-  ) {}
+  // Inyectamos las dependencias.
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private dialogRef = inject(MatDialogRef<InicioDeSesion>);
 
-  // Métodos ahora DENTRO de la clase
   ngOnInit(): void {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -52,24 +47,26 @@ export class InicioDeSesion implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
-    if (this.loginForm.valid) {
-      this.isLoading = true;
-      this.loginError = null;
-      const { email, password } = this.loginForm.value;
+    if (this.loginForm.invalid) {
+      return;
+    }
 
-      try {
-        const success = await this.authService.login(email, password);
-        if (success) {
-          this.dialogRef.close();
-        } else {
-          this.loginError = 'El correo o la contraseña son incorrectos.';
-        }
-      } catch (error) {
-        console.error('Ocurrió un error inesperado durante el login:', error);
-        this.loginError = 'Ocurrió un error. Por favor, intente más tarde.';
-      } finally {
-        this.isLoading = false;
-      }
+    this.isLoading = true;
+    this.loginError = null;
+    const { email, password } = this.loginForm.value;
+
+    try {
+      // Simplemente llamamos al método de login del servicio.
+      await this.authService.login(email, password);
+      // Si la promesa se resuelve, el login fue exitoso y cerramos el diálogo.
+      this.dialogRef.close();
+    } catch (error: any) {
+      // Si la promesa se rechaza, hubo un error.
+      console.error('Error de inicio de sesión:', error);
+      // Aquí podrías poner mensajes más específicos según el 'error.code' de Firebase
+      this.loginError = 'El correo o la contraseña son incorrectos.';
+    } finally {
+      this.isLoading = false;
     }
   }
 }

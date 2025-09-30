@@ -1,70 +1,80 @@
-import { Injectable, signal } from '@angular/core';
-import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
-import * as bcrypt from 'bcryptjs';
+import { Injectable, inject, signal } from '@angular/core';
+import {
+  Auth,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  User,
+} from '@angular/fire/auth';
+import { UserService } from '../services/user';
+import { Router } from '@angular/router';
 
-/**
- * Servicio para gestionar la autenticación de usuarios y el estado de la sesión.
- */
+// Definimos una interfaz para nuestro objeto de usuario, incluyendo el rol.
+export interface AppUser {
+  uid: string;
+  email: string | null;
+  nombre: string;
+  rol: 'admin' | 'usuario'; // O los roles que tengas
+  // ... otros campos de tu colección de usuarios
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  // 'currentUserSignal' es un 'signal' de Angular que almacena el estado del usuario actual.
-  // Es reactivo: si su valor cambia, cualquier parte de la app que lo observe se actualizará.
-  // Inicialmente es 'null' porque no hay nadie conectado.
-  currentUserSignal = signal<any | null>(null);
+  // Inyectamos los servicios necesarios con 'inject()'.
+  private auth: Auth = inject(Auth);
+  private userService: UserService = inject(UserService);
+  private router: Router = inject(Router);
 
-  constructor(private firestore: Firestore) {}
+  // El signal ahora contendrá un objeto 'AppUser', 'null' (desconectado)
+  // o 'undefined' (estado inicial, comprobando...).
+  currentUserSignal = signal<AppUser | null | undefined>(undefined);
 
-  /**
-   * Inicia sesión de un usuario comparando sus credenciales con los datos en Firestore.
-   * @param email - El correo electrónico del usuario.
-   * @param password - La contraseña en texto plano introducida por el usuario.
-   * @returns Una promesa que se resuelve a 'true' si el inicio de sesión es exitoso, 'false' si no.
-   */
-  async login(email: string, password: string): Promise<boolean> {
-    // 1. Creamos una referencia a la colección 'users'.
-    const userCollectionRef = collection(this.firestore, 'users');
-
-    // 2. Creamos una consulta para buscar un documento cuyo campo 'email' coincida.
-    const q = query(userCollectionRef, where('email', '==', email));
-
-    // 3. Ejecutamos la consulta.
-    const querySnapshot = await getDocs(q);
-
-    // 4. Verificamos si se encontró un usuario.
-    if (querySnapshot.empty) {
-      console.log('No se encontró ningún usuario con ese email.');
-      return false;
-    }
-
-    // 5. Obtenemos los datos del primer usuario encontrado (el email debería ser único).
-    const userDoc = querySnapshot.docs[0];
-    const userData = userDoc.data();
-    const hashedPassword = userData['password']; // La contraseña hasheada de la base de datos.
-
-    // 6. Comparamos la contraseña introducida con la hasheada usando bcrypt.
-    const passwordMatches = bcrypt.compareSync(password, hashedPassword);
-
-    if (passwordMatches) {
-      console.log('Inicio de sesión exitoso para:', userData['nombre']);
-      // Si las contraseñas coinciden, actualizamos el signal con los datos del usuario.
-      // Esto notificará a toda la aplicación que el usuario ha iniciado sesión.
-      this.currentUserSignal.set(userData);
-      return true;
-    } else {
-      console.log('La contraseña es incorrecta.');
-      return false;
-    }
+  constructor() {
+    // onAuthStateChanged es el hook de Firebase que se dispara cuando el
+    // estado de autenticación cambia. Es la clave para la persistencia.
+    onAuthStateChanged(this.auth, async (firebaseUser: User | null) => {
+      if (firebaseUser) {
+        // Si Firebase nos dice que hay un usuario, buscamos su perfil en Firestore.
+        const userProfile = await this.userService.getUserByEmail(firebaseUser.email!);
+        if (userProfile) {
+          // Creamos nuestro objeto AppUser con los datos de ambos sitios.
+          const appUser: AppUser = {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            ...userProfile, // Copiamos los campos de Firestore (nombre, rol, etc.)
+          };
+          // Actualizamos el signal. La app ahora sabe quién está conectado.
+          this.currentUserSignal.set(appUser);
+        } else {
+          // Caso raro: autenticado en Firebase pero sin perfil en Firestore.
+          this.currentUserSignal.set(null);
+        }
+      } else {
+        // Si no hay usuario en Firebase, cerramos la sesión en nuestra app.
+        this.currentUserSignal.set(null);
+      }
+    });
   }
 
   /**
-   * Cierra la sesión del usuario actual.
+   * Inicia sesión usando el servicio de autenticación de Firebase.
    */
-  logout(): void {
-    // Simplemente establecemos el signal del usuario a 'null'.
-    // Esto notificará a la aplicación que la sesión se ha cerrado.
-    this.currentUserSignal.set(null);
-    console.log('Sesión cerrada.');
+  async login(email: string, password: string): Promise<void> {
+    // Usamos el método de Firebase para iniciar sesión.
+    // onAuthStateChanged se encargará del resto si tiene éxito.
+    await signInWithEmailAndPassword(this.auth, email, password);
+  }
+
+  /**
+   * Cierra la sesión del usuario actual en Firebase.
+   */
+  async logout(): Promise<void> {
+    // Usamos el método de Firebase para cerrar sesión.
+    // onAuthStateChanged se encargará de actualizar el signal a 'null'.
+    await signOut(this.auth);
+    // Opcional: redirigir al usuario a la página de inicio.
+    this.router.navigate(['/']);
   }
 }
