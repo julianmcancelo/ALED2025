@@ -1,0 +1,125 @@
+<!-- Carousel Hero Section -->
+<div class="hero-carousel">
+  <div class="carousel-container">
+    <!-- Slides -->
+    <div class="carousel-slides" [style.transform]="'translateX(-' + (currentSlideIndex * 100) + '%)'">
+      <div class="carousel-slide" *ngFor="let slide of bannerSlides">
+        <div class="slide-content">
+          <div class="container text-center">
+            <h1 class="display-3 fw-bold text-white">{{ slide.titulo }}</h1>
+            <p class="lead text-white my-4">{{ slide.subtitulo }}</p>
+            <button class="btn btn-light btn-lg">Ver Colección</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controles de navegación -->
+    <button class="carousel-control prev" (click)="prevSlide()">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+    <button class="carousel-control next" (click)="nextSlide()">
+      <i class="bi bi-chevron-right"></i>
+    </button>
+
+    <!-- Indicadores -->
+    <div class="carousel-indicators">
+      <button 
+        *ngFor="let slide of bannerSlides; let i = index"
+        [class.active]="i === currentSlideIndex"
+        (click)="goToSlide(i)">
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Sección de Ofertas Destacadas -->
+<div class="ofertas-section py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title">Ofertas Destacadas</h2>
+      <div class="carousel-controls">
+        <button class="control-btn" (click)="scrollProductos('left')">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="control-btn" (click)="scrollProductos('right')">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scroll horizontal de productos -->
+    <div class="productos-wrapper">
+      <div class="productos-scroll">
+        <div class="producto-card" *ngFor="let producto of productosDestacados">
+          <!-- Badge de descuento -->
+          <div class="descuento-badge" *ngIf="producto.descuento">
+            -{{ producto.descuento }}%
+          </div>
+
+          <!-- Imagen del producto -->
+          <div class="producto-imagen">
+            <img [src]="producto.imagen" [alt]="producto.nombre">
+            <div class="producto-overlay">
+              <button class="btn btn-light btn-sm">
+                <i class="bi bi-eye me-1"></i>Ver más
+              </button>
+            </div>
+          </div>
+
+          <!-- Información del producto -->
+          <div class="producto-info">
+            <span class="producto-categoria">{{ producto.categoria }}</span>
+            <h5 class="producto-nombre">{{ producto.nombre }}</h5>
+            
+            <div class="producto-precio">
+              <span class="precio-actual">
+                ${{ calcularPrecioConDescuento(producto.precio, producto.descuento) | number:'1.0-0' }}
+              </span>
+              <span class="precio-original" *ngIf="producto.descuento">
+                ${{ producto.precio | number:'1.0-0' }}
+              </span>
+            </div>
+
+            <button class="btn btn-primary w-100 mt-3">
+              <i class="bi bi-cart-plus me-2"></i>Agregar al carrito
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Categorías destacadas -->
+<div class="categorias-section py-5 bg-light">
+  <div class="container">
+    <h2 class="section-title text-center mb-5">Explora por Categorías</h2>
+    <div class="row g-4">
+      <div class="col-md-3 col-sm-6">
+        <div class="categoria-card">
+          <i class="bi bi-headphones categoria-icon"></i>
+          <h5>Audio</h5>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="categoria-card">
+          <i class="bi bi-laptop categoria-icon"></i>
+          <h5>Tecnología</h5>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="categoria-card">
+          <i class="bi bi-smartwatch categoria-icon"></i>
+          <h5>Wearables</h5>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6">
+        <div class="categoria-card">
+          <i class="bi bi-bag categoria-icon"></i>
+          <h5>Moda</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ConfiguracionService } from '../services/configuracion';
 
 @Component({
@@ -12,4 +13,15 @@ import { ConfiguracionService } from '../services/configuracion';
 export class Home {
   // Inyectamos el servicio para poder usarlo en la plantilla.
   protected configuracionService = inject(ConfiguracionService);
+  private router = inject(Router);
+
+  // Navegar a la tienda
+  irATienda(): void {
+    this.router.navigate(['/productos']);
+  }
+
+  // Navegar al registro
+  irARegistro(): void {
+    this.router.navigate(['/auth/registro']);
+  }
 }
