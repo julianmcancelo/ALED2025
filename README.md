@@ -1,60 +1,50 @@
-# Final
+# Proyecto Final - Algoritmos y Estructura de Datos III
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.3.
+Este repositorio contiene el proyecto final para la materia **Algoritmos y Estructura de Datos III**, correspondiente a la carrera de Tecnicatura en Analista de Sistemas.
 
-## Development server
+## Descripción
 
-To start a local development server, run:
+La aplicación es un sistema base construido con Angular que demuestra un flujo de autenticación de usuarios completo, incluyendo registro e inicio de sesión. Los datos de los usuarios se gestionan a través de **Firebase Firestore**, y las contraseñas se almacenan de forma segura mediante hashing.
 
-```bash
-ng serve
-```
+La interfaz de usuario ha sido desarrollada utilizando **Angular Material** y **Bootstrap** para crear una experiencia de usuario moderna y profesional.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### Tecnologías Utilizadas
 
-## Code scaffolding
+- **Frontend:** Angular 17
+- **Base de Datos:** Google Firebase (Firestore)
+- **Estilos y UI:**
+  - Angular Material
+  - Bootstrap
+- **Seguridad:** bcryptjs para el hashing de contraseñas
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Cómo Ejecutar el Proyecto
 
-```bash
-ng generate component component-name
-```
+1.  **Clonar el repositorio:**
+    ```bash
+    git clone https://github.com/julianmcancelo/ALED2025.git
+    ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+2.  **Navegar al directorio del proyecto:**
+    ```bash
+    cd ALED2025/Final
+    ```
 
-```bash
-ng generate --help
-```
+3.  **Instalar las dependencias:**
+    ```bash
+    npm install
+    ```
 
-## Building
+4.  **Iniciar el servidor de desarrollo:**
+    ```bash
+    npx ng serve
+    ```
+    La aplicación estará disponible en `http://localhost:4200`.
 
-To build the project run:
+## Autores
 
-```bash
-ng build
-```
+- Cancelo Julian
+- Nicolas Otero
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+### Profesor
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-# ALED2025
+- Sebastian Saldivar
