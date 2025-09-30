@@ -4,7 +4,24 @@
       <h1>Panel de Administración</h1>
     </div>
     <div class="card-body">
-      <p class="lead">Bienvenido, administrador.</p>
+      <!--
+  Contenedor principal del panel de administración.
+  Usamos 'd-flex' de Bootstrap para crear un layout flexible.
+-->
+      <div class="admin-panel-container d-flex">
+        <!--
+    El sidebar es un hijo directo de nuestro contenedor flex.
+  -->
+        <app-sidebar></app-sidebar>
+
+        <!--
+    El contenido principal ocupará todo el espacio restante.
+    Aquí es donde Angular cargará los componentes hijos (bienvenida, usuarios, etc.).
+  -->
+        <main class="flex-grow-1">
+          <router-outlet></router-outlet>
+        </main>
+      </div>
       <p>
         Esta es una vista protegida y solo los usuarios con el rol de 'admin' pueden acceder a ella.
       </p>

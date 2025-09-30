@@ -1,0 +1,8 @@
+/*
+  Asegura que el menú desplegable del usuario se alinee a la derecha,
+  evitando que se salga de la pantalla en vistas más pequeñas.
+*/
+[ngbDropdownMenu] {
+  right: 0;
+  left: auto;
+}

@@ -1,0 +1,7 @@
+.admin-panel-container {
+  /*
+    Calculamos la altura mínima para que el panel ocupe todo el espacio
+    vertical disponible, restando la altura de la barra de navegación (64px).
+  */
+  min-height: calc(100vh - 64px);
+}

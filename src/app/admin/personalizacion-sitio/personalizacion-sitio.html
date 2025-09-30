@@ -1,0 +1,60 @@
+<div class="customization-container">
+  <header class="mb-4">
+    <h1>Personalización del Sitio</h1>
+    <p class="text-muted">
+      Realiza cambios globales que afectarán a todo el sitio.
+    </p>
+  </header>
+
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Configuración General</h5>
+
+      <!-- Formulario para cambiar el título -->
+      <div class="mb-3">
+        <label for="siteTitle" class="form-label">Título del Sitio</label>
+        <input
+          type="text"
+          class="form-control"
+          id="siteTitle"
+          placeholder="Ej: Mi Tienda Fantástica"
+          [(ngModel)]="tituloActual"
+        />
+        <div class="form-text">
+          Este es el título que aparece en la cabecera principal.
+        </div>
+      </div>
+
+      <!-- Botón de Guardar con estados dinámicos -->
+      <button
+        class="btn btn-primary"
+        (click)="guardarCambios()"
+        [disabled]="estadoGuardado() === 'guardando'"
+      >
+        <!--
+          Usamos @switch para mostrar diferente contenido en el botón
+          según el estado de la operación de guardado.
+        -->
+        @switch (estadoGuardado()) {
+          @case ('guardando') {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span class="ms-1">Guardando...</span>
+          }
+          @case ('guardado') {
+            <i class="bi bi-check-circle-fill me-1"></i>
+            <span>¡Guardado!</span>
+          }
+          @case ('error') {
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            <span>Error</span>
+          }
+          @default {
+            <i class="bi bi-save-fill me-1"></i>
+            <span>Guardar Cambios</span>
+          }
+        }
+      </button>
+
+    </div>
+  </div>
+</div>

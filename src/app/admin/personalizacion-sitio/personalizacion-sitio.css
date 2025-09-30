@@ -1,0 +1,11 @@
+.customization-container {
+  padding: 2rem;
+}
+
+/*
+  Añadimos una transición suave al botón para que el cambio
+  de contenido (ej: de "Guardar" a "Guardado") no sea tan brusco.
+*/
+.btn {
+  transition: all 0.3s ease-in-out;
+}

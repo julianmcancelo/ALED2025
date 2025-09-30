@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 
 // Importamos nuestro servicio y las interfaces
 import { CarritoService } from '../services/carrito';
@@ -8,7 +8,7 @@ import { CarritoService } from '../services/carrito';
 /**
  * @component Carrito
  * Componente encargado de mostrar el contenido del carrito de compras.
- * Ahora adaptado para funcionar dentro de un modal de ng-bootstrap.
+ * Adaptado para funcionar dentro de un panel lateral (off-canvas) de ng-bootstrap.
  */
 @Component({
   selector: 'app-carrito',
@@ -25,18 +25,18 @@ export class Carrito {
   protected carritoService = inject(CarritoService);
 
   /**
-   * Inyectamos NgbActiveModal, que nos da una referencia al modal activo
+   * Inyectamos NgbActiveOffcanvas, que nos da una referencia al panel activo
    * y nos permite cerrarlo.
    */
-  protected activeModal = inject(NgbActiveModal);
+  protected activeOffcanvas = inject(NgbActiveOffcanvas);
 
   // --- MÉTODOS DEL TEMPLATE ---
 
   /**
-   * Cierra el modal actual.
+   * Cierra el panel lateral actual.
    */
   cerrar(): void {
-    this.activeModal.dismiss('Cross click');
+    this.activeOffcanvas.dismiss('Cross click');
   }
 
   /**
@@ -66,6 +66,6 @@ export class Carrito {
     console.log('Checkout realizado:', { items, total });
 
     this.carritoService.vaciarCarrito();
-    this.activeModal.close('Checkout'); // Cierra el modal después del checkout
+    this.activeOffcanvas.close('Checkout'); // Cierra el panel después del checkout
   }
 }

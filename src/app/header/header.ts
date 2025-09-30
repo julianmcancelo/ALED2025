@@ -1,19 +1,13 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
-// Importaciones de Angular Material
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatBadgeModule } from '@angular/material/badge';
+import { NgbDropdownModule, NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 // Importamos los componentes y servicios
 import { AuthService } from '../auth/auth';
 import { CarritoService } from '../services/carrito';
+import { ConfiguracionService } from '../services/configuracion'; // Importamos el nuevo servicio
 import { Carrito } from '../carrito/carrito';
 import { Registro } from '../auth/registro/registro';
 import { InicioDeSesion } from '../auth/inicio-sesion/inicio-sesion';
@@ -24,46 +18,37 @@ import { InicioDeSesion } from '../auth/inicio-sesion/inicio-sesion';
   imports: [
     CommonModule,
     RouterLink,
-    MatToolbarModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTooltipModule,
-    MatBadgeModule,
-    MatDialogModule,
+    MatDialogModule, // Aún lo usamos para login/registro
+    NgbDropdownModule, // Para el menú de usuario
   ],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
 export class Header {
-  private modalService = inject(NgbModal);
+  private offcanvasService = inject(NgbOffcanvas);
   private authService = inject(AuthService);
-  private dialog = inject(MatDialog); // Volvemos a inyectar MatDialog
+  private dialog = inject(MatDialog);
   protected carritoService = inject(CarritoService);
+  protected configuracionService = inject(ConfiguracionService); // Inyectamos el servicio
+
+  // Exponemos la señal de configuración para usarla en la plantilla.
+  protected configuracion = this.configuracionService.configuracionSignal;
 
   currentUser = this.authService.currentUserSignal;
   isAdmin = computed(() => this.currentUser()?.rol === 'admin');
 
-  /**
-   * Abre el diálogo de registro usando MatDialog.
-   */
   openRegisterDialog(): void {
     this.dialog.open(Registro, { width: '550px' });
   }
 
-  /**
-   * Abre el diálogo de inicio de sesión usando MatDialog.
-   */
   openLoginDialog(): void {
     this.dialog.open(InicioDeSesion, { width: '450px' });
   }
 
-  /**
-   * Abre el diálogo modal del carrito de compras usando ng-bootstrap.
-   */
   abrirDialogoCarrito(): void {
-    this.modalService.open(Carrito, {
-      size: 'lg', // Un tamaño grande para el modal
-      centered: true, // Centra el modal verticalmente
+    this.offcanvasService.open(Carrito, {
+      position: 'end',
+      panelClass: 'carrito-offcanvas',
     });
   }
 

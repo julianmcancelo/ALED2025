@@ -1,0 +1,13 @@
+.welcome-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%; /* Ocupa toda la altura del contenedor padre */
+  padding: 2rem;
+}
+
+.welcome-icon {
+  font-size: 4rem;
+  color: #3f51b5; /* Color primario de Material */
+  margin-bottom: 1.5rem;
+}

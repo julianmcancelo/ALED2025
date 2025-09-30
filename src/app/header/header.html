@@ -1,49 +1,67 @@
-<mat-toolbar color="primary">
-  <span>Proyecto Final - ALED 3</span>
+<!-- Navbar de Bootstrap -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+  <div class="container-fluid">
+    <!-- Título/Branding de la aplicación -->
+    <a class="navbar-brand fw-bold" href="#">
+      <i class="bi bi-gem me-2"></i>
+      {{ configuracion().titulo || 'Proyecto Final' }}
+    </a>
 
-  <span style="flex: 1 1 auto"></span>
+    <!-- Contenedor para los elementos de la derecha -->
+    <div class="d-flex align-items-center ms-auto">
+      <!-- Bloque que se muestra si NADIE ha iniciado sesión -->
+      @if (currentUser() === null) {
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" (click)="openLoginDialog()">
+          <i class="bi bi-box-arrow-in-right me-1"></i>
+          <span>Iniciar Sesión</span>
+        </button>
+        <button class="btn btn-primary" (click)="openRegisterDialog()">
+          <i class="bi bi-person-plus-fill me-1"></i>
+          <span>Registrarse</span>
+        </button>
+      </div>
+      }
 
-  <!-- Bloque que se muestra si NADIE ha iniciado sesión -->
-  @if (currentUser() === null) {
-  <button mat-stroked-button class="header-button" (click)="openRegisterDialog()">
-    <mat-icon>person_add</mat-icon>
-    <span>Registrarse</span>
-  </button>
+      <!-- Bloque que se muestra si un USUARIO ha iniciado sesión -->
+      @if (currentUser(); as user) {
+      <!-- Menú desplegable del usuario -->
+      <div ngbDropdown class="d-inline-block">
+        <button type="button" class="btn btn-light" id="dropdownBasic1" ngbDropdownToggle>
+          <i class="bi bi-person-circle me-2"></i>
+          ¡Hola, {{ user.nombre }}!
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+          <!-- Botón de Administración (condicional) -->
+          @if (isAdmin()) {
+          <a ngbDropdownItem routerLink="/administracion" class="d-flex align-items-center">
+            <i class="bi bi-shield-lock-fill me-2"></i>
+            <span>Administración</span>
+          </a>
+          }
+          <div class="dropdown-divider"></div>
+          <button ngbDropdownItem (click)="logout()" class="d-flex align-items-center text-danger">
+            <i class="bi bi-box-arrow-right me-2"></i>
+            <span>Cerrar Sesión</span>
+          </button>
+        </div>
+      </div>
+      }
 
-  <button mat-stroked-button class="header-button" (click)="openLoginDialog()">
-    <mat-icon>login</mat-icon>
-    <span>Iniciar Sesión</span>
-  </button>
-  }
+      <!-- Separador visual -->
+      <div class="vr mx-3"></div>
 
-  <!-- Bloque que se muestra si un USUARIO ha iniciado sesión -->
-  @if (currentUser()) {
-  <span class="welcome-message"> ¡Hola, {{ currentUser()?.nombre }}! </span>
-
-  <!-- Botón de Administración: se muestra SÓLO si isAdmin() es true -->
-  @if (isAdmin()) {
-  <button mat-stroked-button class="header-button" routerLink="/administracion">
-    <mat-icon>admin_panel_settings</mat-icon>
-    <span>Administración</span>
-  </button>
-  }
-
-  <button mat-stroked-button class="header-button" (click)="logout()">
-    <mat-icon>logout</mat-icon>
-    <span>Cerrar Sesión</span>
-  </button>
-  }
-
-  <button
-    mat-icon-button
-    matTooltip="Ver carrito de compras"
-    aria-label="Carrito de compras"
-    class="header-button"
-    (click)="abrirDialogoCarrito()"
-    [matBadge]="carritoService.totalItems()"
-    [matBadgeHidden]="carritoService.totalItems() === 0"
-    matBadgeColor="accent"
-  >
-    <mat-icon>shopping_cart</mat-icon>
-  </button>
-</mat-toolbar>
+      <!-- Botón del Carrito de Compras -->
+      <button class="btn btn-outline-primary position-relative" (click)="abrirDialogoCarrito()">
+        <i class="bi bi-cart3"></i>
+        @if (carritoService.totalItems() > 0) {
+        <span
+          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+        >
+          {{ carritoService.totalItems() }}
+        </span>
+        }
+      </button>
+    </div>
+  </div>
+</nav>

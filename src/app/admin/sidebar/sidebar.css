@@ -1,0 +1,40 @@
+/*
+  Estilos para el contenedor del sidebar.
+  - Le damos un ancho fijo.
+  - Un color de fondo suave.
+  - Un borde a la derecha para separarlo del contenido.
+  - Padding para que los elementos no estén pegados a los bordes.
+*/
+:host {
+  display: block; /* Asegura que el componente ocupe espacio */
+  width: 280px;
+  background-color: #f8f9fa; /* Un gris muy claro */
+  border-right: 1px solid #dee2e6; /* Borde sutil */
+  padding: 1.5rem;
+}
+
+/*
+  Estilos para los enlaces de navegación.
+*/
+.nav-link {
+  font-size: 1.05rem;
+  color: #343a40; /* Color de texto oscuro */
+  margin-bottom: 0.5rem; /* Espacio entre los botones */
+}
+
+/*
+  Estilos para el enlace activo (el que está seleccionado).
+  Sobrescribimos los colores por defecto de Bootstrap para que
+  coincidan con el tema de la aplicación.
+*/
+.nav-link.active {
+  background-color: #3f51b5; /* Color primario de Material */
+  color: white;
+}
+
+/*
+  Efecto visual al pasar el mouse sobre un enlace que no está activo.
+*/
+.nav-link:not(.active):hover {
+  background-color: #e9ecef; /* Un gris un poco más oscuro */
+}

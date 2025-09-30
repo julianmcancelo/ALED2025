@@ -8,7 +8,6 @@ import {
 import { provideRouter, Router } from '@angular/router';
 import { UserService } from './services/user';
 import { provideHttpClient } from '@angular/common/http';
-import { NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 // Importamos los componentes y el nuevo guardia
@@ -16,6 +15,9 @@ import { Home } from './home/home';
 import { Admin } from './admin/admin';
 import { adminGuard } from './auth/admin-guard';
 import { PrimerUsuario } from './auth/primer-usuario/primer-usuario';
+import { WelcomeAdmin } from './admin/welcome/welcome';
+import { GestionUsuarios } from './admin/gestion-usuarios/gestion-usuarios';
+import { PersonalizacionSitio } from './admin/personalizacion-sitio/personalizacion-sitio';
 
 // Importaciones de Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
@@ -54,7 +56,6 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(), // Habilita las animaciones de Angular Material
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideHttpClient(),
-    importProvidersFrom(NgbModalModule),
 
     {
       provide: APP_INITIALIZER,
@@ -69,6 +70,12 @@ export const appConfig: ApplicationConfig = {
         path: 'administracion',
         component: Admin,
         canActivate: [adminGuard],
+        // Definimos las rutas hijas para el panel de administración
+        children: [
+          { path: '', component: WelcomeAdmin }, // Ruta por defecto
+          { path: 'usuarios', component: GestionUsuarios }, // Ruta para el gestor
+          { path: 'personalizacion', component: PersonalizacionSitio }, // Nueva ruta
+        ],
       },
     ]),
 

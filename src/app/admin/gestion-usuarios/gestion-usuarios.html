@@ -1,0 +1,76 @@
+<div class="user-management-container">
+  <header class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Gestión de Usuarios</h1>
+    <button class="btn btn-primary">
+      <i class="bi bi-plus-circle-fill me-2"></i>
+      Añadir Usuario
+    </button>
+  </header>
+
+  <!--
+    Usamos el pipe 'async' para suscribirnos automáticamente al observable 'usuarios$'.
+    Angular se encargará de gestionar la suscripción y mostrar los datos cuando lleguen.
+  -->
+  @if (usuarios$ | async; as usuarios) {
+    @if (usuarios.length > 0) {
+      <!-- Si hay usuarios, mostramos la tabla -->
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th scope="col">Nombre</th>
+              <th scope="col">Apellido</th>
+              <th scope="col">Email</th>
+              <th scope="col">Rol</th>
+              <th scope="col" class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Iteramos sobre la lista de usuarios -->
+            @for (usuario of usuarios; track usuario.id) {
+              <tr>
+                <td>{{ usuario.nombre }}</td>
+                <td>{{ usuario.apellido }}</td>
+                <td>{{ usuario.email }}</td>
+                <td>
+                  <!-- Mostramos el rol con un estilo visual (badge) -->
+                  <span
+                    class="badge"
+                    [ngClass]="{
+                      'bg-primary': usuario.rol === 'admin',
+                      'bg-secondary': usuario.rol !== 'admin'
+                    }"
+                  >
+                    {{ usuario.rol | uppercase }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <!-- Botones de acción para cada usuario -->
+                  <button class="btn btn-sm btn-outline-primary me-2" (click)="editarUsuario(usuario)">
+                    <i class="bi bi-pencil-square"></i> Editar
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="eliminarUsuario(usuario.id)">
+                    <i class="bi bi-trash"></i> Eliminar
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <!-- Si no hay usuarios, mostramos un mensaje -->
+      <div class="alert alert-info text-center">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        No se encontraron usuarios registrados en la base de datos.
+      </div>
+    }
+  } @else {
+    <!-- Mientras los datos están cargando, mostramos un spinner -->
+    <div class="d-flex justify-content-center p-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  }
+</div>

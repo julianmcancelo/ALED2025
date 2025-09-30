@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   Firestore,
   collection,
@@ -15,14 +15,26 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class UserService {
-  constructor(private firestore: Firestore) {}
+  private firestore: Firestore = inject(Firestore);
+  private usersCollection = collection(this.firestore, 'users');
 
   /**
-   * Añade un nuevo usuario a la colección 'users' en Firestore.
+   * Obtiene todos los usuarios de la base de datos como un stream.
+   * @returns Un Observable que emite un array de usuarios cada vez que hay cambios.
+   */
+  getUsers(): Observable<any[]> {
+    // collectionData nos da un observable que se actualiza en tiempo real.
+    // El segundo argumento { idField: 'id' } es para asegurar que el ID
+    // del documento se incluya en los datos del objeto.
+    return collectionData(this.usersCollection, { idField: 'id' });
+  }
+
+  /**
+   * Añade un nuevo usuario a la colección 'users'.
+   * @param user - El objeto de usuario a añadir.
    */
   addUser(user: any) {
-    const userCollectionRef = collection(this.firestore, 'users');
-    return addDoc(userCollectionRef, user);
+    return addDoc(this.usersCollection, user);
   }
 
   /**
