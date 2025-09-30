@@ -1,3 +1,11 @@
+.navbar {
+  position: fixed; /* Fija el elemento en la ventana */
+  top: 0; /* Lo pega a la parte superior */
+  left: 0;
+  right: 0;
+  z-index: 1030; /* Un z-index alto para que esté por encima de otros elementos */
+}
+
 /*
   Asegura que el menú desplegable del usuario se alinee a la derecha,
   evitando que se salga de la pantalla en vistas más pequeñas.

@@ -1,0 +1,7 @@
+.main-content {
+  /*
+    Añadimos un padding-top para compensar la altura del header fijo.
+    Ajusta este valor si la altura de tu header cambia.
+  */
+  padding-top: 70px;
+}

@@ -2,15 +2,15 @@ import { Injectable, inject, signal } from '@angular/core';
 import { UserService } from '../services/user';
 import { Router } from '@angular/router';
 import * as bcrypt from 'bcryptjs';
+import { Firestore, doc, onSnapshot } from '@angular/fire/firestore';
+import { Unsubscribe } from 'firebase/firestore';
 
 // Definimos una interfaz para nuestro objeto de usuario.
-// Esto asegura que siempre tengamos la misma estructura de datos.
 export interface AppUser {
   uid: string;
   email: string | null;
   nombre: string;
   rol: 'admin' | 'usuario';
-  // ... otros campos que puedas tener.
 }
 
 @Injectable({
@@ -20,101 +20,94 @@ export class AuthService {
   // --- INYECCIÓN DE DEPENDENCIAS ---
   private userService: UserService = inject(UserService);
   private router: Router = inject(Router);
+  private firestore: Firestore = inject(Firestore);
 
-  // --- CLAVE PARA LOCALSTORAGE ---
-  /**
-   * Usamos una constante para la clave de localStorage.
-   * Esto evita errores de tipeo y facilita futuras búsquedas o modificaciones.
-   */
   private readonly USER_STORAGE_KEY = 'app_user_session';
+  private userSubscription: Unsubscribe | null = null;
 
-  // --- SEÑAL DE ESTADO (SIGNAL) ---
-  /**
-   * 'currentUserSignal' es la fuente de verdad sobre el usuario actual.
-   * - AppUser: Un usuario ha iniciado sesión.
-   * - null: No hay sesión activa.
-   * - undefined: Estado inicial, la app aún no ha comprobado si existe una sesión guardada.
-   */
   currentUserSignal = signal<AppUser | null | undefined>(undefined);
 
   constructor() {
-    // --- LÓGICA DE ARRANQUE: RESTAURAR SESIÓN ---
-    // Este código se ejecuta una sola vez, cuando el servicio es creado al iniciar la app.
     this.cargarSesionDesdeStorage();
   }
 
-  /**
-   * Comprueba si hay una sesión de usuario guardada en localStorage.
-   * Si la encuentra, la carga y actualiza el estado de la aplicación.
-   */
   private cargarSesionDesdeStorage(): void {
     try {
-      // 1. Intentamos obtener el item desde localStorage.
       const userDataString = localStorage.getItem(this.USER_STORAGE_KEY);
-
       if (userDataString) {
-        // 2. Si existe, lo parseamos de JSON string a un objeto.
         const appUser: AppUser = JSON.parse(userDataString);
-        // 3. Actualizamos nuestra señal. La aplicación ahora sabe que el usuario está logueado.
         this.currentUserSignal.set(appUser);
+        // Si cargamos un usuario, empezamos a escuchar sus cambios en tiempo real.
+        this.listenToCurrentUser(appUser.uid);
       } else {
-        // 4. Si no hay datos, significa que no hay sesión activa.
         this.currentUserSignal.set(null);
       }
     } catch (error) {
-      // Si ocurre un error (ej: datos corruptos en localStorage),
-      // lo más seguro es limpiar el estado.
       console.error('Error al cargar la sesión desde localStorage:', error);
       this.currentUserSignal.set(null);
     }
   }
 
   /**
-   * Inicia sesión comparando la contraseña hasheada con bcrypt.
+   * Se suscribe a los cambios del documento del usuario actual en Firestore.
+   * @param userId - El ID del usuario a escuchar.
    */
+  private listenToCurrentUser(userId: string): void {
+    // Si ya hay una suscripción activa, la cancelamos primero.
+    if (this.userSubscription) {
+      this.userSubscription();
+    }
+
+    const userDocRef = doc(this.firestore, 'users', userId);
+    this.userSubscription = onSnapshot(userDocRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const updatedUser = { uid: snapshot.id, ...snapshot.data() } as AppUser;
+        // Actualizamos la señal con los nuevos datos del usuario.
+        this.currentUserSignal.set(updatedUser);
+        // También actualizamos localStorage para mantener la sesión sincronizada.
+        localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(updatedUser));
+      } else {
+        // Si el documento del usuario es eliminado, cerramos la sesión.
+        this.logout();
+      }
+    });
+  }
+
   async login(email: string, password: string): Promise<void> {
-    // 1. Buscamos al usuario por su email en Firestore.
     const userProfile = await this.userService.getUserByEmail(email);
     if (!userProfile) {
       throw new Error('El correo electrónico o la contraseña son incorrectos.');
     }
 
-    // 2. Comparamos la contraseña proporcionada con el hash almacenado.
     const passwordIsValid = bcrypt.compareSync(password, userProfile.password);
     if (!passwordIsValid) {
       throw new Error('El correo electrónico o la contraseña son incorrectos.');
     }
 
-    // 3. Creamos nuestro objeto de usuario para la aplicación.
     const appUser: AppUser = {
       uid: userProfile.id,
       email: userProfile.email,
       ...userProfile,
     };
 
-    // --- GUARDAR SESIÓN ---
-    // 4. Guardamos el objeto de usuario en localStorage como un string JSON.
     localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(appUser));
-
-    // 5. Actualizamos la señal para que toda la app reaccione al nuevo estado.
     this.currentUserSignal.set(appUser);
 
-    // 6. Redirigimos al usuario a la página principal.
+    // Después de iniciar sesión, comenzamos a escuchar los cambios del usuario.
+    this.listenToCurrentUser(appUser.uid);
+
     this.router.navigate(['/']);
   }
 
-  /**
-   * Cierra la sesión del usuario actual.
-   */
   async logout(): Promise<void> {
-    // --- LIMPIAR SESIÓN ---
-    // 1. Eliminamos los datos del usuario de localStorage.
+    // Al cerrar sesión, cancelamos la suscripción a los cambios.
+    if (this.userSubscription) {
+      this.userSubscription();
+      this.userSubscription = null;
+    }
+
     localStorage.removeItem(this.USER_STORAGE_KEY);
-
-    // 2. Actualizamos la señal a 'null' para indicar que no hay sesión.
     this.currentUserSignal.set(null);
-
-    // 3. Redirigimos al usuario a la página de inicio.
     this.router.navigate(['/']);
   }
 }
