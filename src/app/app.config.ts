@@ -18,6 +18,7 @@ import { PrimerUsuario } from './auth/primer-usuario/primer-usuario';
 import { BienvenidaAdmin } from './admin/bienvenida/bienvenida';
 import { GestionUsuarios } from './admin/gestion-usuarios/gestion-usuarios';
 import { PersonalizacionSitio } from './admin/personalizacion-sitio/personalizacion-sitio';
+import { Productos } from './productos/productos';
 
 // Importaciones de Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
@@ -53,7 +54,7 @@ const initializeAppFactory = () => {
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideAnimations(), // Habilita las animaciones de Angular Material
+    provideAnimations(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideHttpClient(),
 
@@ -65,16 +66,16 @@ export const appConfig: ApplicationConfig = {
 
     provideRouter([
       { path: '', component: Home, pathMatch: 'full' },
+      { path: 'productos', component: Productos },
       { path: 'primer-usuario', component: PrimerUsuario },
       {
         path: 'administracion',
         component: Admin,
         canActivate: [adminGuard],
-        // Definimos las rutas hijas para el panel de administración
         children: [
-          { path: '', component: BienvenidaAdmin }, // Ruta por defecto
-          { path: 'usuarios', component: GestionUsuarios }, // Ruta para el gestor
-          { path: 'personalizacion', component: PersonalizacionSitio }, // Nueva ruta
+          { path: '', component: BienvenidaAdmin },
+          { path: 'usuarios', component: GestionUsuarios },
+          { path: 'personalizacion', component: PersonalizacionSitio },
         ],
       },
     ]),
@@ -83,4 +84,4 @@ export const appConfig: ApplicationConfig = {
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
   ],
-};
+}
