@@ -1,0 +1,42 @@
+<mat-toolbar color="primary">
+  <span>Proyecto Final - ALED 3</span>
+
+  <span style="flex: 1 1 auto"></span>
+
+  <!--
+    Usamos la nueva sintaxis de control de flujo de Angular (@if).
+    Este bloque se muestra SÓLO si 'currentUser()' es null (nadie ha iniciado sesión).
+  -->
+  @if (!currentUser()) {
+  <button mat-stroked-button class="header-button" (click)="openRegisterDialog()">
+    <mat-icon>person_add</mat-icon>
+    <span>Registrarse</span>
+  </button>
+
+  <button mat-stroked-button class="header-button" (click)="openLoginDialog()">
+    <mat-icon>login</mat-icon>
+    <span>Iniciar Sesión</span>
+  </button>
+  }
+
+  <!--
+    Este bloque se muestra SÓLO si 'currentUser()' tiene un valor (un usuario ha iniciado sesión).
+  -->
+  @if (currentUser()) {
+  <span class="welcome-message"> ¡Hola, {{ currentUser()?.nombre }}! </span>
+
+  <button mat-stroked-button class="header-button" (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Cerrar Sesión</span>
+  </button>
+  }
+
+  <button
+    mat-icon-button
+    matTooltip="Ver carrito de compras"
+    aria-label="Carrito de compras"
+    class="header-button"
+  >
+    <mat-icon>shopping_cart</mat-icon>
+  </button>
+</mat-toolbar>

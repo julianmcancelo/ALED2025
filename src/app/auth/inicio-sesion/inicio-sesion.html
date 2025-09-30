@@ -1,0 +1,45 @@
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-modal">
+  <h1 mat-dialog-title class="modal-header bg-light text-dark">Iniciar Sesión</h1>
+
+  <div mat-dialog-content class="pt-3">
+    <div class="mb-3">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Correo Electrónico</mat-label>
+        <input matInput formControlName="email" type="email" required />
+        <mat-icon matPrefix>alternate_email</mat-icon>
+        <mat-error *ngIf="loginForm.get('email')?.hasError('required')">Requerido.</mat-error>
+        <mat-error *ngIf="loginForm.get('email')?.hasError('email')">Formato no válido.</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="mb-3">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Contraseña</mat-label>
+        <input matInput formControlName="password" type="password" required />
+        <mat-icon matPrefix>lock</mat-icon>
+        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Requerida.</mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Alerta de Bootstrap para mostrar errores de login -->
+    @if (loginError) {
+    <div class="alert alert-danger mt-2">{{ loginError }}</div>
+    }
+  </div>
+
+  <div mat-dialog-actions align="end">
+    <button mat-button [disabled]="isLoading" mat-dialog-close>Cancelar</button>
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      [disabled]="loginForm.invalid || isLoading"
+    >
+      @if (isLoading) {
+      <mat-spinner diameter="24"></mat-spinner>
+      } @else {
+      <span>Ingresar</span>
+      }
+    </button>
+  </div>
+</form>

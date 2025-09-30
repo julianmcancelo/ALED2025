@@ -1,1 +1,111 @@
 /* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+/*
+  Estilos para los botones del Header.
+  Se añaden aquí como solución alternativa a un problema al escribir en header.css.
+*/
+
+/*
+  Añade un pequeño margen a la izquierda de cada botón en el header
+  para que no estén pegados entre sí.
+*/
+.header-button {
+  margin-left: 8px;
+}
+
+/*
+  Asegura que el borde y el texto de los botones 'stroked' en la toolbar sean blancos
+  para un mejor contraste y visibilidad.
+*/
+.mat-toolbar .mat-mdc-stroked-button:not(:disabled) {
+  border-color: white;
+  color: white;
+}
+
+/*
+  Asegura que el ícono dentro del botón también sea blanco.
+*/
+.mat-toolbar .mat-mdc-stroked-button .mat-icon {
+  color: white;
+}
+/*
+  Estilos para el Footer (Versión Compacta).
+*/
+.footer-compact {
+  height: 40px;
+  padding: 0 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8rem;
+  background-color: #f5f5f5; /* Fondo gris claro para buen contraste */
+}
+
+.footer-text-compact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  color: black; /* Color de texto negro */
+}
+
+.footer-text-compact .separator {
+  margin: 0 8px;
+}
+
+/*
+  Estilos para el layout principal de la aplicación (Sticky Footer).
+*/
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+}
+
+/*
+  Estilos para mejorar la estética de los modales de autenticación.
+*/
+.auth-modal .full-width {
+  width: 100%;
+}
+
+.auth-modal .checkbox-group {
+  display: flex;
+  flex-direction: column;
+  margin: 10px 0;
+}
+
+.auth-modal .mat-mdc-raised-button .mat-spinner {
+  margin: 0 auto;
+}
+
+/*
+  Estilos para mejorar la integración de Bootstrap en los modales de Material.
+*/
+.modal-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #dee2e6;
+  margin: -24px -24px 0 -24px; /* Compensa el padding por defecto de mat-dialog-content */
+  font-size: 1.25rem;
+}
+
+/*
+  Ajuste para que los campos 'outline' de Angular Material no tengan un fondo
+  que oculte el color de fondo del modal.
+*/
+.mat-mdc-form-field-flex {
+  background-color: transparent !important;
+}
