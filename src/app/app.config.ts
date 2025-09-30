@@ -15,7 +15,7 @@ import { Home } from './home/home';
 import { Admin } from './admin/admin';
 import { adminGuard } from './auth/admin-guard';
 import { PrimerUsuario } from './auth/primer-usuario/primer-usuario';
-import { WelcomeAdmin } from './admin/welcome/welcome';
+import { BienvenidaAdmin } from './admin/bienvenida/bienvenida';
 import { GestionUsuarios } from './admin/gestion-usuarios/gestion-usuarios';
 import { PersonalizacionSitio } from './admin/personalizacion-sitio/personalizacion-sitio';
 
@@ -72,7 +72,7 @@ export const appConfig: ApplicationConfig = {
         canActivate: [adminGuard],
         // Definimos las rutas hijas para el panel de administración
         children: [
-          { path: '', component: WelcomeAdmin }, // Ruta por defecto
+          { path: '', component: BienvenidaAdmin }, // Ruta por defecto
           { path: 'usuarios', component: GestionUsuarios }, // Ruta para el gestor
           { path: 'personalizacion', component: PersonalizacionSitio }, // Nueva ruta
         ],

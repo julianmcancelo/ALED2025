@@ -2,14 +2,14 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 /**
- * @component WelcomeAdmin
+ * @component BienvenidaAdmin
  * Muestra un mensaje de bienvenida en el panel de administración.
  */
 @Component({
-  selector: 'app-welcome-admin',
+  selector: 'app-bienvenida-admin',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './welcome.html',
-  styleUrl: './welcome.css',
+  templateUrl: './bienvenida.html',
+  styleUrl: './bienvenida.css',
 })
-export class WelcomeAdmin {}
+export class BienvenidaAdmin {}
