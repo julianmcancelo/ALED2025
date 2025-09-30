@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ConfiguracionService } from '../services/configuracion';
 
 @Component({
   selector: 'app-home',
@@ -8,4 +9,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home {}
+export class Home {
+  // Inyectamos el servicio para poder usarlo en la plantilla.
+  protected configuracionService = inject(ConfiguracionService);
+}

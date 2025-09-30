@@ -1,9 +1,7 @@
 <div class="customization-container">
   <header class="mb-4">
     <h1>Personalización del Sitio</h1>
-    <p class="text-muted">
-      Realiza cambios globales que afectarán a todo el sitio.
-    </p>
+    <p class="text-muted">Realiza cambios globales que afectarán a todo el sitio.</p>
   </header>
 
   <div class="card">
@@ -20,9 +18,20 @@
           placeholder="Ej: Mi Tienda Fantástica"
           [(ngModel)]="tituloActual"
         />
-        <div class="form-text">
-          Este es el título que aparece en la cabecera principal.
-        </div>
+        <div class="form-text">Este es el título que aparece en la cabecera principal.</div>
+      </div>
+
+      <!-- Formulario para cambiar el subtítulo -->
+      <div class="mb-3">
+        <label for="siteSubtitle" class="form-label">Subtítulo del Sitio</label>
+        <textarea
+          class="form-control"
+          id="siteSubtitle"
+          rows="3"
+          placeholder="Ej: Tu tienda de confianza para productos increíbles."
+          [(ngModel)]="subtituloActual"
+        ></textarea>
+        <div class="form-text">Este es el subtítulo que aparece en la página de inicio.</div>
       </div>
 
       <!-- Botón de Guardar con estados dinámicos -->
@@ -35,26 +44,20 @@
           Usamos @switch para mostrar diferente contenido en el botón
           según el estado de la operación de guardado.
         -->
-        @switch (estadoGuardado()) {
-          @case ('guardando') {
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            <span class="ms-1">Guardando...</span>
-          }
-          @case ('guardado') {
-            <i class="bi bi-check-circle-fill me-1"></i>
-            <span>¡Guardado!</span>
-          }
-          @case ('error') {
-            <i class="bi bi-exclamation-triangle-fill me-1"></i>
-            <span>Error</span>
-          }
-          @default {
-            <i class="bi bi-save-fill me-1"></i>
-            <span>Guardar Cambios</span>
-          }
-        }
+        @switch (estadoGuardado()) { @case ('guardando') {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span class="ms-1">Guardando...</span>
+        } @case ('guardado') {
+        <i class="bi bi-check-circle-fill me-1"></i>
+        <span>¡Guardado!</span>
+        } @case ('error') {
+        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+        <span>Error</span>
+        } @default {
+        <i class="bi bi-save-fill me-1"></i>
+        <span>Guardar Cambios</span>
+        } }
       </button>
-
     </div>
   </div>
 </div>

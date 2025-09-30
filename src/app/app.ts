@@ -1,31 +1,45 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { RouterOutlet } from '@angular/router'; // Importamos RouterOutlet
+import { RouterOutlet } from '@angular/router';
 import * as bcrypt from 'bcryptjs';
+import { Title } from '@angular/platform-browser';
 
 // Importamos los componentes y servicios necesarios
 import { Header } from './header/header';
 import { Footer } from './footer/footer';
 import { Registro } from './auth/registro/registro';
 import { UserService } from './services/user';
+import { ConfiguracionService } from './services/configuracion';
 import { Firestore, collection, getDocs, limit, query } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, Header, Footer, MatDialogModule, RouterOutlet], // Añadimos RouterOutlet
+  imports: [CommonModule, Header, Footer, MatDialogModule, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App implements OnInit {
   protected readonly title = signal('Final');
 
+  // Inyección de servicios moderna con inject()
+  private titleService = inject(Title);
+  private configuracionService = inject(ConfiguracionService);
+
   constructor(
     public dialog: MatDialog,
     private firestore: Firestore,
     private userService: UserService,
-  ) {}
+  ) {
+    // Creamos un efecto que reacciona a los cambios en la configuración.
+    effect(() => {
+      // Obtenemos el título desde la señal del servicio de configuración.
+      const nuevoTitulo = this.configuracionService.configuracionSignal().titulo;
+      // Actualizamos el título de la pestaña del navegador.
+      this.titleService.setTitle(nuevoTitulo);
+    });
+  }
 
   /**
    * ngOnInit es un "hook" del ciclo de vida de Angular.

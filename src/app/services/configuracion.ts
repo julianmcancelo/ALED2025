@@ -8,6 +8,7 @@ import { Firestore, doc, setDoc, onSnapshot, DocumentData } from '@angular/fire/
  */
 export interface ConfiguracionSitio {
   titulo: string;
+  subtitulo: string;
   // En el futuro, podríamos añadir más campos como:
   // logoUrl: string;
   // colorPrincipal: string;
@@ -32,6 +33,7 @@ export class ConfiguracionService {
    */
   configuracionSignal = signal<ConfiguracionSitio>({
     titulo: 'Cargando...',
+    subtitulo: '...',
   });
 
   constructor() {
@@ -60,13 +62,20 @@ export class ConfiguracionService {
             'No se encontró configuración en Firestore. Creando documento por defecto...',
           );
           // Esta llamada a 'actualizarConfiguracion' creará el documento.
-          this.actualizarConfiguracion({ titulo: 'Proyecto Final' });
+          this.actualizarConfiguracion({
+            titulo: 'Proyecto Final',
+            subtitulo:
+              'Una aplicación de demostración que integra un sistema de autenticación y un carrito de compras funcional.',
+          });
         }
       },
       (error) => {
         // Manejo de errores en caso de que falle la conexión.
         console.error('Error al escuchar la configuración del sitio:', error);
-        this.configuracionSignal.set({ titulo: 'Error al cargar' });
+        this.configuracionSignal.set({
+          titulo: 'Error al cargar',
+          subtitulo: 'Intente de nuevo más tarde.',
+        });
       },
     );
   }

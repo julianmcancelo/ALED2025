@@ -22,24 +22,28 @@ export class PersonalizacionSitio {
   /**
    * @signal tituloActual
    * Almacena el valor del campo de texto del título.
-   * Usamos una señal local para no modificar el estado global directamente.
    */
   protected tituloActual = signal<string>('');
 
   /**
+   * @signal subtituloActual
+   * Almacena el valor del campo de texto del subtítulo.
+   */
+  protected subtituloActual = signal<string>('');
+
+  /**
    * @signal estadoGuardado
    * Controla el mensaje de feedback para el usuario.
-   * Puede ser 'inicial', 'guardando', 'guardado' o 'error'.
    */
   protected estadoGuardado = signal<'inicial' | 'guardando' | 'guardado' | 'error'>('inicial');
 
   constructor() {
     // --- EFECTO (EFFECT) ---
-    // Un 'effect' reacciona a los cambios en otras señales.
-    // Lo usamos para mantener nuestro 'tituloActual' sincronizado
-    // con el título global del 'ConfiguracionService'.
+    // Sincroniza las señales locales con los datos del servicio de configuración.
     effect(() => {
-      this.tituloActual.set(this.configuracionService.configuracionSignal().titulo);
+      const config = this.configuracionService.configuracionSignal();
+      this.tituloActual.set(config.titulo);
+      this.subtituloActual.set(config.subtitulo);
     });
   }
 
@@ -47,13 +51,14 @@ export class PersonalizacionSitio {
    * Se ejecuta cuando el usuario hace clic en el botón "Guardar Cambios".
    */
   async guardarCambios(): Promise<void> {
-    this.estadoGuardado.set('guardando'); // Cambiamos el estado a 'guardando'
+    this.estadoGuardado.set('guardando');
     try {
       // Llamamos al servicio para actualizar los datos en Firestore.
       await this.configuracionService.actualizarConfiguracion({
         titulo: this.tituloActual(),
+        subtitulo: this.subtituloActual(),
       });
-      this.estadoGuardado.set('guardado'); // Si todo va bien, estado 'guardado'
+      this.estadoGuardado.set('guardado');
 
       // Hacemos que el mensaje de "Guardado" desaparezca después de 3 segundos.
       setTimeout(() => this.estadoGuardado.set('inicial'), 3000);
