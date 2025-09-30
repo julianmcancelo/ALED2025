@@ -33,7 +33,7 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
 }
 
 @Component({
-  selector: 'app-register',
+  selector: 'app-registro',
   standalone: true,
   imports: [
     CommonModule,
@@ -47,10 +47,10 @@ export function passwordMatchValidator(control: AbstractControl): ValidationErro
     MatSnackBarModule,
     MatIconModule,
   ],
-  templateUrl: './register.html',
-  styleUrls: ['./register.css'],
+  templateUrl: './registro.html',
+  styleUrls: ['./registro.css'],
 })
-export class Register implements OnInit {
+export class Registro implements OnInit {
   registerForm!: FormGroup;
   registrationError: string | null = null;
   isLoading = false;
@@ -58,7 +58,7 @@ export class Register implements OnInit {
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
-    public dialogRef: MatDialogRef<Register>,
+    public dialogRef: MatDialogRef<Registro>,
     private snackBar: MatSnackBar,
   ) {}
 

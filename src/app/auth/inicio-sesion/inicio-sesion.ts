@@ -9,7 +9,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
 import { MatIconModule } from '@angular/material/icon';
 
 // Importamos nuestro servicio de autenticación.
@@ -31,17 +30,20 @@ import { AuthService } from '../auth';
   templateUrl: './inicio-sesion.html',
   styleUrls: ['./inicio-sesion.css'],
 })
-export class InicioSesion implements OnInit {
+export class InicioDeSesion implements OnInit {
+  // Propiedades de la clase que faltaban
   loginForm!: FormGroup;
   loginError: string | null = null;
   isLoading = false;
 
+  // Constructor completo con las inyecciones de dependencias
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    public dialogRef: MatDialogRef<InicioSesion>,
+    public dialogRef: MatDialogRef<InicioDeSesion>,
   ) {}
 
+  // Métodos ahora DENTRO de la clase
   ngOnInit(): void {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],

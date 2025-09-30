@@ -15,40 +15,34 @@
     <main class="container mt-5">
       <!--
         Componente "Hero" o "Jumbotron" estilizado con clases de Bootstrap.
-        - p-5: Añade un padding grande alrededor del contenido.
-        - mb-4: Añade un margen inferior para separarlo de lo que venga después.
-        - bg-light: Aplica un color de fondo gris claro.
-        - rounded-3: Aplica bordes redondeados.
-        - text-center: Centra todo el texto dentro del div.
       -->
       <div class="p-5 mb-4 bg-light rounded-3 text-center">
         <div class="container-fluid py-4">
           <!--
-            Clases de tipografía de Bootstrap para un título más grande y llamativo.
-            - display-5: Tamaño de fuente grande, para títulos principales.
-            - fw-bold: Hace la fuente más gruesa (font-weight: bold).
+            Título principal de la página.
           -->
-          <h1 class="display-5 fw-bold">¡Bienvenido al Proyecto Final de ALED 3!</h1>
+          <h1 class="display-5 fw-bold">Proyecto Final: Algoritmos y Estructura de Datos III</h1>
 
           <!--
-            - fs-4: Tamaño de fuente de nivel 4, más grande que el párrafo normal.
+            Párrafo de introducción con información de los autores.
           -->
-          <p class="fs-4">
-            Esta es una aplicación de demostración construida con Angular, Firebase y Bootstrap.
-          </p>
+          <p class="fs-4">Una aplicación de demostración desarrollada por:</p>
+          <p class="lead fw-bold">Cancelo Julian y Nicolas Otero</p>
+          <p>Bajo la supervisión del profesor Sebastian Saldivar.</p>
+
+          <hr class="my-4" />
+
           <p>
-            Explora las funcionalidades, regístrate para crear una cuenta y prueba el inicio de
-            sesión.
+            El proyecto integra Angular para el frontend, Firebase para la base de datos y
+            autenticación, y Bootstrap junto a Angular Material para el diseño.
           </p>
 
           <!--
-            Botón de "Llamada a la acción" estilizado con Bootstrap.
-            - btn: Estilo base de botón.
-            - btn-primary: Botón con el color primario del tema.
-            - btn-lg: Botón de tamaño grande.
-            - mt-3: Margen superior para separarlo del texto.
+            Botón de "Llamada a la acción" que invita al usuario a registrarse.
           -->
-          <button class="btn btn-primary btn-lg mt-3" type="button">Empezar a explorar</button>
+          <button class="btn btn-primary btn-lg mt-3" type="button" (click)="openRegisterDialog()">
+            ¡Crea tu cuenta!
+          </button>
         </div>
       </div>
     </main>

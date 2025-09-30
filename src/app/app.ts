@@ -1,20 +1,34 @@
 import { Component, signal } from '@angular/core';
-// Importamos los componentes Header y Footer para poder utilizarlos en la plantilla HTML.
+import { CommonModule } from '@angular/common'; // Importamos CommonModule
+import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // Importamos MatDialog
+
+// Importamos los componentes que vamos a usar
 import { Header } from './header/header';
 import { Footer } from './footer/footer';
+import { Registro } from './auth/registro/registro';
 
 /**
  * Este es el componente raíz (principal) de la aplicación.
- * Es el primer componente que se carga y actúa como contenedor de todos los demás.
  */
 @Component({
-  selector: 'app-root', // El selector que se usa en index.html para cargar este componente.
-  imports: [Header, Footer], // Declara que este componente utiliza los componentes Header y Footer.
-  templateUrl: './app.html', // La plantilla HTML asociada.
-  styleUrl: './app.css', // La hoja de estilos asociada.
+  selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, Header, Footer, MatDialogModule], // Añadimos los módulos necesarios
+  templateUrl: './app.html',
+  styleUrl: './app.css',
 })
 export class App {
-  // 'signal' es una nueva característica de Angular para manejar el estado de forma reactiva.
-  // Aquí, simplemente almacena el título de la aplicación.
   protected readonly title = signal('Final');
+
+  constructor(public dialog: MatDialog) {}
+
+  /**
+   * Abre el diálogo modal de registro.
+   * Replicamos esta función aquí para que el botón del "Hero" funcione.
+   */
+  openRegisterDialog(): void {
+    this.dialog.open(Registro, {
+      width: '550px',
+    });
+  }
 }
