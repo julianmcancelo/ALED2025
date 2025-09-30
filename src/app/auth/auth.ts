@@ -8,6 +8,7 @@ import {
 } from '@angular/fire/auth';
 import { UserService } from '../services/user';
 import { Router } from '@angular/router';
+import * as bcrypt from 'bcryptjs';
 
 // Definimos una interfaz para nuestro objeto de usuario, incluyendo el rol.
 export interface AppUser {
@@ -59,21 +60,47 @@ export class AuthService {
   }
 
   /**
-   * Inicia sesión usando el servicio de autenticación de Firebase.
+   * Inicia sesión comparando la contraseña hasheada con bcrypt.
    */
   async login(email: string, password: string): Promise<void> {
-    // Usamos el método de Firebase para iniciar sesión.
-    // onAuthStateChanged se encargará del resto si tiene éxito.
-    await signInWithEmailAndPassword(this.auth, email, password);
+    // 1. Buscar al usuario por su email en nuestra base de datos (Firestore).
+    const userProfile = await this.userService.getUserByEmail(email);
+
+    // Si no encontramos un usuario con ese email, lanzamos un error.
+    if (!userProfile) {
+      throw new Error('El correo electrónico o la contraseña son incorrectos.');
+    }
+
+    // 2. Comparar la contraseña proporcionada con el hash almacenado.
+    // bcrypt.compareSync devuelve 'true' si coinciden, 'false' si no.
+    const passwordIsValid = bcrypt.compareSync(password, userProfile.password);
+
+    // Si las contraseñas no coinciden, lanzamos el mismo error genérico.
+    if (!passwordIsValid) {
+      throw new Error('El correo electrónico o la contraseña son incorrectos.');
+    }
+
+    // 3. Si la contraseña es válida, actualizamos nuestro signal de estado.
+    // Creamos un objeto AppUser con los datos del perfil.
+    // El 'uid' puede venir del perfil o ser un identificador único que tengas.
+    const appUser: AppUser = {
+      uid: userProfile.id, // Asumiendo que el perfil tiene un campo 'id'
+      email: userProfile.email,
+      ...userProfile,
+    };
+
+    this.currentUserSignal.set(appUser);
+
+    // Opcional: Redirigir al usuario a la página principal tras el login.
+    this.router.navigate(['/']);
   }
 
   /**
-   * Cierra la sesión del usuario actual en Firebase.
+   * Cierra la sesión del usuario actual.
    */
   async logout(): Promise<void> {
-    // Usamos el método de Firebase para cerrar sesión.
-    // onAuthStateChanged se encargará de actualizar el signal a 'null'.
-    await signOut(this.auth);
+    // Simplemente ponemos el signal a 'null' para cerrar la sesión en nuestra app.
+    this.currentUserSignal.set(null);
     // Opcional: redirigir al usuario a la página de inicio.
     this.router.navigate(['/']);
   }

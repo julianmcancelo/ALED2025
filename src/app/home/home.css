@@ -1,0 +1,70 @@
+.hero-section {
+  /* Fondo con un gradiente sutil */
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+
+  /* Ocupa toda la altura de la vista menos el header (aproximadamente) */
+  min-height: calc(100vh - 64px);
+
+  /* Centrado vertical y horizontal */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 4rem 2rem;
+  color: #333;
+}
+
+.hero-section .display-4 {
+  /* Sombra sutil para destacar el título */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hero-section .lead {
+  font-size: 1.25rem;
+  color: #555;
+  max-width: 600px; /* Evita que el texto sea demasiado ancho en pantallas grandes */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* --- Estilos para las Tarjetas de Créditos --- */
+.credit-card {
+  background-color: rgba(255, 255, 255, 0.7); /* Fondo semitransparente */
+  border-radius: 15px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px); /* Efecto de desenfoque para el fondo */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  height: 100%; /* Asegura que ambas tarjetas tengan la misma altura */
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  color: var(--bs-primary); /* Usa el color primario de Bootstrap */
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-weight: bold;
+  color: #333;
+}
+
+.card-text {
+  color: #555;
+}
+/* --- Fin de Estilos para Tarjetas --- */
+
+.btn-primary {
+  /* Transición suave para el hover */
+  transition: all 0.3s ease;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  border-radius: 50px; /* Botón con bordes redondeados */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+  /* Efecto al pasar el mouse */
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}

@@ -3,9 +3,13 @@ import {
   provideZoneChangeDetection,
   APP_INITIALIZER,
   inject,
+  importProvidersFrom,
 } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
 import { UserService } from './services/user';
+import { provideHttpClient } from '@angular/common/http';
+import { NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 // Importamos los componentes y el nuevo guardia
 import { Home } from './home/home';
@@ -16,7 +20,7 @@ import { PrimerUsuario } from './auth/primer-usuario/primer-usuario';
 // Importaciones de Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideFirestore, getFirestore } from '@angular/fire/firestore';
-import { provideAuth, getAuth } from '@angular/fire/auth'; // <-- AÑADIDO
+import { provideAuth, getAuth } from '@angular/fire/auth';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAJncpI42BQRSh_c4hjsxZv5q_esZFG4pk',
@@ -37,41 +41,39 @@ const initializeAppFactory = () => {
     try {
       const usersExist = await userService.checkIfUsersExist();
       if (!usersExist) {
-        // Si no hay usuarios, redirigimos a la página de creación del primer usuario
         await router.navigate(['/primer-usuario']);
       }
     } catch (error) {
       console.error('Error durante la inicialización de la app:', error);
-      // Opcional: redirigir a una página de error
     }
   };
 };
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideAnimations(), // Habilita las animaciones de Angular Material
     provideZoneChangeDetection({ eventCoalescing: true }),
+    provideHttpClient(),
+    importProvidersFrom(NgbModalModule),
 
-    // Proveedor para ejecutar lógica ANTES de que la app se inicie
     {
       provide: APP_INITIALIZER,
       useFactory: initializeAppFactory,
       multi: true,
     },
 
-    // Proveemos las rutas a la aplicación
     provideRouter([
       { path: '', component: Home, pathMatch: 'full' },
       { path: 'primer-usuario', component: PrimerUsuario },
       {
         path: 'administracion',
         component: Admin,
-        canActivate: [adminGuard], // ¡Aquí aplicamos el guardia!
+        canActivate: [adminGuard],
       },
     ]),
 
-    // Proveedores de Firebase
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
     provideFirestore(() => getFirestore()),
-    provideAuth(() => getAuth()), // <-- AÑADIDO
+    provideAuth(() => getAuth()),
   ],
 };
