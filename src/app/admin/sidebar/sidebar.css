@@ -1,40 +1,39 @@
-/*
-  Estilos para el contenedor del sidebar.
-  - Le damos un ancho fijo.
-  - Un color de fondo suave.
-  - Un borde a la derecha para separarlo del contenido.
-  - Padding para que los elementos no estén pegados a los bordes.
-*/
-:host {
-  display: block; /* Asegura que el componente ocupe espacio */
-  width: 280px;
-  background-color: #f8f9fa; /* Un gris muy claro */
-  border-right: 1px solid #dee2e6; /* Borde sutil */
-  padding: 1.5rem;
+/* Contenedor principal del sidebar */
+.sidebar-container {
+  background-color: #f8f9fa; /* Un fondo gris claro para distinguirlo */
+  padding: 1rem;
+  border-right: 1px solid #dee2e6; /* Borde sutil a la derecha */
+  width: 250px; /* Ancho fijo */
+  flex-shrink: 0; /* Evita que se encoja */
 }
 
-/*
-  Estilos para los enlaces de navegación.
-*/
+/* Estilo para cada enlace de navegación */
 .nav-link {
-  font-size: 1.05rem;
-  color: #343a40; /* Color de texto oscuro */
-  margin-bottom: 0.5rem; /* Espacio entre los botones */
+  color: #343a40;
+  margin-bottom: 0.5rem;
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
 }
 
-/*
-  Estilos para el enlace activo (el que está seleccionado).
-  Sobrescribimos los colores por defecto de Bootstrap para que
-  coincidan con el tema de la aplicación.
-*/
+/* Estilo para el enlace activo */
 .nav-link.active {
-  background-color: #3f51b5; /* Color primario de Material */
-  color: white;
+  background-color: var(--bs-primary) !important; /* Usa el color primario de Bootstrap */
+  color: white !important;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/*
-  Efecto visual al pasar el mouse sobre un enlace que no está activo.
-*/
+/* Estilo al pasar el mouse sobre un enlace (que no esté activo) */
 .nav-link:not(.active):hover {
-  background-color: #e9ecef; /* Un gris un poco más oscuro */
+  background-color: #e9ecef;
+}
+
+/* --- Estilos Responsivos para Móviles --- */
+@media (max-width: 768px) {
+  .sidebar-container {
+    width: 100%; /* Ocupa todo el ancho */
+    border-right: none;
+    border-bottom: 1px solid #dee2e6; /* Borde inferior en móviles */
+  }
 }

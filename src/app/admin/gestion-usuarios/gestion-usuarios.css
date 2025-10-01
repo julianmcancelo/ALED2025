@@ -1,22 +1,2 @@
-/*
-  Contenedor principal para la gestión de usuarios.
-  Le damos un padding para que el contenido no esté pegado a los bordes.
-*/
-.user-management-container {
-  padding: 2rem;
-}
-
-/*
-  Ajustes para la cabecera de la tabla.
-*/
-.table-dark {
-  --bs-table-bg: #3f51b5; /* Color primario de Material */
-  --bs-table-border-color: #3f51b5;
-}
-
-/*
-  Aseguramos que los botones dentro de la tabla estén bien alineados.
-*/
-.table .btn {
-  vertical-align: middle;
-}
+/* Los estilos de padding y contenedor ahora son manejados por el layout principal de administración (admin.css) */
+/* Este archivo se puede usar para estilos específicos de la tabla de usuarios si es necesario. */

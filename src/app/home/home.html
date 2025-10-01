@@ -3,6 +3,53 @@
     <h1 class="display-4 fw-bold">{{ configuracionService.configuracionSignal().titulo }}</h1>
     <p class="lead my-4">{{ configuracionService.configuracionSignal().subtitulo }}</p>
 
+    <!-- SLIDER DE NOVEDADES -->
+    @if (novedades$ | async; as novedades) { @if (novedades.length > 0) {
+    <div class="container my-5">
+      <h2 class="text-center mb-4">Novedades y Ofertas</h2>
+      <div
+        id="productCarousel"
+        class="carousel slide carousel-fade shadow-lg"
+        data-bs-ride="carousel"
+      >
+        <div class="carousel-inner">
+          @for (novedad of novedades; track novedad.id; let i = $index) {
+          <div class="carousel-item" [class.active]="i === 0">
+            <img [src]="novedad.imagenUrl" class="d-block w-100" [alt]="novedad.titulo" />
+            <div class="carousel-caption">
+              <h5>{{ novedad.titulo }}</h5>
+              <p class="d-none d-sm-block">{{ novedad.descripcion }}</p>
+              @if (novedad.enlaceUrl) {
+              <a [routerLink]="novedad.enlaceUrl" class="btn btn-sm btn-outline-light"
+                >Ver Detalle</a
+              >
+              }
+            </div>
+          </div>
+          }
+        </div>
+        <button
+          class="carousel-control-prev"
+          type="button"
+          data-bs-target="#productCarousel"
+          data-bs-slide="prev"
+        >
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button
+          class="carousel-control-next"
+          type="button"
+          data-bs-target="#productCarousel"
+          data-bs-slide="next"
+        >
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </div>
+    } }
+
     <!-- Sección de créditos con tarjetas -->
     <div class="credits-section row justify-content-center gx-4 gy-3 mt-5">
       <div class="col-md-5">

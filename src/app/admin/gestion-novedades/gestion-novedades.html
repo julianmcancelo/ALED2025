@@ -1,0 +1,70 @@
+<div class="container-fluid mt-4">
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3">Gestión de Novedades y Ofertas</h2>
+    <button class="btn btn-primary" (click)="iniciarNuevo()" *ngIf="!mostrarFormulario">
+      <i class="bi bi-plus-circle me-2"></i>Crear Novedad
+    </button>
+  </div>
+
+  <!-- Formulario de Creación/Edición -->
+  <div class="card mb-4" *ngIf="mostrarFormulario">
+    <div class="card-header">
+      <h5>{{ esModoEdicion ? 'Editar' : 'Nueva' }} Novedad</h5>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="guardarNovedad()">
+        <div class="mb-3">
+          <label for="titulo" class="form-label">Título *</label>
+          <input type="text" class="form-control" id="titulo" [(ngModel)]="novedadActual.titulo" name="titulo" required>
+        </div>
+        <div class="mb-3">
+          <label for="descripcion" class="form-label">Descripción Corta</label>
+          <input type="text" class="form-control" id="descripcion" [(ngModel)]="novedadActual.descripcion" name="descripcion">
+        </div>
+        <div class="mb-3">
+          <label for="imagenUrl" class="form-label">URL de la Imagen *</label>
+          <input type="url" class="form-control" id="imagenUrl" [(ngModel)]="novedadActual.imagenUrl" name="imagenUrl" required>
+        </div>
+        <div class="mb-3">
+          <label for="enlaceUrl" class="form-label">URL de Enlace (Opcional)</label>
+          <input type="url" class="form-control" id="enlaceUrl" [(ngModel)]="novedadActual.enlaceUrl" name="enlaceUrl" placeholder="Ej: /productos/ID_DEL_PRODUCTO">
+        </div>
+        <button type="submit" class="btn btn-success me-2">{{ esModoEdicion ? 'Actualizar' : 'Guardar' }}</button>
+        <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lista de Novedades -->
+  <div class="card">
+    <div class="card-header">
+      <h5>Lista de Novedades</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Imagen</th>
+              <th>Título</th>
+              <th>Descripción</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let novedad of (novedades$ | async)">
+              <td><img [src]="novedad.imagenUrl" [alt]="novedad.titulo" width="100"></td>
+              <td>{{ novedad.titulo }}</td>
+              <td>{{ novedad.descripcion }}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary me-2" (click)="iniciarEdicion(novedad)"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" (click)="eliminarNovedad(novedad.id!)"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

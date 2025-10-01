@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user';
 import Swal from 'sweetalert2';
+import * as bcrypt from 'bcryptjs'; // Importar bcrypt
 
 // Importaciones de Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -46,15 +47,21 @@ export class PrimerUsuario {
 
     try {
       const { nombre, email, password } = this.registerForm.value;
-      // Aquí en un caso real, primero crearíamos el usuario en Firebase Auth
-      // y luego guardaríamos los datos en Firestore. Por simplicidad,
-      // solo guardamos en Firestore como lo pide la estructura actual.
-      await this.userService.createAdminUser({ nombre, email, password });
+
+      // --- ENCRIPTACIÓN DE LA CONTRASEÑA ---
+      // 1. Generamos un 'salt' para asegurar que el hash sea único.
+      const salt = bcrypt.genSaltSync(10);
+      // 2. Hasheamos la contraseña.
+      const hashedPassword = bcrypt.hashSync(password, salt);
+
+      // 3. Enviamos los datos con la contraseña ya hasheada al servicio.
+      await this.userService.createAdminUser({ nombre, email, password: hashedPassword });
+
       await Swal.fire({
         icon: 'success',
         title: '¡Administrador creado!',
         text: 'Usuario administrador creado con éxito',
-        confirmButtonText: 'Continuar'
+        confirmButtonText: 'Continuar',
       });
       this.router.navigate(['/']); // Redirige a la página principal
     } catch (error) {
@@ -63,7 +70,7 @@ export class PrimerUsuario {
         icon: 'error',
         title: 'Error',
         text: 'Hubo un error al crear el usuario. Revisa la consola.',
-        confirmButtonText: 'Entendido'
+        confirmButtonText: 'Entendido',
       });
     }
   }

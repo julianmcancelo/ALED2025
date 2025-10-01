@@ -12,17 +12,18 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 
 // Importamos los componentes y el nuevo guardia
 import { Home } from './home/home';
-import { TiendaComponent } from './tienda/tienda'; // Importar TiendaComponent
+import { TiendaComponent } from './tienda/tienda';
+import { DetalleProductoComponent } from './detalle-producto/detalle-producto';
 import { Admin } from './admin/admin';
 import { adminGuard } from './auth/admin-guard';
 import { PrimerUsuario } from './auth/primer-usuario/primer-usuario';
 import { BienvenidaAdmin } from './admin/bienvenida/bienvenida';
 import { GestionUsuarios } from './admin/gestion-usuarios/gestion-usuarios';
 import { PersonalizacionSitio } from './admin/personalizacion-sitio/personalizacion-sitio';
+import { GestionNovedadesComponent } from './admin/gestion-novedades/gestion-novedades';
+import { GestionProductos } from './admin/gestion-productos/gestion-productos'; // Nombre Correcto
 import { PerfilUsuarioComponent } from './perfil-usuario/perfil-usuario';
 import { authGuard } from './auth/auth.guard';
-import { GestionProductos } from './admin/gestion-productos/gestion-productos';
-import { Productos } from './productos/productos';
 
 // Importaciones de Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
@@ -71,6 +72,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter([
       { path: '', component: Home, pathMatch: 'full' },
       { path: 'productos', component: TiendaComponent }, // Nueva ruta de la tienda
+      { path: 'productos/:id', component: DetalleProductoComponent }, // Ruta para el detalle del producto
       { path: 'primer-usuario', component: PrimerUsuario },
       { path: 'perfil', component: PerfilUsuarioComponent, canActivate: [authGuard] }, // Nueva ruta de perfil
       {
@@ -81,7 +83,8 @@ export const appConfig: ApplicationConfig = {
           { path: '', component: BienvenidaAdmin },
           { path: 'usuarios', component: GestionUsuarios },
           { path: 'personalizacion', component: PersonalizacionSitio },
-          { path: 'productos', component: GestionProductos },
+          { path: 'novedades', component: GestionNovedadesComponent },
+          { path: 'productos', component: GestionProductos }, // Nombre Correcto
         ],
       },
     ]),

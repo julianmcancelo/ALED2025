@@ -1,0 +1,10 @@
+.price {
+  font-weight: 300;
+  color: var(--bs-primary);
+}
+
+.img-fluid {
+  max-height: 500px;
+  width: 100%;
+  object-fit: cover;
+}

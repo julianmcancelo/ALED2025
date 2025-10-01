@@ -27,6 +27,67 @@
   margin-right: auto;
 }
 
+/* --- Estilos para el Carrusel de Productos --- */
+#productCarousel {
+  /* Creamos una forma de polígono que corta la esquina inferior derecha */
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+  /* Usamos drop-shadow porque se aplica a la forma final después del clip-path */
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.15));
+}
+
+.carousel-item {
+  /* Altura adaptable, más compacta */
+  height: 40vh;
+  max-height: 350px;
+  min-height: 300px;
+}
+
+.carousel-item img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+  transition: transform 15s ease-in-out;
+}
+
+.carousel-item.active img {
+  transform: scale(1.1);
+}
+
+.carousel-caption {
+  /* Hacemos el gradiente más oscuro y pronunciado para asegurar legibilidad */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 20%, rgba(0, 0, 0, 0) 100%);
+  bottom: 0; /* Aseguramos que esté pegado abajo */
+  left: 0;
+  right: 0;
+  padding-bottom: 2.5rem;
+  padding-top: 5rem;
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+}
+
+.carousel-item.active .carousel-caption {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.5s;
+}
+
+/* Estilo mejorado para los controles del carrusel */
+.carousel-control-prev,
+.carousel-control-next {
+  width: 5%;
+}
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  padding: 1.5rem;
+  background-size: 50%;
+}
+/* --- Fin de Estilos para el Carrusel --- */
+
 /* --- Estilos para las Tarjetas de Créditos --- */
 .credit-card {
   background-color: rgba(255, 255, 255, 0.7); /* Fondo semitransparente */

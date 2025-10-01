@@ -30,6 +30,7 @@ export class GestionProductos implements OnInit {
     stock: 0,
     imagen: '',
     activo: true,
+    esDestacado: false, // Nuevo campo
   };
 
   // --- PROPIEDADES DE CATEGORÍAS ---
@@ -205,6 +206,7 @@ export class GestionProductos implements OnInit {
       stock: 0,
       imagen: '',
       activo: true,
+      esDestacado: false,
     };
   }
 
@@ -218,6 +220,7 @@ export class GestionProductos implements OnInit {
       stock: producto.stock || 0,
       imagen: producto.imagen || '',
       activo: producto.activo !== undefined ? producto.activo : true,
+      esDestacado: producto.esDestacado || false,
     };
   }
 

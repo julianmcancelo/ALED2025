@@ -1,6 +1,6 @@
 import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import { Observable, from, of } from 'rxjs';
-import { switchMap, catchError } from 'rxjs/operators';
+import { switchMap, catchError, map } from 'rxjs/operators';
 import {
   Firestore,
   collection,
@@ -10,6 +10,7 @@ import {
   updateDoc,
   deleteDoc,
   getDocs,
+  getDoc, // Importar getDoc
   setDoc,
   query,
   where,
@@ -29,6 +30,7 @@ export interface Producto {
   stock?: number; // Cantidad disponible en inventario
   imagen?: string; // URL de la imagen del producto
   activo: boolean; // Estado del producto (activo/inactivo)
+  esDestacado?: boolean; // true si es un producto destacado para la página de inicio
   fechaCreacion?: Date; // Fecha de creación del producto
   fechaActualizacion?: Date; // Fecha de última actualización
 }
@@ -222,17 +224,41 @@ export class GestionProductosService {
   }
 
   /**
+   * Obtiene únicamente los productos que están marcados como activos Y destacados.
+   * @returns Observable con array de productos activos y destacados.
+   */
+  obtenerProductosDestacados(): Observable<Producto[]> {
+    return from(this.inicializacionCompleta).pipe(
+      switchMap(() => {
+        const q = query(
+          this.productosCollection,
+          where('activo', '==', true),
+          where('esDestacado', '==', true),
+        );
+        return collectionData(q, { idField: 'id' }) as Observable<Producto[]>;
+      }),
+      catchError((error) => {
+        console.error('❌ Error al obtener productos destacados:', error);
+        return of([]);
+      }),
+    );
+  }
+
+  /**
    * Obtiene un producto específico por su ID
    * @param id - ID único del producto a buscar
    * @returns Observable con el producto encontrado o null si no existe
    */
   obtenerProductoPorId(id: string): Observable<Producto | null> {
-    // TODO: Implementar lógica para obtener un producto específico
-    // Ejemplo de implementación:
-    // const productoRef = doc(this.firestore, `productos/${id}`);
-    // return docData(productoRef, { idField: 'id' }) as Observable<Producto>;
-    throw new Error(
-      'Método obtenerProductoPorId() no implementado - Pendiente configuración de Firestore',
+    const productoRef = doc(this.firestore, `productos/${id}`);
+    return from(getDoc(productoRef)).pipe(
+      map((docSnap) => {
+        if (docSnap.exists()) {
+          return { id: docSnap.id, ...docSnap.data() } as Producto;
+        } else {
+          return null;
+        }
+      }),
     );
   }
 
