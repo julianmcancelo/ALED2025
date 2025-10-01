@@ -60,15 +60,21 @@
         <span class="fw-bold fs-5 text-primary"> ${{ carritoService.totalPrecio() }} </span>
       </div>
       <!-- Botones de Acción -->
-      <div class="d-grid gap-2 mt-3">
-        <button type="button" class="btn btn-primary" (click)="manejarCheckout()">
-          <i class="bi bi-bag-check-fill me-1"></i>
-          Finalizar Compra
-        </button>
-        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="manejarVaciar()">
-          <i class="bi bi-cart-x me-1"></i>
-          Vaciar Carrito
-        </button>
+      <div class="offcanvas-footer p-3 border-top">
+        <div class="d-grid gap-2">
+          <button class="btn btn-primary" (click)="pagarConMercadoPago()" [disabled]="cargandoMP()">
+            @if (cargandoMP()) {
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span role="status"> Procesando...</span>
+            } @else {
+            <i class="bi bi-credit-card-fill me-2"></i>
+            Pagar con Mercado Pago }
+          </button>
+          <button class="btn btn-outline-danger" (click)="manejarVaciar()">
+            <i class="bi bi-trash3-fill me-2"></i>
+            Vaciar Carrito
+          </button>
+        </div>
       </div>
     </div>
   </div>

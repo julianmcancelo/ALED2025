@@ -6,10 +6,10 @@ import { Injectable, signal, computed } from '@angular/core';
  * Esto nos ayuda a asegurar que todos los productos tengan la misma forma.
  */
 export interface Producto {
-  id: number;
+  id?: string; // Cambiado a string opcional para máxima compatibilidad
   nombre: string;
   precio: number;
-  imagen: string; // URL de la imagen del producto
+  imagen?: string; // Hacemos la imagen opcional para mayor flexibilidad
 }
 
 /**
@@ -51,9 +51,7 @@ export class CarritoService {
    * Suma las 'cantidades' de todos los elementos.
    * Se actualiza automáticamente cada vez que la señal 'items' cambia.
    */
-  totalItems = computed(() =>
-    this.items().reduce((total, item) => total + item.cantidad, 0)
-  );
+  totalItems = computed(() => this.items().reduce((total, item) => total + item.cantidad, 0));
 
   /**
    * @computed totalPrecio
@@ -62,10 +60,7 @@ export class CarritoService {
    * Se actualiza automáticamente cada vez que la señal 'items' cambia.
    */
   totalPrecio = computed(() =>
-    this.items().reduce(
-      (total, item) => total + item.producto.precio * item.cantidad,
-      0
-    )
+    this.items().reduce((total, item) => total + item.producto.precio * item.cantidad, 0),
   );
 
   // --- MÉTODOS PÚBLICOS ---
@@ -78,19 +73,15 @@ export class CarritoService {
    */
   agregarProducto(producto: Producto): void {
     // Buscamos si el producto ya está en el carrito.
-    const itemExistente = this.items().find(
-      (item) => item.producto.id === producto.id
-    );
+    const itemExistente = this.items().find((item) => item.producto.id === producto.id);
 
     if (itemExistente) {
       // Si existe, actualizamos la cantidad.
       // Usamos 'update' para modificar la señal basándonos en su valor actual.
       this.items.update((items) =>
         items.map((item) =>
-          item.producto.id === producto.id
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item
-        )
+          item.producto.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item,
+        ),
       );
     } else {
       // Si no existe, lo añadimos al array.
@@ -102,11 +93,10 @@ export class CarritoService {
    * Elimina un producto completamente del carrito.
    * @param idProducto - El ID del producto a eliminar.
    */
-  eliminarProducto(idProducto: number): void {
+  eliminarProducto(idProducto: string): void {
+    // Cambiado a string
     // Filtramos el array, quedándonos solo con los productos que NO coinciden con el ID.
-    this.items.update((items) =>
-      items.filter((item) => item.producto.id !== idProducto)
-    );
+    this.items.update((items) => items.filter((item) => item.producto.id !== idProducto));
   }
 
   /**

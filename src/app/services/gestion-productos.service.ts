@@ -1,19 +1,19 @@
 import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import { Observable, from, of } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
-import { 
-  Firestore, 
-  collection, 
-  collectionData, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  getDocs, 
+import {
+  Firestore,
+  collection,
+  collectionData,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
   setDoc,
   query,
   where,
-  orderBy
+  orderBy,
 } from '@angular/fire/firestore';
 
 /**
@@ -21,16 +21,16 @@ import {
  * Incluye todos los campos necesarios para la gestión completa de productos
  */
 export interface Producto {
-  id?: string;                    // ID único del producto (generado por Firebase)
-  nombre: string;                 // Nombre del producto
-  descripcion?: string;           // Descripción detallada del producto
-  precio: number;                 // Precio del producto en la moneda local
-  categoria: string;              // Categoría a la que pertenece el producto
-  stock?: number;                 // Cantidad disponible en inventario
-  imagen?: string;                // URL de la imagen del producto
-  activo: boolean;                // Estado del producto (activo/inactivo)
-  fechaCreacion?: Date;           // Fecha de creación del producto
-  fechaActualizacion?: Date;      // Fecha de última actualización
+  id?: string; // ID único del producto (generado por Firebase)
+  nombre: string; // Nombre del producto
+  descripcion?: string; // Descripción detallada del producto
+  precio: number; // Precio del producto en la moneda local
+  categoria: string; // Categoría a la que pertenece el producto
+  stock?: number; // Cantidad disponible en inventario
+  imagen?: string; // URL de la imagen del producto
+  activo: boolean; // Estado del producto (activo/inactivo)
+  fechaCreacion?: Date; // Fecha de creación del producto
+  fechaActualizacion?: Date; // Fecha de última actualización
 }
 
 /**
@@ -39,19 +39,18 @@ export interface Producto {
  * Integrado con Firebase/Firestore para persistencia de datos
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GestionProductosService {
-  
   // --- INYECCIÓN DE DEPENDENCIAS ---
   private firestore: Firestore = inject(Firestore);
   private injector: Injector = inject(Injector);
   private productosCollection = collection(this.firestore, 'productos');
   private inicializacionCompleta: Promise<void>;
 
-  constructor() { 
+  constructor() {
     // Verificar y crear la colección automáticamente al inicializar el servicio
-    this.inicializacionCompleta = this.verificarYCrearColeccion().catch(error => {
+    this.inicializacionCompleta = this.verificarYCrearColeccion().catch((error) => {
       console.error('Error durante la inicialización del servicio:', error);
       // Incluso si hay error, permitimos continuar
       return Promise.resolve();
@@ -66,34 +65,41 @@ export class GestionProductosService {
   private async verificarYCrearColeccion(): Promise<void> {
     try {
       console.log('🔍 Verificando colección de productos en Firestore...');
-      
+
       // Intentamos obtener los documentos de la colección
       const snapshot = await getDocs(this.productosCollection);
-      
+
       if (snapshot.empty) {
-        console.log('📦 Colección de productos vacía o no encontrada. Inicializando con datos de ejemplo...');
+        console.log(
+          '📦 Colección de productos vacía o no encontrada. Inicializando con datos de ejemplo...',
+        );
         await this.inicializarColeccionConDatosEjemplo();
         console.log('✅ Colección de productos inicializada correctamente.');
       } else {
-        console.log(`✅ Colección de productos encontrada con ${snapshot.size} productos existentes.`);
-        
+        console.log(
+          `✅ Colección de productos encontrada con ${snapshot.size} productos existentes.`,
+        );
+
         // Mostrar información de los productos existentes
-         snapshot.forEach((doc: any) => {
-           const data = doc.data();
-           console.log(`📄 Producto existente: ${data['nombre']} (ID: ${doc.id})`);
-         });
+        snapshot.forEach((doc: any) => {
+          const data = doc.data();
+          console.log(`📄 Producto existente: ${data['nombre']} (ID: ${doc.id})`);
+        });
       }
     } catch (error) {
       console.error('❌ Error al verificar la colección de productos:', error);
       console.error('Detalles del error:', error);
-      
+
       // Si hay error, intentamos crear la colección con datos de ejemplo
       console.log('🔄 Intentando crear colección con datos de ejemplo como fallback...');
       try {
         await this.inicializarColeccionConDatosEjemplo();
         console.log('✅ Colección creada como fallback.');
       } catch (fallbackError) {
-        console.error('❌ Error crítico: No se pudo crear la colección de productos:', fallbackError);
+        console.error(
+          '❌ Error crítico: No se pudo crear la colección de productos:',
+          fallbackError,
+        );
         throw fallbackError;
       }
     }
@@ -114,7 +120,7 @@ export class GestionProductosService {
         imagen: 'https://via.placeholder.com/300x200?text=Producto+1',
         activo: true,
         fechaCreacion: new Date(),
-        fechaActualizacion: new Date()
+        fechaActualizacion: new Date(),
       },
       {
         nombre: 'Producto de Ejemplo 2',
@@ -125,7 +131,7 @@ export class GestionProductosService {
         imagen: 'https://via.placeholder.com/300x200?text=Producto+2',
         activo: true,
         fechaCreacion: new Date(),
-        fechaActualizacion: new Date()
+        fechaActualizacion: new Date(),
       },
       {
         nombre: 'Producto de Ejemplo 3',
@@ -136,8 +142,8 @@ export class GestionProductosService {
         imagen: 'https://via.placeholder.com/300x200?text=Producto+3',
         activo: false,
         fechaCreacion: new Date(),
-        fechaActualizacion: new Date()
-      }
+        fechaActualizacion: new Date(),
+      },
     ];
 
     try {
@@ -159,15 +165,15 @@ export class GestionProductosService {
     return runInInjectionContext(this.injector, async () => {
       try {
         console.log('🧪 Iniciando prueba de conexión con Firestore...');
-        
+
         // Esperamos a que la inicialización se complete
         await this.inicializacionCompleta;
         console.log('✅ Inicialización completada');
-        
+
         // Intentamos leer la colección
         const snapshot = await getDocs(this.productosCollection);
         console.log(`📊 Conexión exitosa. Productos encontrados: ${snapshot.size}`);
-        
+
         // Mostramos los productos encontrados
         let index = 0;
         snapshot.forEach((doc: any) => {
@@ -175,7 +181,7 @@ export class GestionProductosService {
           index++;
           console.log(`${index}. ${data['nombre']} - $${data['precio']} (Stock: ${data['stock']})`);
         });
-        
+
         return true;
       } catch (error) {
         console.error('❌ Error en la prueba de conexión:', error);
@@ -190,16 +196,16 @@ export class GestionProductosService {
    */
   obtenerProductos(): Observable<Producto[]> {
     console.log('🔄 Iniciando obtención de productos...');
-    
+
     // Esperamos a que la inicialización se complete antes de leer datos
     return from(this.inicializacionCompleta).pipe(
       switchMap(() => {
         try {
           console.log('✅ Inicialización completa, obteniendo productos desde Firestore...');
-          
+
           // Obtenemos todos los productos
           const productosRef = collection(this.firestore, 'productos');
-          
+
           // Retornamos un observable que se actualiza en tiempo real
           return collectionData(productosRef, { idField: 'id' }) as Observable<Producto[]>;
         } catch (error) {
@@ -208,10 +214,10 @@ export class GestionProductosService {
           return of([]);
         }
       }),
-      catchError(error => {
+      catchError((error) => {
         console.error('❌ Error durante la inicialización o lectura:', error);
         return of([]);
-      })
+      }),
     );
   }
 
@@ -225,7 +231,9 @@ export class GestionProductosService {
     // Ejemplo de implementación:
     // const productoRef = doc(this.firestore, `productos/${id}`);
     // return docData(productoRef, { idField: 'id' }) as Observable<Producto>;
-    throw new Error('Método obtenerProductoPorId() no implementado - Pendiente configuración de Firestore');
+    throw new Error(
+      'Método obtenerProductoPorId() no implementado - Pendiente configuración de Firestore',
+    );
   }
 
   /**
@@ -239,15 +247,15 @@ export class GestionProductosService {
       const nuevoProducto = {
         ...producto,
         fechaCreacion: new Date(),
-        fechaActualizacion: new Date()
+        fechaActualizacion: new Date(),
       };
-      
+
       // Creamos el documento y retornamos el ID
       return from(
-        addDoc(this.productosCollection, nuevoProducto).then(docRef => {
+        addDoc(this.productosCollection, nuevoProducto).then((docRef) => {
           console.log('Producto creado con ID:', docRef.id);
           return docRef.id;
-        })
+        }),
       );
     } catch (error) {
       console.error('Error al crear producto:', error);
@@ -265,18 +273,18 @@ export class GestionProductosService {
     try {
       // Referencia al documento específico
       const productoRef = doc(this.firestore, `productos/${id}`);
-      
+
       // Preparamos los datos con fecha de actualización
       const datosActualizacion = {
         ...producto,
-        fechaActualizacion: new Date()
+        fechaActualizacion: new Date(),
       };
-      
+
       // Actualizamos el documento
       return from(
         updateDoc(productoRef, datosActualizacion).then(() => {
           console.log('Producto actualizado con ID:', id);
-        })
+        }),
       );
     } catch (error) {
       console.error('Error al actualizar producto:', error);
@@ -293,12 +301,12 @@ export class GestionProductosService {
     try {
       // Referencia al documento específico
       const productoRef = doc(this.firestore, `productos/${id}`);
-      
+
       // Eliminamos el documento
       return from(
         deleteDoc(productoRef).then(() => {
           console.log('Producto eliminado con ID:', id);
-        })
+        }),
       );
     } catch (error) {
       console.error('Error al eliminar producto:', error);
@@ -317,7 +325,9 @@ export class GestionProductosService {
     // const productosRef = collection(this.firestore, 'productos');
     // const q = query(productosRef, where('categoria', '==', categoria));
     // return collectionData(q, { idField: 'id' }) as Observable<Producto[]>;
-    throw new Error('Método obtenerProductosPorCategoria() no implementado - Pendiente configuración de Firestore');
+    throw new Error(
+      'Método obtenerProductosPorCategoria() no implementado - Pendiente configuración de Firestore',
+    );
   }
 
   /**
@@ -329,7 +339,9 @@ export class GestionProductosService {
     // TODO: Implementar lógica de búsqueda de productos
     // Nota: Firestore no soporta búsqueda de texto completo nativamente
     // Se puede implementar usando Algolia o similar para búsquedas avanzadas
-    throw new Error('Método buscarProductos() no implementado - Pendiente configuración de búsqueda');
+    throw new Error(
+      'Método buscarProductos() no implementado - Pendiente configuración de búsqueda',
+    );
   }
 
   /**
@@ -337,12 +349,17 @@ export class GestionProductosService {
    * @returns Observable con array de productos activos
    */
   obtenerProductosActivos(): Observable<Producto[]> {
-    // TODO: Implementar lógica para obtener solo productos activos
-    // Ejemplo de implementación:
-    // const productosRef = collection(this.firestore, 'productos');
-    // const q = query(productosRef, where('activo', '==', true));
-    // return collectionData(q, { idField: 'id' }) as Observable<Producto[]>;
-    throw new Error('Método obtenerProductosActivos() no implementado - Pendiente configuración de Firestore');
+    return from(this.inicializacionCompleta).pipe(
+      switchMap(() => {
+        const productosRef = collection(this.firestore, 'productos');
+        const q = query(productosRef, where('activo', '==', true));
+        return collectionData(q, { idField: 'id' }) as Observable<Producto[]>;
+      }),
+      catchError((error) => {
+        console.error('❌ Error al obtener productos activos:', error);
+        return of([]);
+      }),
+    );
   }
 
   /**
@@ -356,7 +373,7 @@ export class GestionProductosService {
     if (nuevoStock < 0) {
       throw new Error('El stock no puede ser negativo');
     }
-    
+
     // Utilizamos el método actualizarProducto para actualizar solo el stock
     return this.actualizarProducto(id, { stock: nuevoStock });
   }

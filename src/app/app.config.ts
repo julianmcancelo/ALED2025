@@ -12,6 +12,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 
 // Importamos los componentes y el nuevo guardia
 import { Home } from './home/home';
+import { TiendaComponent } from './tienda/tienda'; // Importar TiendaComponent
 import { Admin } from './admin/admin';
 import { adminGuard } from './auth/admin-guard';
 import { PrimerUsuario } from './auth/primer-usuario/primer-usuario';
@@ -69,7 +70,7 @@ export const appConfig: ApplicationConfig = {
 
     provideRouter([
       { path: '', component: Home, pathMatch: 'full' },
-      { path: 'productos', component: Productos },
+      { path: 'productos', component: TiendaComponent }, // Nueva ruta de la tienda
       { path: 'primer-usuario', component: PrimerUsuario },
       { path: 'perfil', component: PerfilUsuarioComponent, canActivate: [authGuard] }, // Nueva ruta de perfil
       {
