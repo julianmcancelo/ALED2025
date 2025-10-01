@@ -39,11 +39,21 @@ export class AuthService {
   private cargarSesionDesdeStorage(): void {
     try {
       const userDataString = localStorage.getItem(this.USER_STORAGE_KEY);
+
       if (userDataString) {
         const appUser: AppUser = JSON.parse(userDataString);
-        this.currentUserSignal.set(appUser);
-        // Si cargamos un usuario, empezamos a escuchar sus cambios en tiempo real.
-        this.listenToCurrentUser(appUser.id); // Usar 'id'
+
+        // --- VALIDACIÓN DE SESIÓN ---
+        // Verificamos que el objeto de usuario tenga un ID. Si no lo tiene, la sesión es inválida.
+        if (appUser && appUser.id) {
+          this.currentUserSignal.set(appUser);
+          this.listenToCurrentUser(appUser.id);
+        } else {
+          // Si los datos son inválidos, limpiamos todo.
+          console.error('Sesión inválida encontrada en localStorage. Limpiando...');
+          localStorage.removeItem(this.USER_STORAGE_KEY);
+          this.currentUserSignal.set(null);
+        }
       } else {
         this.currentUserSignal.set(null);
       }

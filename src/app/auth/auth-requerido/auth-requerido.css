@@ -1,0 +1,4 @@
+/* Centra los botones de acción del diálogo de Angular Material */
+.mat-dialog-actions {
+  justify-content: center;
+}

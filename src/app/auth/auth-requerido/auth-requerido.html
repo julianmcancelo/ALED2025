@@ -1,0 +1,28 @@
+<!-- Usamos clases de Bootstrap para el estilo del contenido del modal -->
+<div class="text-center p-3">
+
+  <!-- Icono grande para llamar la atención -->
+  <i class="bi bi-lock-fill display-3 text-primary mb-3"></i>
+
+  <!-- Título y mensaje -->
+  <h2 mat-dialog-title class="h4">Acción Requerida</h2>
+  <div mat-dialog-content>
+    <p class="text-muted">
+      Para continuar con tu compra, por favor inicia sesión o crea una cuenta.
+    </p>
+  </div>
+
+  <!-- Botones de acción -->
+  <div mat-dialog-actions class="d-flex flex-column gap-2 w-100">
+    <button mat-raised-button color="primary" (click)="closeDialog('login')">
+      <i class="bi bi-box-arrow-in-right me-2"></i>
+      Iniciar Sesión
+    </button>
+    <button mat-stroked-button color="primary" (click)="closeDialog('register')">
+      <i class="bi bi-person-plus-fill me-2"></i>
+      Crear Cuenta
+    </button>
+    <button mat-button [mat-dialog-close]="undefined" class="mt-2">Cancelar</button>
+  </div>
+
+</div>
