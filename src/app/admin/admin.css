@@ -1,7 +1,28 @@
-.admin-panel-container {
-  /*
-    Calculamos la altura mínima para que el panel ocupe todo el espacio
-    vertical disponible, restando la altura de la barra de navegación (64px).
-  */
-  min-height: calc(100vh - 64px);
+.admin-layout {
+  display: flex;
+  /* Altura mínima para ocupar el espacio restante de la pantalla */
+  min-height: calc(100vh - 70px);
+}
+
+.admin-main-content {
+  flex-grow: 1;
+  padding: 2rem;
+  /* Dejamos un margen a la izquierda para dar espacio al sidebar */
+  margin-left: 250px;
+  transition: margin-left 0.2s ease-in-out;
+}
+
+/* --- Media Query para Dispositivos Móviles --- */
+/* Estas reglas se aplican solo si el ancho de la pantalla es 768px o menos */
+@media (max-width: 768px) {
+  .admin-layout {
+    /* Cambiamos la dirección del flexbox a columna para apilar los elementos */
+    flex-direction: column;
+  }
+
+  .admin-main-content {
+    /* Eliminamos el margen para que el contenido ocupe todo el ancho */
+    margin-left: 0;
+    padding: 1rem; /* Reducimos el padding en pantallas pequeñas */
+  }
 }

@@ -34,10 +34,7 @@ export class GestionUsuarios {
   editarUsuario(usuario: AppUser): void {
     // 1. Abrimos el diálogo modal, pasándole el componente 'EditarUsuarioComponent'.
     const dialogRef = this.dialog.open(EditarUsuarioComponent, {
-      width: '450px',
-      // 'data' es la propiedad que nos permite pasar información al componente del modal.
-      // Pasamos una copia del usuario para evitar modificar la tabla en tiempo real.
-      data: { ...usuario },
+      data: { ...usuario }, // Pasamos una copia del usuario al modal
     });
 
     // 2. Nos suscribimos al evento 'afterClosed()'. Este observable se dispara cuando el modal se cierra.

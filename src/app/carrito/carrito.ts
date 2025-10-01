@@ -43,7 +43,7 @@ export class Carrito {
    * Abre el modal que pregunta al usuario si quiere iniciar sesión o registrarse.
    */
   private openAuthRequiredModal(): void {
-    const dialogRef = this.dialog.open(AuthRequeridoComponent, { width: '400px' });
+    const dialogRef = this.dialog.open(AuthRequeridoComponent);
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result === 'login') {
@@ -58,7 +58,7 @@ export class Carrito {
    * Abre el modal de inicio de sesión y gestiona la continuación del pago.
    */
   private openLoginModal(): void {
-    const dialogRef = this.dialog.open(InicioDeSesion, { width: '400px' });
+    const dialogRef = this.dialog.open(InicioDeSesion);
     this.handleAuthModalClose(dialogRef);
   }
 
@@ -66,7 +66,7 @@ export class Carrito {
    * Abre el modal de registro y gestiona la continuación del pago.
    */
   private openRegisterModal(): void {
-    const dialogRef = this.dialog.open(Registro, { width: '550px' });
+    const dialogRef = this.dialog.open(Registro);
     this.handleAuthModalClose(dialogRef);
   }
 
