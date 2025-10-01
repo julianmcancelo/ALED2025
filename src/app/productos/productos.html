@@ -53,9 +53,11 @@
       <div class="productos-scroll">
         <div class="producto-card" *ngFor="let producto of productosDestacados">
           <!-- Badge de descuento -->
-          <div class="descuento-badge" *ngIf="producto.descuento">
-            -{{ producto.descuento }}%
-          </div>
+          @if (producto.descuento) {
+            <div class="descuento-badge">
+              -{{ producto.descuento }}%
+            </div>
+          }
 
           <!-- Imagen del producto -->
           <div class="producto-imagen">
@@ -76,9 +78,11 @@
               <span class="precio-actual">
                 ${{ calcularPrecioConDescuento(producto.precio, producto.descuento) | number:'1.0-0' }}
               </span>
-              <span class="precio-original" *ngIf="producto.descuento">
-                ${{ producto.precio | number:'1.0-0' }}
-              </span>
+              @if (producto.descuento) {
+                <span class="precio-original">
+                  ${{ producto.precio | number:'1.0-0' }}
+                </span>
+              }
             </div>
 
             <button class="btn btn-primary w-100 mt-3">

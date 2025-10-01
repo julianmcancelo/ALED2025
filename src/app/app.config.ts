@@ -18,6 +18,7 @@ import { PrimerUsuario } from './auth/primer-usuario/primer-usuario';
 import { BienvenidaAdmin } from './admin/bienvenida/bienvenida';
 import { GestionUsuarios } from './admin/gestion-usuarios/gestion-usuarios';
 import { PersonalizacionSitio } from './admin/personalizacion-sitio/personalizacion-sitio';
+import { GestionProductos } from './admin/gestion-productos/gestion-productos';
 import { Productos } from './productos/productos';
 
 // Importaciones de Firebase
@@ -76,6 +77,7 @@ export const appConfig: ApplicationConfig = {
           { path: '', component: BienvenidaAdmin },
           { path: 'usuarios', component: GestionUsuarios },
           { path: 'personalizacion', component: PersonalizacionSitio },
+          { path: 'productos', component: GestionProductos },
         ],
       },
     ]),
