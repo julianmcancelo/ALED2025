@@ -32,6 +32,11 @@
           ¡Hola, {{ user.nombre }}!
         </button>
         <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+          <!-- Enlace al Perfil de Usuario -->
+          <a ngbDropdownItem routerLink="/perfil" class="d-flex align-items-center">
+            <i class="bi bi-person-badge me-2"></i>
+            <span>Mi Perfil</span>
+          </a>
           <!-- Botón de Administración (condicional) -->
           @if (isAdmin()) {
           <a ngbDropdownItem routerLink="/administracion" class="d-flex align-items-center">

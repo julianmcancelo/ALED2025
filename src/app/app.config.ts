@@ -18,6 +18,8 @@ import { PrimerUsuario } from './auth/primer-usuario/primer-usuario';
 import { BienvenidaAdmin } from './admin/bienvenida/bienvenida';
 import { GestionUsuarios } from './admin/gestion-usuarios/gestion-usuarios';
 import { PersonalizacionSitio } from './admin/personalizacion-sitio/personalizacion-sitio';
+import { PerfilUsuarioComponent } from './perfil-usuario/perfil-usuario';
+import { authGuard } from './auth/auth.guard';
 import { GestionProductos } from './admin/gestion-productos/gestion-productos';
 import { Productos } from './productos/productos';
 
@@ -69,6 +71,7 @@ export const appConfig: ApplicationConfig = {
       { path: '', component: Home, pathMatch: 'full' },
       { path: 'productos', component: Productos },
       { path: 'primer-usuario', component: PrimerUsuario },
+      { path: 'perfil', component: PerfilUsuarioComponent, canActivate: [authGuard] }, // Nueva ruta de perfil
       {
         path: 'administracion',
         component: Admin,
@@ -86,4 +89,4 @@ export const appConfig: ApplicationConfig = {
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
   ],
-}
+};

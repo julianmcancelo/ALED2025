@@ -8,6 +8,10 @@ import {
   getDocs,
   limit,
   collectionData,
+  doc,
+  updateDoc,
+  deleteDoc,
+  getDoc,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
@@ -20,21 +24,51 @@ export class UserService {
 
   /**
    * Obtiene todos los usuarios de la base de datos como un stream.
-   * @returns Un Observable que emite un array de usuarios cada vez que hay cambios.
    */
   getUsers(): Observable<any[]> {
-    // collectionData nos da un observable que se actualiza en tiempo real.
-    // El segundo argumento { idField: 'id' } es para asegurar que el ID
-    // del documento se incluya en los datos del objeto.
     return collectionData(this.usersCollection, { idField: 'id' });
   }
 
   /**
    * Añade un nuevo usuario a la colección 'users'.
-   * @param user - El objeto de usuario a añadir.
    */
   addUser(user: any) {
     return addDoc(this.usersCollection, user);
+  }
+
+  /**
+   * Actualiza los datos de un usuario existente en Firestore.
+   * @param id - El ID del documento del usuario a actualizar.
+   * @param data - Un objeto parcial con los campos y nuevos valores a modificar.
+   * @returns Una promesa que se resuelve cuando la actualización se completa.
+   */
+  updateUser(id: string, data: Partial<any>): Promise<void> {
+    const userDocRef = doc(this.firestore, `users/${id}`);
+    return updateDoc(userDocRef, data);
+  }
+
+  /**
+   * Elimina un usuario de Firestore.
+   * @param id - El ID del documento del usuario a eliminar.
+   * @returns Una promesa que se resuelve cuando la eliminación se completa.
+   */
+  deleteUser(id: string): Promise<void> {
+    const userDocRef = doc(this.firestore, `users/${id}`);
+    return deleteDoc(userDocRef);
+  }
+
+  /**
+   * Obtiene los datos completos de un usuario específico por su ID.
+   * @param id - El ID del documento del usuario a obtener.
+   * @returns Una promesa que se resuelve con los datos del usuario (incluyendo el ID), o null si no se encuentra.
+   */
+  async getUserById(id: string): Promise<any | null> {
+    const userDocRef = doc(this.firestore, `users/${id}`);
+    const docSnap = await getDoc(userDocRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    }
+    return null;
   }
 
   /**

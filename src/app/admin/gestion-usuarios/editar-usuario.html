@@ -1,0 +1,49 @@
+<!-- Plantilla para el diálogo modal de edición de usuario -->
+
+<!-- Título del diálogo, proporcionado por Angular Material -->
+<h1 mat-dialog-title>Editar Usuario</h1>
+
+<!-- Contenido principal del diálogo -->
+<div mat-dialog-content>
+  <p>Modifique los datos del usuario. Tenga cuidado al cambiar el rol.</p>
+
+  <!-- Campo para el Nombre -->
+  <mat-form-field appearance="fill" class="w-100 mb-3">
+    <mat-label>Nombre</mat-label>
+    <!-- [(ngModel)] crea un enlace de datos bidireccional con la propiedad 'nombre' del objeto 'usuarioEditable' -->
+    <input matInput [(ngModel)]="usuarioEditable.nombre" />
+  </mat-form-field>
+
+  <!-- Campo para el Apellido -->
+  <mat-form-field appearance="fill" class="w-100 mb-3">
+    <mat-label>Apellido</mat-label>
+    <input matInput [(ngModel)]="usuarioEditable.apellido" />
+  </mat-form-field>
+
+  <!-- Campo para el Email (deshabilitado) -->
+  <mat-form-field appearance="fill" class="w-100 mb-3">
+    <mat-label>Email</mat-label>
+    <!-- El email se muestra pero no se puede editar para mantener la integridad de la cuenta -->
+    <input matInput type="email" [(ngModel)]="usuarioEditable.email" disabled />
+    <mat-hint>El email no se puede modificar.</mat-hint>
+  </mat-form-field>
+
+  <!-- Campo para seleccionar el Rol -->
+  <mat-form-field appearance="fill" class="w-100">
+    <mat-label>Rol</mat-label>
+    <mat-select [(ngModel)]="usuarioEditable.rol">
+      <mat-option value="admin">Administrador</mat-option>
+      <mat-option value="usuario">Usuario</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<!-- Acciones del diálogo (botones) -->
+<div mat-dialog-actions align="end">
+  <!-- Botón para cancelar, llama al método onNoClick() -->
+  <button mat-button (click)="onNoClick()">Cancelar</button>
+  <!-- Botón para guardar, llama a guardarCambios(). cdkFocusInitial le da el foco automáticamente -->
+  <button mat-raised-button color="primary" (click)="guardarCambios()" cdkFocusInitial>
+    Guardar Cambios
+  </button>
+</div>

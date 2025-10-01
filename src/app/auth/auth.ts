@@ -7,10 +7,15 @@ import { Unsubscribe } from 'firebase/firestore';
 
 // Definimos una interfaz para nuestro objeto de usuario.
 export interface AppUser {
-  uid: string;
+  id: string;
   email: string | null;
   nombre: string;
+  apellido: string; // Apellido del usuario
   rol: 'admin' | 'usuario';
+  // Campos opcionales para la dirección de entrega
+  domicilio?: string;
+  ciudad?: string;
+  codigoPostal?: string;
 }
 
 @Injectable({
@@ -38,7 +43,7 @@ export class AuthService {
         const appUser: AppUser = JSON.parse(userDataString);
         this.currentUserSignal.set(appUser);
         // Si cargamos un usuario, empezamos a escuchar sus cambios en tiempo real.
-        this.listenToCurrentUser(appUser.uid);
+        this.listenToCurrentUser(appUser.id); // Usar 'id'
       } else {
         this.currentUserSignal.set(null);
       }
@@ -53,7 +58,6 @@ export class AuthService {
    * @param userId - El ID del usuario a escuchar.
    */
   private listenToCurrentUser(userId: string): void {
-    // Si ya hay una suscripción activa, la cancelamos primero.
     if (this.userSubscription) {
       this.userSubscription();
     }
@@ -61,13 +65,10 @@ export class AuthService {
     const userDocRef = doc(this.firestore, 'users', userId);
     this.userSubscription = onSnapshot(userDocRef, (snapshot) => {
       if (snapshot.exists()) {
-        const updatedUser = { uid: snapshot.id, ...snapshot.data() } as AppUser;
-        // Actualizamos la señal con los nuevos datos del usuario.
+        const updatedUser = { id: snapshot.id, ...snapshot.data() } as AppUser; // Usar 'id'
         this.currentUserSignal.set(updatedUser);
-        // También actualizamos localStorage para mantener la sesión sincronizada.
         localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(updatedUser));
       } else {
-        // Si el documento del usuario es eliminado, cerramos la sesión.
         this.logout();
       }
     });
@@ -85,7 +86,7 @@ export class AuthService {
     }
 
     const appUser: AppUser = {
-      uid: userProfile.id,
+      id: userProfile.id, // Usar 'id' en lugar de 'uid'
       email: userProfile.email,
       ...userProfile,
     };
@@ -93,8 +94,7 @@ export class AuthService {
     localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(appUser));
     this.currentUserSignal.set(appUser);
 
-    // Después de iniciar sesión, comenzamos a escuchar los cambios del usuario.
-    this.listenToCurrentUser(appUser.uid);
+    this.listenToCurrentUser(appUser.id); // Usar 'id'
 
     this.router.navigate(['/']);
   }

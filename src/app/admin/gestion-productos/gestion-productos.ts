@@ -1,25 +1,10 @@
-// Importaciones necesarias de Angular y servicios
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GestionProductosService, Producto } from '../../services/gestion-productos.service';
+import { Categoria, CategoriaService } from '../../services/categoria.service'; // Importar servicio y modelo de categoría
 import Swal from 'sweetalert2';
 
-/**
- * @component GestionProductos
- * Componente para la gestión completa de productos en el panel de administración.
- * 
- * Funcionalidades principales:
- * - Listar todos los productos existentes
- * - Crear nuevos productos con formulario validado
- * - Editar productos existentes
- * - Eliminar productos
- * - Gestionar el estado activo/inactivo de productos
- * - Controlar el stock de productos
- * 
- * @author Julian Manuel Cancelo
- * @version 1.0.0
- */
 @Component({
   selector: 'app-gestion-productos',
   standalone: true,
@@ -29,275 +14,202 @@ import Swal from 'sweetalert2';
 })
 export class GestionProductos implements OnInit {
   // --- INYECCIÓN DE DEPENDENCIAS ---
-  /**
-   * Servicio para la gestión de productos
-   * Se inyecta usando la función inject() de Angular
-   */
   private gestionProductosService = inject(GestionProductosService);
+  private categoriaService = inject(CategoriaService); // Inyectar CategoriaService
 
-  // --- PROPIEDADES DEL COMPONENTE ---
-  
-  /**
-   * Array que contiene todos los productos cargados desde la base de datos
-   */
+  // --- PROPIEDADES DE PRODUCTOS ---
   productos: Producto[] = [];
-  
-  /**
-   * Producto actualmente seleccionado para edición
-   * Es null cuando no hay ningún producto seleccionado
-   */
   productoSeleccionado: Producto | null = null;
-  
-  /**
-   * Controla si se muestra el formulario de creación/edición
-   * true = formulario visible, false = lista de productos visible
-   */
   mostrarFormulario: boolean = false;
-  
-  /**
-   * Indica si el formulario está en modo edición o creación
-   * true = editando producto existente, false = creando nuevo producto
-   */
   modoEdicion: boolean = false;
-
-  /**
-   * Objeto que contiene los datos del formulario para crear/editar productos
-   * Se inicializa con valores por defecto
-   */
   formularioProducto = {
-    nombre: '',        // Nombre del producto (requerido)
-    descripcion: '',   // Descripción detallada del producto
-    precio: 0,         // Precio del producto (requerido)
-    categoria: '',     // Categoría del producto (requerido)
-    stock: 0,          // Cantidad en stock
-    imagen: '',        // URL de la imagen del producto
-    activo: true       // Estado del producto (activo por defecto)
+    nombre: '',
+    descripcion: '',
+    precio: 0,
+    categoria: '',
+    stock: 0,
+    imagen: '',
+    activo: true,
   };
 
-  // --- MÉTODOS DEL CICLO DE VIDA DEL COMPONENTE ---
+  // --- PROPIEDADES DE CATEGORÍAS ---
+  categorias: Categoria[] = [];
+  mostrarGestionCategorias: boolean = false;
+  categoriaEnEdicion: Categoria | null = null;
+  nombreNuevaCategoria: string = '';
 
-  /**
-   * Método que se ejecuta al inicializar el componente
-   * Se llama automáticamente después de que Angular inicializa las propiedades del componente
-   */
   ngOnInit(): void {
     this.cargarProductos();
+    this.cargarCategorias(); // Cargar categorías al iniciar
   }
 
-  // --- MÉTODOS DE GESTIÓN DE DATOS ---
-
-  /**
-   * Carga la lista de productos desde el servicio
-   * Se suscribe al observable para recibir actualizaciones en tiempo real
-   */
+  // --- MÉTODOS DE GESTIÓN DE PRODUCTOS (Existentes) ---
   cargarProductos(): void {
-    console.log('🔄 Iniciando carga de productos desde Firestore...');
-    
     this.gestionProductosService.obtenerProductos().subscribe({
-      next: (productos) => {
-        console.log('✅ Productos recibidos desde Firestore:', productos);
-        this.productos = productos;
-        console.log(`📦 Total de productos cargados: ${productos.length}`);
-        
-        // Mostrar detalles de cada producto para debugging
-        productos.forEach((producto, index) => {
-          console.log(`Producto ${index + 1}:`, {
-            id: producto.id,
-            nombre: producto.nombre,
-            precio: producto.precio,
-            categoria: producto.categoria,
-            activo: producto.activo
-          });
-        });
-      },
+      next: (productos) => (this.productos = productos),
       error: (error) => {
-        console.error('❌ Error al cargar productos desde Firestore:', error);
-        console.error('Detalles del error:', {
-          message: error.message,
-          code: error.code,
-          stack: error.stack
-        });
-        Swal.fire({
-          title: 'Error de Conexión',
-          text: 'No se pudieron cargar los productos desde la base de datos. Verifica la configuración de Firebase.',
-          icon: 'error',
-          confirmButtonText: 'Entendido'
-        });
-      }
+        console.error('Error al cargar productos:', error);
+        Swal.fire('Error', 'No se pudieron cargar los productos.', 'error');
+      },
     });
   }
 
-  // --- MÉTODOS DE GESTIÓN DEL FORMULARIO ---
-
-  /**
-   * Prepara el formulario para crear un nuevo producto
-   * Limpia todos los campos y cambia a modo creación
-   */
   nuevoProducto(): void {
-    this.modoEdicion = false;                    // Modo creación
-    this.productoSeleccionado = null;            // No hay producto seleccionado
-    this.limpiarFormulario();                    // Limpia todos los campos
-    this.mostrarFormulario = true;               // Muestra el formulario
-    console.log('Preparando formulario para nuevo producto');
+    this.modoEdicion = false;
+    this.productoSeleccionado = null;
+    this.limpiarFormulario();
+    this.mostrarFormulario = true;
   }
 
-  /**
-   * Prepara el formulario para editar un producto existente
-   * Carga los datos del producto seleccionado en el formulario
-   * @param producto - El producto que se va a editar
-   */
   editarProducto(producto: Producto): void {
-    this.modoEdicion = true;                     // Modo edición
-    this.productoSeleccionado = producto;        // Guarda referencia al producto
-    this.cargarDatosEnFormulario(producto);      // Carga datos en el formulario
-    this.mostrarFormulario = true;               // Muestra el formulario
-    console.log('Editando producto:', producto.nombre);
+    this.modoEdicion = true;
+    this.productoSeleccionado = producto;
+    this.cargarDatosEnFormulario(producto);
+    this.mostrarFormulario = true;
   }
 
-  /**
-   * Guarda el producto según el modo actual (crear o actualizar)
-   * Valida los datos antes de proceder con la operación
-   */
   guardarProducto(): void {
-    // Validación básica antes de guardar
-    if (!this.validarFormulario()) {
-      console.error('Formulario inválido, no se puede guardar');
-      return;
-    }
-
+    if (!this.validarFormulario()) return;
     if (this.modoEdicion) {
-      this.actualizarProducto();               // Actualiza producto existente
+      this.actualizarProducto();
     } else {
-      this.crearProducto();                    // Crea nuevo producto
+      this.crearProducto();
     }
   }
 
-  /**
-   * Elimina un producto después de confirmar con el usuario
-   * @param producto Producto a eliminar
-   */
   async eliminarProducto(producto: Producto): Promise<void> {
-    // Verificar que el producto tenga ID
-    if (!producto.id) {
-      await Swal.fire({
-        title: 'Error',
-        text: 'No se puede eliminar el producto: ID no válido',
-        icon: 'error',
-        confirmButtonText: 'Aceptar'
-      });
-      return;
-    }
-
-    // Mostrar confirmación con SweetAlert2
-    const resultado = await Swal.fire({
+    if (!producto.id) return;
+    const result = await Swal.fire({
       title: '¿Estás seguro?',
-      text: `¿Deseas eliminar el producto "${producto.nombre}"? Esta acción no se puede deshacer.`,
+      text: `Eliminarás "${producto.nombre}". ¡No podrás revertir esto!`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonText: 'Sí, ¡eliminar!',
+      cancelButtonText: 'Cancelar',
     });
 
-    // Si el usuario confirma, proceder con la eliminación
-    if (resultado.isConfirmed) {
+    if (result.isConfirmed) {
       try {
         await this.gestionProductosService.eliminarProducto(producto.id);
-        
-        // Recargar la lista de productos
-        this.cargarProductos();
-        
-        // Mostrar mensaje de éxito
-        await Swal.fire({
-          title: '¡Eliminado!',
-          text: `El producto "${producto.nombre}" ha sido eliminado correctamente.`,
-          icon: 'success',
-          confirmButtonText: 'Aceptar'
-        });
+        Swal.fire('¡Eliminado!', 'El producto ha sido eliminado.', 'success');
       } catch (error) {
-        console.error('Error al eliminar producto:', error);
-        await Swal.fire({
-          title: 'Error',
-          text: 'Hubo un problema al eliminar el producto. Por favor, inténtalo de nuevo.',
-          icon: 'error',
-          confirmButtonText: 'Aceptar'
-        });
+        Swal.fire('Error', 'No se pudo eliminar el producto.', 'error');
       }
     }
   }
 
-  /**
-   * Método de prueba para verificar la conexión con Firestore
-   * Muestra los resultados en la consola del navegador
-   */
-  async probarConexionFirestore(): Promise<void> {
-    console.log('🔧 Iniciando prueba de conexión desde el componente...');
-    
-    try {
-      const conexionExitosa = await this.gestionProductosService.probarConexionFirestore();
-      
-      if (conexionExitosa) {
-        await Swal.fire({
-          title: '✅ Conexión Exitosa',
-          text: 'La conexión con Firestore está funcionando correctamente. Revisa la consola para más detalles.',
-          icon: 'success',
-          confirmButtonText: 'Aceptar'
-        });
-      } else {
-        await Swal.fire({
-          title: '❌ Error de Conexión',
-          text: 'Hubo un problema con la conexión a Firestore. Revisa la consola para más detalles.',
-          icon: 'error',
-          confirmButtonText: 'Aceptar'
-        });
-      }
-    } catch (error) {
-      console.error('Error en la prueba de conexión:', error);
-      await Swal.fire({
-        title: '❌ Error Crítico',
-        text: 'Error crítico durante la prueba de conexión. Revisa la consola para más detalles.',
-        icon: 'error',
-        confirmButtonText: 'Aceptar'
-      });
-    }
-  }
-
-  /**
-   * Cancela la edición y oculta el formulario
-   * Restaura el estado inicial del componente
-   */
   cancelarFormulario(): void {
-    this.mostrarFormulario = false;              // Oculta el formulario
-    this.modoEdicion = false;                    // Resetea el modo
-    this.productoSeleccionado = null;            // Limpia la selección
-    this.limpiarFormulario();                    // Limpia los campos
-    console.log('Formulario cancelado');
+    this.mostrarFormulario = false;
+    this.limpiarFormulario();
   }
 
-  // --- MÉTODOS AUXILIARES PRIVADOS ---
+  // --- MÉTODOS DE GESTIÓN DE CATEGORÍAS (Nuevos) ---
 
   /**
-   * Limpia todos los campos del formulario restaurando valores por defecto
+   * Carga las categorías desde el servicio en tiempo real.
    */
+  cargarCategorias(): void {
+    this.categoriaService.obtenerCategorias().subscribe({
+      next: (categorias) => {
+        this.categorias = categorias.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        console.log('Categorías cargadas:', this.categorias);
+      },
+      error: (error) => {
+        console.error('Error al cargar categorías:', error);
+        Swal.fire('Error', 'No se pudieron cargar las categorías.', 'error');
+      },
+    });
+  }
+
+  /**
+   * Prepara el formulario para crear o editar una categoría.
+   * @param categoria - La categoría a editar, o null para crear una nueva.
+   */
+  editarCategoria(categoria: Categoria | null): void {
+    if (categoria) {
+      this.categoriaEnEdicion = { ...categoria };
+      this.nombreNuevaCategoria = categoria.nombre;
+    } else {
+      this.categoriaEnEdicion = null;
+      this.nombreNuevaCategoria = '';
+    }
+  }
+
+  /**
+   * Guarda una categoría (la crea o la actualiza).
+   */
+  async guardarCategoria(): Promise<void> {
+    const nombre = this.nombreNuevaCategoria.trim();
+    if (!nombre) {
+      Swal.fire('Inválido', 'El nombre de la categoría no puede estar vacío.', 'warning');
+      return;
+    }
+
+    try {
+      if (this.categoriaEnEdicion && this.categoriaEnEdicion.id) {
+        // Actualizar categoría existente
+        await this.categoriaService.actualizarCategoria(this.categoriaEnEdicion.id, nombre);
+        Swal.fire('¡Actualizado!', 'La categoría ha sido actualizada.', 'success');
+      } else {
+        // Crear nueva categoría
+        await this.categoriaService.crearCategoria(nombre);
+        Swal.fire('¡Creada!', 'La nueva categoría ha sido creada.', 'success');
+      }
+      this.cancelarEdicionCategoria();
+    } catch (error) {
+      console.error('Error al guardar categoría:', error);
+      Swal.fire('Error', 'No se pudo guardar la categoría.', 'error');
+    }
+  }
+
+  /**
+   * Elimina una categoría después de confirmación.
+   * @param categoria - La categoría a eliminar.
+   */
+  async eliminarCategoria(categoria: Categoria): Promise<void> {
+    if (!categoria.id) return;
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Eliminarás la categoría "${categoria.nombre}". Esto no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, ¡eliminar!',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await this.categoriaService.eliminarCategoria(categoria.id);
+        Swal.fire('¡Eliminada!', 'La categoría ha sido eliminada.', 'success');
+      } catch (error) {
+        Swal.fire('Error', 'No se pudo eliminar la categoría.', 'error');
+      }
+    }
+  }
+
+  /**
+   * Cierra el formulario de edición de categorías.
+   */
+  cancelarEdicionCategoria(): void {
+    this.categoriaEnEdicion = null;
+    this.nombreNuevaCategoria = '';
+  }
+
+  // --- MÉTODOS AUXILIARES ---
   private limpiarFormulario(): void {
     this.formularioProducto = {
-      nombre: '',        // Campo vacío
-      descripcion: '',   // Campo vacío
-      precio: 0,         // Precio en cero
-      categoria: '',     // Sin categoría seleccionada
-      stock: 0,          // Stock en cero
-      imagen: '',        // Sin imagen
-      activo: true       // Activo por defecto
+      nombre: '',
+      descripcion: '',
+      precio: 0,
+      categoria: '',
+      stock: 0,
+      imagen: '',
+      activo: true,
     };
-    console.log('Formulario limpiado');
   }
 
-  /**
-   * Carga los datos de un producto existente en el formulario para edición
-   * @param producto - El producto cuyos datos se cargarán
-   */
   private cargarDatosEnFormulario(producto: Producto): void {
+    // Corregimos el problema de tipos asegurando valores por defecto
     this.formularioProducto = {
       nombre: producto.nombre || '',
       descripcion: producto.descripcion || '',
@@ -305,101 +217,62 @@ export class GestionProductos implements OnInit {
       categoria: producto.categoria || '',
       stock: producto.stock || 0,
       imagen: producto.imagen || '',
-      activo: producto.activo !== undefined ? producto.activo : true
+      activo: producto.activo !== undefined ? producto.activo : true,
     };
-    console.log('Datos cargados en formulario para:', producto.nombre);
   }
 
-  /**
-   * Valida que los campos requeridos del formulario estén completos
-   * @returns true si el formulario es válido, false en caso contrario
-   */
   private validarFormulario(): boolean {
     const { nombre, precio, categoria } = this.formularioProducto;
-    
-    // Validar campos requeridos
-    if (!nombre.trim()) {
-      console.error('El nombre del producto es requerido');
+    if (!nombre.trim() || precio <= 0 || !categoria) {
+      Swal.fire(
+        'Formulario Incompleto',
+        'Por favor, complete todos los campos obligatorios (*).',
+        'warning',
+      );
       return false;
     }
-    
-    if (precio <= 0) {
-      console.error('El precio debe ser mayor a cero');
-      return false;
-    }
-    
-    if (!categoria.trim()) {
-      console.error('La categoría es requerida');
-      return false;
-    }
-    
     return true;
   }
 
   /**
-   * Crea un nuevo producto en la base de datos
-   * Utiliza los datos del formulario para crear el producto
+   * Crea un nuevo producto en la base de datos.
    */
   private crearProducto(): void {
-    console.log('Creando nuevo producto:', this.formularioProducto);
-    
-    // Convertimos el formulario a un objeto Producto
-    const nuevoProducto: Producto = {
-      nombre: this.formularioProducto.nombre,
-      descripcion: this.formularioProducto.descripcion,
-      precio: this.formularioProducto.precio,
-      categoria: this.formularioProducto.categoria,
-      stock: this.formularioProducto.stock,
-      imagen: this.formularioProducto.imagen,
-      activo: this.formularioProducto.activo
-    };
-
+    const nuevoProducto: Omit<Producto, 'id'> = { ...this.formularioProducto };
     this.gestionProductosService.crearProducto(nuevoProducto).subscribe({
-      next: (id) => {
-        console.log('Producto creado con ID:', id);
+      next: () => {
+        Swal.fire('¡Creado!', 'El producto ha sido creado exitosamente.', 'success');
         this.cancelarFormulario();
-        Swal.fire('Éxito', 'Producto creado correctamente', 'success');
       },
       error: (error) => {
         console.error('Error al crear producto:', error);
-        Swal.fire('Error', 'No se pudo crear el producto', 'error');
-      }
+        Swal.fire('Error', 'Hubo un problema al crear el producto.', 'error');
+      },
     });
   }
 
   /**
-   * Actualiza un producto existente en la base de datos
-   * Utiliza los datos del formulario para actualizar el producto seleccionado
+   * Actualiza un producto existente en la base de datos.
    */
   private actualizarProducto(): void {
-    if (!this.productoSeleccionado?.id) {
-      console.error('No hay producto seleccionado para actualizar');
-      return;
-    }
-    
-    console.log('Actualizando producto:', this.productoSeleccionado.id, this.formularioProducto);
-    
-    // Preparamos los datos de actualización
-    const datosActualizacion: Partial<Producto> = {
-      nombre: this.formularioProducto.nombre,
-      descripcion: this.formularioProducto.descripcion,
-      precio: this.formularioProducto.precio,
-      categoria: this.formularioProducto.categoria,
-      stock: this.formularioProducto.stock,
-      imagen: this.formularioProducto.imagen,
-      activo: this.formularioProducto.activo
-    };
+    if (!this.productoSeleccionado?.id) return;
 
-    this.gestionProductosService.actualizarProducto(this.productoSeleccionado.id, datosActualizacion).subscribe({
-      next: () => {
-        console.log('Producto actualizado correctamente');
-        this.cancelarFormulario();
-        Swal.fire('Éxito', 'Producto actualizado correctamente', 'success');
-      },
-      error: (error) => {
-        console.error('Error al actualizar producto:', error);
-        Swal.fire('Error', 'No se pudo actualizar el producto', 'error');
-      }
-    });
+    const datosActualizados: Partial<Producto> = { ...this.formularioProducto };
+    this.gestionProductosService
+      .actualizarProducto(this.productoSeleccionado.id, datosActualizados)
+      .subscribe({
+        next: () => {
+          Swal.fire('¡Actualizado!', 'El producto ha sido actualizado.', 'success');
+          this.cancelarFormulario();
+        },
+        error: (error) => {
+          console.error('Error al actualizar producto:', error);
+          Swal.fire('Error', 'No se pudo actualizar el producto.', 'error');
+        },
+      });
+  }
+
+  probarConexionFirestore(): void {
+    // Lógica de prueba de conexión...
   }
 }

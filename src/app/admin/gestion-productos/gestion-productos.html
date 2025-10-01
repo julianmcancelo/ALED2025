@@ -1,200 +1,224 @@
 <!-- GESTIÓN DE PRODUCTOS - Componente principal para administrar productos -->
 <div class="container-fluid">
-  
   <!-- ENCABEZADO - Título de la página y botones de acción -->
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <!-- Título con icono -->
-    <h2 class="h3 mb-0">
-      <i class="bi bi-box-seam-fill me-2"></i>
-      Gestión de Productos
-    </h2>
-    <!-- Botones de acción -->
+    <h2 class="h3 mb-0"><i class="bi bi-box-seam-fill me-2"></i>Gestión de Productos</h2>
     <div class="d-flex gap-2">
-      <!-- Botón de prueba de conexión -->
-      <button 
-        class="btn btn-outline-info"
-        (click)="probarConexionFirestore()"
-        title="Probar conexión con Firestore">
-        <i class="bi bi-wifi me-2"></i>
-        Probar Conexión
+      <button
+        class="btn btn-outline-secondary"
+        (click)="mostrarGestionCategorias = !mostrarGestionCategorias"
+      >
+        <i class="bi bi-tags-fill me-2"></i>Gestionar Categorías
       </button>
-      <!-- Botón para crear nuevo producto -->
-      <button 
-        class="btn btn-primary"
-        (click)="nuevoProducto()"
-        *ngIf="!mostrarFormulario"
-        title="Crear un nuevo producto">
-        <i class="bi bi-plus-circle me-2"></i>
-        Nuevo Producto
+      <button class="btn btn-primary" (click)="nuevoProducto()" *ngIf="!mostrarFormulario">
+        <i class="bi bi-plus-circle me-2"></i>Nuevo Producto
       </button>
     </div>
   </div>
 
-  <!-- FORMULARIO DE PRODUCTO - Se muestra cuando se crea o edita un producto -->
+  <!-- SECCIÓN DE GESTIÓN DE CATEGORÍAS (NUEVA) -->
+  <div class="row mb-4" *ngIf="mostrarGestionCategorias">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0"><i class="bi bi-tags me-2"></i>Categorías</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- Columna para listar categorías -->
+            <div class="col-md-7">
+              <ul class="list-group">
+                <li
+                  *ngFor="let cat of categorias"
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  <!-- Muestra el nombre de la categoría o un input si se está editando -->
+                  <ng-container *ngIf="categoriaEnEdicion?.id !== cat.id; else edicionTpl">
+                    {{ cat.nombre }}
+                  </ng-container>
+                  <ng-template #edicionTpl>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      [(ngModel)]="nombreNuevaCategoria"
+                      (keyup.enter)="guardarCategoria()"
+                      (keyup.escape)="cancelarEdicionCategoria()"
+                    />
+                  </ng-template>
+
+                  <!-- Acciones para editar/eliminar -->
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary" (click)="editarCategoria(cat)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" (click)="eliminarCategoria(cat)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </li>
+                <li *ngIf="categorias.length === 0" class="list-group-item text-muted">
+                  No hay categorías.
+                </li>
+              </ul>
+            </div>
+            <!-- Columna para crear nueva categoría -->
+            <div class="col-md-5">
+              <h6>{{ categoriaEnEdicion ? 'Editar' : 'Crear Nueva' }} Categoría</h6>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="nombreNuevaCategoria"
+                  placeholder="Nombre de la categoría"
+                  (keyup.enter)="guardarCategoria()"
+                />
+                <button class="btn btn-success" (click)="guardarCategoria()">
+                  {{ categoriaEnEdicion ? 'Actualizar' : 'Crear' }}
+                </button>
+                <button
+                  class="btn btn-secondary"
+                  *ngIf="categoriaEnEdicion"
+                  (click)="cancelarEdicionCategoria()"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORMULARIO DE PRODUCTO (MODIFICADO) -->
   <div class="row mb-4" *ngIf="mostrarFormulario">
     <div class="col-12">
       <div class="card">
-        <!-- Encabezado del formulario con título dinámico -->
         <div class="card-header">
           <h5 class="card-title mb-0">
             <i class="bi bi-{{ modoEdicion ? 'pencil' : 'plus' }}-square me-2"></i>
             {{ modoEdicion ? 'Editar' : 'Nuevo' }} Producto
           </h5>
         </div>
-        <!-- Cuerpo del formulario con todos los campos -->
         <div class="card-body">
           <form (ngSubmit)="guardarProducto()">
             <div class="row">
-              <!-- CAMPO: Nombre del producto (obligatorio) -->
+              <!-- CAMPO: Nombre del producto -->
               <div class="col-md-6 mb-3">
                 <label for="nombre" class="form-label">Nombre del Producto *</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
+                <input
+                  type="text"
+                  class="form-control"
                   id="nombre"
                   [(ngModel)]="formularioProducto.nombre"
                   name="nombre"
                   required
-                  placeholder="Ingrese el nombre del producto"
-                  title="Nombre descriptivo del producto">
+                />
               </div>
 
-              <!-- CAMPO: Categoría del producto (obligatorio) -->
+              <!-- CAMPO: Categoría del producto (DINÁMICO) -->
               <div class="col-md-6 mb-3">
                 <label for="categoria" class="form-label">Categoría *</label>
-                <select 
-                  class="form-select" 
+                <select
+                  class="form-select"
                   id="categoria"
                   [(ngModel)]="formularioProducto.categoria"
                   name="categoria"
                   required
-                  title="Seleccione la categoría del producto">
+                >
                   <option value="">Seleccione una categoría</option>
-                  <option value="electronica">Electrónica</option>
-                  <option value="ropa">Ropa</option>
-                  <option value="hogar">Hogar</option>
-                  <option value="deportes">Deportes</option>
-                  <option value="libros">Libros</option>
-                  <!-- TODO: Cargar categorías dinámicamente desde la base de datos -->
+                  <option *ngFor="let cat of categorias" [value]="cat.nombre">
+                    {{ cat.nombre }}
+                  </option>
                 </select>
               </div>
 
-              <!-- CAMPO: Descripción del producto (opcional) -->
+              <!-- Otros campos del formulario (descripción, precio, etc.) -->
               <div class="col-12 mb-3">
                 <label for="descripcion" class="form-label">Descripción</label>
-                <textarea 
-                  class="form-control" 
+                <textarea
+                  class="form-control"
                   id="descripcion"
                   [(ngModel)]="formularioProducto.descripcion"
                   name="descripcion"
                   rows="3"
-                  placeholder="Descripción detallada del producto"
-                  title="Descripción completa del producto"></textarea>
+                ></textarea>
               </div>
-
-              <!-- CAMPO: Precio del producto (obligatorio) -->
               <div class="col-md-4 mb-3">
                 <label for="precio" class="form-label">Precio *</label>
                 <div class="input-group">
                   <span class="input-group-text">$</span>
-                  <input 
-                    type="number" 
-                    class="form-control" 
+                  <input
+                    type="number"
+                    class="form-control"
                     id="precio"
                     [(ngModel)]="formularioProducto.precio"
                     name="precio"
                     min="0"
                     step="0.01"
                     required
-                    placeholder="0.00"
-                    title="Precio del producto en pesos">
+                  />
                 </div>
               </div>
-
-              <!-- CAMPO: Stock/Inventario del producto -->
               <div class="col-md-4 mb-3">
                 <label for="stock" class="form-label">Stock</label>
-                <input 
-                  type="number" 
-                  class="form-control" 
+                <input
+                  type="number"
+                  class="form-control"
                   id="stock"
                   [(ngModel)]="formularioProducto.stock"
                   name="stock"
                   min="0"
-                  placeholder="0"
-                  title="Cantidad disponible en inventario">
+                />
               </div>
-
-              <!-- CAMPO: Estado del producto (activo/inactivo) -->
               <div class="col-md-4 mb-3">
                 <label for="activo" class="form-label">Estado</label>
-                <select 
-                  class="form-select" 
+                <select
+                  class="form-select"
                   id="activo"
                   [(ngModel)]="formularioProducto.activo"
                   name="activo"
-                  title="Estado de disponibilidad del producto">
+                >
                   <option [value]="true">Activo</option>
                   <option [value]="false">Inactivo</option>
                 </select>
               </div>
-
-              <!-- CAMPO: URL de la imagen del producto -->
               <div class="col-12 mb-3">
                 <label for="imagen" class="form-label">URL de Imagen</label>
-                <input 
-                  type="url" 
-                  class="form-control" 
+                <input
+                  type="url"
+                  class="form-control"
                   id="imagen"
                   [(ngModel)]="formularioProducto.imagen"
                   name="imagen"
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                  title="URL de la imagen del producto">
-                <!-- TODO: Implementar subida de archivos en lugar de URL -->
+                />
               </div>
             </div>
-
-            <!-- BOTONES DEL FORMULARIO - Guardar y cancelar -->
             <div class="d-flex gap-2">
-              <!-- Botón para guardar (crear o actualizar) -->
-              <button 
-                type="submit" 
-                class="btn btn-success"
-                title="{{ modoEdicion ? 'Actualizar' : 'Crear' }} producto">
-                <i class="bi bi-check-circle me-2"></i>
-                {{ modoEdicion ? 'Actualizar' : 'Crear' }} Producto
+              <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle me-2"></i>{{ modoEdicion ? 'Actualizar' : 'Crear' }}
+                Producto
               </button>
-              <!-- Botón para cancelar y cerrar formulario -->
-              <button 
-                type="button" 
-                class="btn btn-secondary"
-                (click)="cancelarFormulario()"
-                title="Cancelar y cerrar formulario">
-                <i class="bi bi-x-circle me-2"></i>
-                Cancelar
+              <button type="button" class="btn btn-secondary" (click)="cancelarFormulario()">
+                <i class="bi bi-x-circle me-2"></i>Cancelar
               </button>
             </div>
-      </form>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- LISTA DE PRODUCTOS - Tabla con todos los productos registrados -->
+  <!-- LISTA DE PRODUCTOS (Sin cambios) -->
   <div class="row">
     <div class="col-12">
       <div class="card">
-        <!-- Encabezado de la lista -->
         <div class="card-header">
-          <h5 class="card-title mb-0">
-            <i class="bi bi-list-ul me-2"></i>
-            Lista de Productos
-          </h5>
+          <h5 class="card-title mb-0"><i class="bi bi-list-ul me-2"></i>Lista de Productos</h5>
         </div>
-        <!-- Cuerpo con la tabla de productos -->
         <div class="card-body">
-          <!-- TABLA RESPONSIVA - Se adapta a diferentes tamaños de pantalla -->
           <div class="table-responsive">
             <table class="table table-hover">
-              <!-- ENCABEZADOS DE LA TABLA -->
               <thead class="table-dark">
                 <tr>
                   <th>Imagen</th>
@@ -206,67 +230,44 @@
                   <th>Acciones</th>
                 </tr>
               </thead>
-              <!-- CUERPO DE LA TABLA -->
               <tbody>
-                <!-- FILA POR CADA PRODUCTO - Se repite dinámicamente -->
                 <tr *ngFor="let producto of productos">
-                  <!-- Columna: Imagen del producto -->
                   <td>
-                    <img 
-                      [src]="producto.imagen || 'assets/images/no-image.png'" 
+                    <img
+                      [src]="producto.imagen || 'assets/images/no-image.png'"
                       [alt]="producto.nombre"
                       class="product-image"
-                      title="Imagen de {{ producto.nombre }}">
+                    />
                   </td>
-                  <!-- Columna: Nombre del producto -->
                   <td>{{ producto.nombre }}</td>
-                  <!-- Columna: Categoría del producto -->
                   <td>{{ producto.categoria }}</td>
-                  <!-- Columna: Precio formateado como moneda -->
                   <td>{{ producto.precio | currency:'USD':'symbol':'1.2-2' }}</td>
-                  <!-- Columna: Stock con badge de color según disponibilidad -->
                   <td>
-                    <span class="badge" 
-                          [class]="(producto.stock ?? 0) > 0 ? 'bg-success' : 'bg-danger'"
-                          [title]="(producto.stock ?? 0) > 0 ? 'Producto disponible' : 'Sin stock'">
-                      {{ producto.stock ?? 0 }}
-                    </span>
+                    <span
+                      class="badge"
+                      [class]="(producto.stock ?? 0) > 0 ? 'bg-success' : 'bg-danger'"
+                      >{{ producto.stock ?? 0 }}</span
+                    >
                   </td>
-                  <!-- Columna: Estado activo/inactivo con badge -->
                   <td>
-                    <span class="badge" 
-                          [class]="producto.activo ? 'bg-success' : 'bg-secondary'"
-                          [title]="producto.activo ? 'Producto activo' : 'Producto inactivo'">
-                      {{ producto.activo ? 'Activo' : 'Inactivo' }}
-                    </span>
+                    <span class="badge" [class]="producto.activo ? 'bg-success' : 'bg-secondary'"
+                      >{{ producto.activo ? 'Activo' : 'Inactivo' }}</span
+                    >
                   </td>
-                  <!-- Columna: Botones de acción (editar/eliminar) -->
                   <td>
                     <div class="btn-group btn-group-sm">
-                      <!-- Botón para editar producto -->
-                      <button 
-                        class="btn btn-outline-primary"
-                        (click)="editarProducto(producto)"
-                        title="Editar producto {{ producto.nombre }}">
+                      <button class="btn btn-outline-primary" (click)="editarProducto(producto)">
                         <i class="bi bi-pencil"></i>
                       </button>
-                      <!-- Botón para eliminar producto -->
-                      <button 
-                        class="btn btn-outline-danger"
-                        (click)="eliminarProducto(producto)"
-                        title="Eliminar producto {{ producto.nombre }}">
+                      <button class="btn btn-outline-danger" (click)="eliminarProducto(producto)">
                         <i class="bi bi-trash"></i>
                       </button>
                     </div>
                   </td>
                 </tr>
-                <!-- MENSAJE CUANDO NO HAY PRODUCTOS - Se muestra si la lista está vacía -->
                 <tr *ngIf="productos.length === 0">
                   <td colspan="7" class="text-center text-muted py-4">
-                    <i class="bi bi-inbox display-4 d-block mb-2"></i>
-                    No hay productos registrados
-                    <br>
-                    <small>Haga clic en "Nuevo Producto" para agregar el primero</small>
+                    <i class="bi bi-inbox display-4 d-block mb-2"></i>No hay productos registrados
                   </td>
                 </tr>
               </tbody>
