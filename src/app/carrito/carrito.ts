@@ -94,7 +94,7 @@ export class Carrito {
     this.cargandoMP.set(true);
     this.activeOffcanvas.dismiss('Processing payment');
 
-    const functionUrl = 'http://127.0.0.1:5001/aled3-6b4ee/us-central1/createPreference';
+    const functionUrl = 'https://us-central1-aled3-6b4ee.cloudfunctions.net/createPreferenceV1';
 
     this.http.post<{ id: string }>(functionUrl, { items }).subscribe({
       next: (res) => {

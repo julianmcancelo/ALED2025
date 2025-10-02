@@ -1,47 +1,42 @@
-/**
- * Importa los módulos necesarios.
- */
-import * as functions from 'firebase-functions';
+import * as functions from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+// @ts-ignore
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+import * as crypto from 'crypto';
 
 // Inicializa la app de Firebase Admin para poder interactuar con Firebase.
 admin.initializeApp();
 
 // --- CONFIGURACIÓN DE MERCADO PAGO ---
-// Configura el cliente de Mercado Pago con tu Access Token de prueba.
-// ¡IMPORTANTE! Nunca expongas tu Access Token de producción en el código.
 const client = new MercadoPagoConfig({
-  accessToken: 'TEST-6441831883142998-100108-00aaeaebb4d1ce895323768f8f4e13b4-2667547778',
+  accessToken: functions.config().mercadopago.accesstoken,
 });
+const webhookSecret = functions.config().mercadopago.secretkey;
 
 /**
- * @function createPreference
+ * @function createPreferenceV1
  * Crea una preferencia de pago en Mercado Pago.
- * Es una función HTTP que se puede llamar desde el frontend.
- *
- * @param {functions.https.Request} request - El objeto de la solicitud HTTP.
- *   Debe contener en el body un array de 'items'.
- * @param {functions.Response<any>} response - El objeto de respuesta HTTP.
- *
- * @returns {Promise<void>}
  */
-// Forzando un cambio para el redespliegue.
-export const createPreference = functions.https.onRequest(async (request, response) => {
-  // Configura los encabezados CORS para permitir solicitudes desde cualquier origen.
-  response.set('Access-Control-Allow-Origin', '*');
-  response.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS, POST');
-  response.set('Access-Control-Allow-Headers', 'Content-Type');
-
-  // Si la solicitud es un 'preflight' de CORS (método OPTIONS), termina la ejecución aquí.
-  if (request.method === 'OPTIONS') {
-    response.status(204).send();
-    return;
+export const createPreferenceV1 = functions.region('us-central1').https.onRequest(async (request, response) => {
+  // Configuración CORS
+  const allowedOrigins = [
+    'http://localhost:4201',
+    'http://localhost:4202',
+    'http://127.0.0.1:4201',
+    'http://127.0.0.1:4202',
+    'https://aled-2025.vercel.app'
+  ];
+  const origin = request.headers.origin as string;
+  if (origin && allowedOrigins.includes(origin)) {
+    response.set('Access-Control-Allow-Origin', origin);
   }
+  response.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  response.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  response.set('Access-Control-Allow-Credentials', 'true');
 
-  // Continúa solo si el método es POST.
-  if (request.method !== 'POST') {
-    response.status(405).send('Method Not Allowed');
+  // Manejar preflight request
+  if (request.method === 'OPTIONS') {
+    response.status(204).send('');
     return;
   }
 
@@ -93,9 +88,9 @@ export const createPreference = functions.https.onRequest(async (request, respon
       })),
       // URLs a las que Mercado Pago redirigirá al usuario después del pago.
       back_urls: {
-        success: 'http://localhost:4201/pago-exitoso',
-        failure: 'http://localhost:4201/pago-fallido',
-        pending: 'http://localhost:4201/pago-pendiente'
+        success: 'http://localhost:4202/pago-exitoso',
+        failure: 'http://localhost:4202/pago-fallido',
+        pending: 'http://localhost:4202/pago-pendiente'
       }
     };
 
@@ -130,5 +125,71 @@ export const createPreference = functions.https.onRequest(async (request, respon
       error: 'Error al crear la preferencia de pago.',
       details: error.message 
     });
+  }
+});
+
+/**
+ * @function receiveWebhookV1
+ * Recibe y procesa las notificaciones de Webhook enviadas por Mercado Pago.
+ */
+export const receiveWebhookV1 = functions.region('us-central1').https.onRequest(async (request, response) => {
+  // Configuración CORS
+  const allowedOrigins = [
+    'http://localhost:4201',
+    'http://localhost:4202',
+    'http://127.0.0.1:4201',
+    'http://127.0.0.1:4202',
+    'https://aled-2025.vercel.app'
+  ];
+  const origin = request.headers.origin as string;
+  if (origin && allowedOrigins.includes(origin)) {
+    response.set('Access-Control-Allow-Origin', origin);
+  }
+  response.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  response.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-signature, x-request-id');
+  response.set('Access-Control-Allow-Credentials', 'true');
+
+  // Manejar preflight request
+  if (request.method === 'OPTIONS') {
+    response.status(204).send('');
+    return;
+  }
+
+  const signature = request.headers['x-signature'] as string;
+  const requestId = request.headers['x-request-id'] as string;
+
+  // 1. Validar la firma para asegurar que la petición viene de Mercado Pago
+  const [ts, hash] = signature.split(',');
+  const timestamp = ts.split('=')[1];
+  const receivedHash = hash.split('=')[1];
+
+  const manifest = `id:${request.body.data.id};request-id:${requestId};ts:${timestamp};`;
+  const hmac = crypto.createHmac('sha256', webhookSecret).update(manifest).digest('hex');
+
+  if (hmac !== receivedHash) {
+    console.warn('Firma de Webhook inválida.');
+    response.status(403).send('Forbidden');
+    return;
+  }
+
+  // 2. Procesar la notificación
+  if (request.body.type === 'payment') {
+    try {
+      const paymentId = request.body.data.id;
+      const payment = await new Payment(client).get({ id: paymentId });
+
+      if (payment.status === 'approved') {
+        console.log(`✅ Pago aprobado: ${paymentId}`);
+        // TODO: Lógica de negocio (actualizar stock, etc.)
+      } else {
+        console.log(`⚠️ Estado del pago: ${payment.status} (ID: ${paymentId})`);
+      }
+      response.status(200).send('Webhook received successfully.');
+    } catch (error) {
+      console.error('Error processing webhook:', error);
+      response.status(500).send('Error processing webhook.');
+    }
+  } else {
+    response.status(200).send('Not a payment notification, skipping.');
   }
 });

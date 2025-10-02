@@ -1,57 +1,59 @@
 <!-- Contenedor principal de la página de la tienda -->
-<div class="container my-5">
+<div class="max-w-7xl mx-auto px-4 py-8">
 
   <!-- Encabezado de la tienda -->
-  <header class="text-center mb-5">
-    <h1 class="display-4">Nuestros Productos</h1>
-    <p class="lead text-muted">Explora nuestro catálogo y encuentra lo que buscas.</p>
+  <header class="text-center mb-12">
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Nuestros Productos</h1>
+    <p class="text-xl text-gray-600">Explora nuestro catálogo y encuentra lo que buscas.</p>
   </header>
 
   <!-- Usamos @if para manejar el estado del observable de productos -->
   @if (productos$ | async; as productos) {
     <!-- Si hay productos, los mostramos en una cuadrícula -->
     @if (productos.length > 0) {
-      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
         <!-- Iteramos sobre cada producto con @for -->
         @for (producto of productos; track producto.id) {
-          <div class="col">
-            <div class="card h-100 product-card">
-              <!-- Imagen del producto -->
-              <img [src]="producto.imagen || 'assets/images/no-image.png'" class="card-img-top" [alt]="producto.nombre">
+          <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <!-- Imagen del producto -->
+            <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-200">
+              <img [src]="producto.imagen || 'assets/images/no-image.png'" 
+                   class="w-full h-48 object-cover object-center group-hover:opacity-75" 
+                   [alt]="producto.nombre">
+            </div>
 
-              <!-- Cuerpo de la tarjeta con los detalles -->
-              <div class="card-body d-flex flex-column">
-                <h5 class="card-title">{{ producto.nombre }}</h5>
-                <p class="card-text text-muted">{{ producto.categoria }}</p>
-                <p class="card-price h4 mt-auto">{{ producto.precio | currency:'ARS':'$' }}</p>
-              </div>
+            <!-- Cuerpo de la tarjeta con los detalles -->
+            <div class="p-4 flex flex-col h-32">
+              <h5 class="text-lg font-semibold text-gray-900 mb-1">{{ producto.nombre }}</h5>
+              <p class="text-sm text-gray-500 mb-2">{{ producto.categoria }}</p>
+              <p class="text-xl font-bold text-blue-600 mt-auto">{{ producto.precio | currency:'ARS':'$' }}</p>
+            </div>
 
-              <!-- Pie de la tarjeta con el botón de acción -->
-              <div class="card-footer text-center">
-                <button class="btn btn-primary w-100" (click)="agregarAlCarrito(producto)">
-                  <i class="bi bi-cart-plus-fill me-2"></i>
-                  Añadir al Carrito
-                </button>
-              </div>
+            <!-- Pie de la tarjeta con el botón de acción -->
+            <div class="p-4 pt-0">
+              <button class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center" 
+                      (click)="agregarAlCarrito(producto)">
+                <i class="bi bi-cart-plus-fill mr-2"></i>
+                Añadir al Carrito
+              </button>
             </div>
           </div>
         }
       </div>
     } @else {
       <!-- Mensaje que se muestra si no hay productos activos -->
-      <div class="text-center py-5">
-        <i class="bi bi-emoji-frown display-1 text-muted"></i>
-        <h3 class="mt-3">No hay productos disponibles</h3>
-        <p class="text-muted">Vuelve a intentarlo más tarde.</p>
+      <div class="text-center py-12">
+        <i class="bi bi-emoji-frown text-6xl text-gray-400 mb-4"></i>
+        <h3 class="text-2xl font-semibold text-gray-900 mb-2">No hay productos disponibles</h3>
+        <p class="text-gray-600">Vuelve a intentarlo más tarde.</p>
       </div>
     }
   } @else {
     <!-- Indicador de carga que se muestra mientras se obtienen los datos -->
-    <div class="text-center py-5">
-      <div class="spinner-border" role="status">
-        <span class="visually-hidden">Cargando productos...</span>
-      </div>
+    <div class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <p class="mt-2 text-gray-600">Cargando productos...</p>
     </div>
   }
 </div>
