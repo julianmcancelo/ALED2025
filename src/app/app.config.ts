@@ -24,6 +24,9 @@ import { GestionNovedadesComponent } from './admin/gestion-novedades/gestion-nov
 import { GestionProductos } from './admin/gestion-productos/gestion-productos'; // Nombre Correcto
 import { PerfilUsuarioComponent } from './perfil-usuario/perfil-usuario';
 import { authGuard } from './auth/auth.guard';
+import { PagoExitoso } from './pago-exitoso/pago-exitoso';
+import { PagoFallido } from './pago-fallido/pago-fallido';
+import { PagoPendiente } from './pago-pendiente/pago-pendiente';
 
 // Importaciones de Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
@@ -75,6 +78,9 @@ export const appConfig: ApplicationConfig = {
       { path: 'productos/:id', component: DetalleProductoComponent }, // Ruta para el detalle del producto
       { path: 'primer-usuario', component: PrimerUsuario },
       { path: 'perfil', component: PerfilUsuarioComponent, canActivate: [authGuard] }, // Nueva ruta de perfil
+      { path: 'pago-exitoso', component: PagoExitoso },
+      { path: 'pago-fallido', component: PagoFallido },
+      { path: 'pago-pendiente', component: PagoPendiente },
       {
         path: 'administracion',
         component: Admin,
