@@ -1,42 +1,80 @@
-<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-modal">
-  <h1 mat-dialog-title class="modal-header bg-light text-dark">Iniciar Sesión</h1>
-
-  <div mat-dialog-content class="pt-3">
-    <div class="mb-3">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Correo Electrónico</mat-label>
-        <input matInput formControlName="email" type="email" required />
-        <mat-icon matPrefix>alternate_email</mat-icon>
-        <mat-error *ngIf="loginForm.get('email')?.hasError('required')">Requerido.</mat-error>
-        <mat-error *ngIf="loginForm.get('email')?.hasError('email')">Formato no válido.</mat-error>
-      </mat-form-field>
+<div class="modal-content border-0 shadow-lg">
+  <!-- Header con gradiente -->
+  <div class="modal-header bg-gradient text-white border-0">
+    <div>
+      <h4 class="modal-title mb-1 fw-bold">Iniciar Sesión</h4>
+      <p class="mb-0 small opacity-90">Ingresa tus credenciales para continuar</p>
     </div>
-
-    <div class="mb-3">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Contraseña</mat-label>
-        <input matInput formControlName="password" type="password" required />
-        <mat-icon matPrefix>lock</mat-icon>
-        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Requerida.</mat-error>
-      </mat-form-field>
-    </div>
-
-
+    <button type="button" class="btn-close btn-close-white" mat-dialog-close aria-label="Close"></button>
   </div>
 
-  <div mat-dialog-actions align="end">
-    <button mat-button [disabled]="isLoading" mat-dialog-close>Cancelar</button>
-    <button
-      mat-raised-button
-      color="primary"
-      type="submit"
-      [disabled]="loginForm.invalid || isLoading"
-    >
-      @if (isLoading) {
-      <mat-spinner diameter="24"></mat-spinner>
-      } @else {
-      <span>Ingresar</span>
-      }
-    </button>
-  </div>
-</form>
+  <!-- Body del formulario -->
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <div class="modal-body p-4">
+      <!-- Email -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">
+          <mat-icon class="align-middle me-1" style="font-size: 18px;">alternate_email</mat-icon>
+          Correo Electrónico
+        </label>
+        <input 
+          type="email" 
+          class="form-control form-control-lg"
+          [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+          formControlName="email" 
+          placeholder="ejemplo@correo.com"
+          required
+        />
+        <div class="invalid-feedback" *ngIf="loginForm.get('email')?.hasError('required')">
+          El correo es requerido
+        </div>
+        <div class="invalid-feedback" *ngIf="loginForm.get('email')?.hasError('email')">
+          Formato no válido
+        </div>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">
+          <mat-icon class="align-middle me-1" style="font-size: 18px;">lock</mat-icon>
+          Contraseña
+        </label>
+        <input 
+          type="password" 
+          class="form-control form-control-lg"
+          [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+          formControlName="password" 
+          placeholder="••••••••"
+          required
+        />
+        <div class="invalid-feedback" *ngIf="loginForm.get('password')?.hasError('required')">
+          La contraseña es requerida
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer con botones -->
+    <div class="modal-footer border-0 pt-0 pb-4 px-4">
+      <button 
+        type="button" 
+        class="btn btn-outline-secondary px-4 py-2"
+        [disabled]="isLoading" 
+        mat-dialog-close
+      >
+        Cancelar
+      </button>
+      <button 
+        type="submit" 
+        class="btn btn-primary px-4 py-2 shadow-sm"
+        [disabled]="loginForm.invalid || isLoading"
+      >
+        @if (isLoading) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Cargando...
+        } @else {
+          Ingresar
+        }
+      </button>
+    </div>
+  </form>
+</div>

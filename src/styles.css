@@ -4,6 +4,19 @@
 
 /* You can add global styles to this file, and also import other style files */
 
+/* Variables de colores globales - Esquema Azul y Gris Oscuro */
+:root {
+  --color-primary: #0077b6;
+  --color-primary-dark: #005a8d;
+  --color-primary-light: #0096c7;
+  --color-secondary: #2c3e50;
+  --color-secondary-dark: #1a252f;
+  --color-accent: #00b4d8;
+  --color-gray-light: #f8f9fa;
+  --color-gray: #6c757d;
+  --color-gray-dark: #343a40;
+}
+
 @layer base {
   html, body { 
     height: 100%; 
@@ -15,60 +28,132 @@
 }
 
 @layer components {
-  /* Estilos para botones del header */
-  .header-button {
-    @apply ml-2;
+  /* === SISTEMA DE BOTONES CONSISTENTE === */
+  .btn-primary {
+    @apply bg-[#0077b6] hover:bg-[#005a8d] text-white font-medium px-4 py-2 rounded-lg transition-all duration-200;
+    box-shadow: 0 2px 8px rgba(0, 119, 182, 0.2);
+  }
+  
+  .btn-primary:hover {
+    box-shadow: 0 4px 12px rgba(0, 119, 182, 0.3);
+    transform: translateY(-1px);
   }
 
-  .mat-toolbar .mat-mdc-stroked-button:not(:disabled) {
-    @apply border-white text-white;
+  .btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200;
   }
 
-  .mat-toolbar .mat-mdc-stroked-button .mat-icon {
-    @apply text-white;
+  .btn-outline {
+    @apply border-2 border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg transition-all duration-200;
   }
 
-  /* Footer compacto */
-  .footer-compact {
-    @apply h-10 px-4 flex justify-center items-center text-sm bg-gray-100;
+  /* === CARDS CONSISTENTES === */
+  .card {
+    @apply bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden;
   }
 
-  .footer-text-compact {
-    @apply flex flex-wrap justify-center items-center text-black;
+  .card-header {
+    @apply bg-gradient-to-r from-[#0077b6] to-[#2c3e50] text-white px-6 py-4 font-semibold;
   }
 
-  .footer-text-compact .separator {
-    @apply mx-2;
+  .card-body {
+    @apply p-6;
   }
 
-  /* Layout principal de la aplicación */
+  /* === INPUTS Y FORMS === */
+  .form-input {
+    @apply w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#0077b6] focus:ring-2 focus:ring-[#0077b6] focus:ring-opacity-20 transition-all duration-200;
+  }
+
+  .form-label {
+    @apply block text-gray-700 font-medium mb-2 text-sm;
+  }
+
+  /* === BADGES Y TAGS === */
+  .badge-primary {
+    @apply bg-[#0077b6] text-white px-3 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .badge-secondary {
+    @apply bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold;
+  }
+
+  /* === LAYOUT === */
   .app-container {
-    @apply flex flex-col min-h-screen;
+    @apply flex flex-col min-h-screen bg-gray-50;
   }
 
   .main-content {
     @apply flex-1;
   }
 
-  /* Estilos para modales de autenticación */
-  .auth-modal .full-width {
-    @apply w-full;
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  .auth-modal .checkbox-group {
-    @apply flex flex-col my-2.5;
+  /* === FOOTER === */
+  .footer-compact {
+    @apply h-10 px-4 flex justify-center items-center text-sm bg-gray-100 border-t border-gray-200;
   }
 
-  .auth-modal .mat-mdc-raised-button .mat-spinner {
-    @apply mx-auto;
+  .footer-text-compact {
+    @apply flex flex-wrap justify-center items-center text-gray-600;
   }
 
-  /* Ajustes para la integración de Bootstrap en modales de Material */
-  .modal-header {
-    @apply px-6 py-4 border-b border-gray-200 -mx-6 -mt-6 mb-0 text-xl;
+  .footer-text-compact .separator {
+    @apply mx-2 text-gray-400;
   }
 
-  .mat-mdc-form-field-flex {
-    @apply bg-transparent;
+  /* === LINKS === */
+  .link-primary {
+    @apply text-[#0077b6] hover:text-[#005a8d] transition-colors duration-200;
+  }
+
+  /* === MODALES === */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-40;
+  }
+
+  .modal-content {
+    @apply bg-white rounded-xl shadow-2xl max-w-2xl mx-auto;
+  }
+
+  /* === TABLAS === */
+  .table-custom {
+    @apply w-full border-collapse bg-white rounded-lg overflow-hidden shadow-md;
+  }
+
+  .table-custom thead {
+    @apply bg-[#0077b6] text-white;
+  }
+
+  .table-custom th {
+    @apply px-6 py-3 text-left text-sm font-semibold;
+  }
+
+  .table-custom td {
+    @apply px-6 py-4 border-b border-gray-200 text-sm;
+  }
+
+  .table-custom tbody tr:hover {
+    @apply bg-gray-50;
+  }
+
+  /* === ALERTS === */
+  .alert-success {
+    @apply bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded;
+  }
+
+  .alert-error {
+    @apply bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded;
+  }
+
+  .alert-info {
+    @apply bg-blue-50 border-l-4 border-[#0077b6] text-blue-900 p-4 rounded;
+  }
+
+  /* === LOADING STATES === */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
   }
 }

@@ -1,7 +1,9 @@
 .main-content {
   /*
-    Añadimos un padding-top para compensar la altura del header fijo.
-    Ajusta este valor si la altura de tu header cambia.
+    Añadimos padding-top para compensar el header fijo
+    y padding-bottom para compensar el footer fijo
   */
   padding-top: 70px;
+  padding-bottom: 60px; /* Espacio para el footer fijo */
+  min-height: calc(100vh - 130px); /* Altura mínima para que el contenido ocupe la pantalla */
 }

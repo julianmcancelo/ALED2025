@@ -20,11 +20,14 @@ const webhookSecret = functions.config().mercadopago.secretkey;
 exports.createPreferenceV1 = functions.region('us-central1').https.onRequest(async (request, response) => {
     // Configuración CORS
     const allowedOrigins = [
+        'http://localhost:4200',
         'http://localhost:4201',
         'http://localhost:4202',
+        'http://127.0.0.1:4200',
         'http://127.0.0.1:4201',
         'http://127.0.0.1:4202',
-        'https://aled-2025.vercel.app'
+        'https://aled-2025.vercel.app',
+        'https://aled3-6b4ee.web.app'
     ];
     const origin = request.headers.origin;
     if (origin && allowedOrigins.includes(origin)) {
@@ -79,9 +82,9 @@ exports.createPreferenceV1 = functions.region('us-central1').https.onRequest(asy
             })),
             // URLs a las que Mercado Pago redirigirá al usuario después del pago.
             back_urls: {
-                success: 'http://localhost:4202/pago-exitoso',
-                failure: 'http://localhost:4202/pago-fallido',
-                pending: 'http://localhost:4202/pago-pendiente'
+                success: 'https://aled3-6b4ee.web.app/pago-exitoso',
+                failure: 'https://aled3-6b4ee.web.app/pago-fallido',
+                pending: 'https://aled3-6b4ee.web.app/pago-pendiente'
             }
         };
         console.log('Datos de preferencia:', JSON.stringify(preferenceData, null, 2));
@@ -119,11 +122,14 @@ exports.createPreferenceV1 = functions.region('us-central1').https.onRequest(asy
 exports.receiveWebhookV1 = functions.region('us-central1').https.onRequest(async (request, response) => {
     // Configuración CORS
     const allowedOrigins = [
+        'http://localhost:4200',
         'http://localhost:4201',
         'http://localhost:4202',
+        'http://127.0.0.1:4200',
         'http://127.0.0.1:4201',
         'http://127.0.0.1:4202',
-        'https://aled-2025.vercel.app'
+        'https://aled-2025.vercel.app',
+        'https://aled3-6b4ee.web.app'
     ];
     const origin = request.headers.origin;
     if (origin && allowedOrigins.includes(origin)) {

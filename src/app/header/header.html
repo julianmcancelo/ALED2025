@@ -3,17 +3,17 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-16">
       <!-- Título/Branding de la aplicación -->
-      <a class="flex items-center text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors" routerLink="/">
-        <i class="bi bi-gem mr-2 text-blue-600"></i>
+      <a class="flex items-center text-xl font-bold text-gray-900 hover:text-[#0077b6] transition-colors" routerLink="/">
+        <i class="bi bi-gem mr-2 text-[#0077b6]"></i>
         {{ configuracion().titulo || 'Proyecto Final' }}
       </a>
 
       <!-- Navegación principal (desktop) -->
       <div class="hidden md:flex items-center space-x-8">
         <!-- Enlace a la Tienda -->
-        <a class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors" 
+        <a class="text-gray-700 hover:text-[#0077b6] px-3 py-2 rounded-md text-sm font-medium transition-colors" 
            routerLink="/productos" 
-           routerLinkActive="text-blue-600 bg-blue-50">
+           routerLinkActive="text-[#0077b6] bg-blue-50">
           Tienda
         </a>
         
@@ -22,12 +22,12 @@
           <!-- Bloque que se muestra si NADIE ha iniciado sesión -->
           @if (currentUser() === null) {
           <div class="flex space-x-2">
-            <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors" 
+            <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:ring-offset-2 transition-colors" 
                     (click)="openLoginDialog()">
               <i class="bi bi-box-arrow-in-right mr-1"></i>
               <span>Iniciar Sesión</span>
             </button>
-            <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors" 
+            <button class="px-4 py-2 text-sm font-medium text-white bg-[#0077b6] border border-transparent rounded-md hover:bg-[#005a8d] focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:ring-offset-2 transition-colors" 
                     (click)="openRegisterDialog()">
               <i class="bi bi-person-plus-fill mr-1"></i>
               <span>Registrarse</span>
@@ -40,7 +40,7 @@
           <!-- Menú desplegable del usuario -->
           <div ngbDropdown class="relative">
             <button type="button" 
-                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors" 
+                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:ring-offset-2 transition-colors" 
                     id="dropdownBasic1" 
                     ngbDropdownToggle>
               <i class="bi bi-person-circle mr-2 text-lg"></i>
@@ -74,7 +74,7 @@
 
           <!-- Botón del Carrito de Compras -->
           <button
-            class="relative p-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            class="relative p-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:ring-offset-2 transition-colors"
             (click)="abrirDialogoCarrito()"
           >
             <i class="bi bi-cart3 text-lg"></i>

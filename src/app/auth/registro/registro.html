@@ -1,109 +1,173 @@
-<!-- Se añade la clase 'auth-modal' para aplicar estilos globales específicos. -->
-<form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-modal">
-  <!-- Título del diálogo con estilo mejorado. -->
-  <h1 mat-dialog-title class="modal-header bg-light text-dark">Crear una cuenta nueva</h1>
-
-  <div mat-dialog-content class="pt-3">
-    <!-- Fila para Nombre y Apellido -->
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nombre</mat-label>
-          <input matInput formControlName="nombre" required />
-          <mat-icon matPrefix>person</mat-icon>
-          <mat-error *ngIf="registerForm.get('nombre')?.hasError('required')">Requerido.</mat-error>
-        </mat-form-field>
-      </div>
-      <div class="col-md-6 mb-3">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Apellido</mat-label>
-          <input matInput formControlName="apellido" required />
-          <mat-error *ngIf="registerForm.get('apellido')?.hasError('required')"
-            >Requerido.</mat-error
-          >
-        </mat-form-field>
-      </div>
+<div class="modal-content border-0 shadow-lg">
+  <!-- Header con gradiente -->
+  <div class="modal-header bg-gradient text-white border-0">
+    <div>
+      <h4 class="modal-title mb-1 fw-bold">Crear una cuenta nueva</h4>
+      <p class="mb-0 small opacity-90">Completa tus datos para registrarte</p>
     </div>
-
-    <!-- Campo DNI -->
-    <div class="mb-3">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>DNI</mat-label>
-        <input matInput formControlName="dni" required />
-        <mat-icon matPrefix>badge</mat-icon>
-        <mat-error *ngIf="registerForm.get('dni')?.hasError('required')"
-          >El DNI es requerido.</mat-error
-        >
-      </mat-form-field>
-    </div>
-
-    <!-- Campo Correo Electrónico -->
-    <div class="mb-3">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Correo Electrónico</mat-label>
-        <input matInput formControlName="email" type="email" required />
-        <mat-icon matPrefix>alternate_email</mat-icon>
-        <mat-error *ngIf="registerForm.get('email')?.hasError('required')"
-          >El correo es requerido.</mat-error
-        >
-        <mat-error *ngIf="registerForm.get('email')?.hasError('email')"
-          >Formato no válido.</mat-error
-        >
-      </mat-form-field>
-    </div>
-
-    <!-- Fila para Contraseñas -->
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Contraseña</mat-label>
-          <input matInput formControlName="password" type="password" required />
-          <mat-icon matPrefix>lock</mat-icon>
-          <mat-error *ngIf="registerForm.get('password')?.hasError('required')"
-            >Requerida.</mat-error
-          >
-        </mat-form-field>
-      </div>
-      <div class="col-md-6 mb-3">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Confirmar Contraseña</mat-label>
-          <input matInput formControlName="confirmPassword" type="password" required />
-          <mat-icon matPrefix>lock</mat-icon>
-          <mat-error *ngIf="registerForm.get('confirmPassword')?.hasError('required')"
-            >Requerida.</mat-error
-          >
-          <mat-error *ngIf="registerForm.hasError('passwordMismatch')">No coinciden.</mat-error>
-        </mat-form-field>
-      </div>
-    </div>
-
-    <!-- Checkboxes -->
-    <div class="checkbox-group mb-3">
-      <mat-checkbox formControlName="novedades">Acepto recibir novedades.</mat-checkbox>
-      <mat-checkbox formControlName="terminos" required
-        >Acepto los términos y condiciones.</mat-checkbox
-      >
-      <mat-error *ngIf="registerForm.get('terminos')?.hasError('required')"
-        >Debe aceptar los términos.</mat-error
-      >
-    </div>
-
-
+    <button type="button" class="btn-close btn-close-white" mat-dialog-close aria-label="Close"></button>
   </div>
 
-  <div mat-dialog-actions align="end">
-    <button mat-button [disabled]="isLoading" mat-dialog-close>Cancelar</button>
-    <button
-      mat-raised-button
-      color="primary"
-      type="submit"
-      [disabled]="registerForm.invalid || isLoading"
-    >
-      @if (isLoading) {
-      <mat-spinner diameter="24"></mat-spinner>
-      } @else {
-      <span>Registrarse</span>
-      }
-    </button>
-  </div>
-</form>
+  <!-- Body del formulario -->
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <div class="modal-body p-4">
+      <!-- Nombre y Apellido -->
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">
+            <mat-icon class="align-middle me-1" style="font-size: 18px;">person</mat-icon>
+            Nombre
+          </label>
+          <input 
+            type="text" 
+            class="form-control form-control-lg"
+            [class.is-invalid]="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched"
+            formControlName="nombre" 
+            placeholder="Tu nombre"
+            required
+          />
+          <div class="invalid-feedback" *ngIf="registerForm.get('nombre')?.hasError('required')">
+            El nombre es requerido
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">Apellido</label>
+          <input 
+            type="text" 
+            class="form-control form-control-lg"
+            [class.is-invalid]="registerForm.get('apellido')?.invalid && registerForm.get('apellido')?.touched"
+            formControlName="apellido" 
+            placeholder="Tu apellido"
+            required
+          />
+          <div class="invalid-feedback" *ngIf="registerForm.get('apellido')?.hasError('required')">
+            El apellido es requerido
+          </div>
+        </div>
+      </div>
+
+      <!-- DNI -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">
+          <mat-icon class="align-middle me-1" style="font-size: 18px;">badge</mat-icon>
+          DNI
+        </label>
+        <input 
+          type="text" 
+          class="form-control form-control-lg"
+          [class.is-invalid]="registerForm.get('dni')?.invalid && registerForm.get('dni')?.touched"
+          formControlName="dni" 
+          placeholder="12345678"
+          required
+        />
+        <div class="invalid-feedback" *ngIf="registerForm.get('dni')?.hasError('required')">
+          El DNI es requerido
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">
+          <mat-icon class="align-middle me-1" style="font-size: 18px;">alternate_email</mat-icon>
+          Correo Electrónico
+        </label>
+        <input 
+          type="email" 
+          class="form-control form-control-lg"
+          [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+          formControlName="email" 
+          placeholder="ejemplo@correo.com"
+          required
+        />
+        <div class="invalid-feedback" *ngIf="registerForm.get('email')?.hasError('required')">
+          El correo es requerido
+        </div>
+        <div class="invalid-feedback" *ngIf="registerForm.get('email')?.hasError('email')">
+          Formato no válido
+        </div>
+      </div>
+
+      <!-- Contraseñas -->
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">
+            <mat-icon class="align-middle me-1" style="font-size: 18px;">lock</mat-icon>
+            Contraseña
+          </label>
+          <input 
+            type="password" 
+            class="form-control form-control-lg"
+            [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+            formControlName="password" 
+            placeholder="••••••••"
+            required
+          />
+          <div class="invalid-feedback" *ngIf="registerForm.get('password')?.hasError('required')">
+            La contraseña es requerida
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label fw-semibold">
+            <mat-icon class="align-middle me-1" style="font-size: 18px;">lock</mat-icon>
+            Confirmar Contraseña
+          </label>
+          <input 
+            type="password" 
+            class="form-control form-control-lg"
+            [class.is-invalid]="(registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched) || registerForm.hasError('passwordMismatch')"
+            formControlName="confirmPassword" 
+            placeholder="••••••••"
+            required
+          />
+          <div class="invalid-feedback" *ngIf="registerForm.get('confirmPassword')?.hasError('required')">
+            Requerida
+          </div>
+          <div class="invalid-feedback" *ngIf="registerForm.hasError('passwordMismatch')">
+            Las contraseñas no coinciden
+          </div>
+        </div>
+      </div>
+
+      <!-- Términos y condiciones -->
+      <div class="form-check mb-3">
+        <input 
+          class="form-check-input" 
+          type="checkbox" 
+          formControlName="terminos" 
+          id="terminos"
+          [class.is-invalid]="registerForm.get('terminos')?.invalid && registerForm.get('terminos')?.touched"
+        />
+        <label class="form-check-label" for="terminos">
+          Acepto los términos y condiciones
+        </label>
+        <div class="invalid-feedback" *ngIf="registerForm.get('terminos')?.hasError('required')">
+          Debe aceptar los términos
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer con botones -->
+    <div class="modal-footer border-0 pt-0 pb-4 px-4">
+      <button 
+        type="button" 
+        class="btn btn-outline-secondary px-4 py-2"
+        [disabled]="isLoading" 
+        mat-dialog-close
+      >
+        Cancelar
+      </button>
+      <button 
+        type="submit" 
+        class="btn btn-primary px-4 py-2 shadow-sm"
+        [disabled]="registerForm.invalid || isLoading"
+      >
+        @if (isLoading) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Cargando...
+        } @else {
+          Registrarse
+        }
+      </button>
+    </div>
+  </form>
+</div>

@@ -202,19 +202,21 @@ export class GestionProductosService {
     // Esperamos a que la inicialización se complete antes de leer datos
     return from(this.inicializacionCompleta).pipe(
       switchMap(() => {
-        try {
-          console.log('✅ Inicialización completa, obteniendo productos desde Firestore...');
+        return runInInjectionContext(this.injector, () => {
+          try {
+            console.log('✅ Inicialización completa, obteniendo productos desde Firestore...');
 
-          // Obtenemos todos los productos
-          const productosRef = collection(this.firestore, 'productos');
+            // Obtenemos todos los productos
+            const productosRef = collection(this.firestore, 'productos');
 
-          // Retornamos un observable que se actualiza en tiempo real
-          return collectionData(productosRef, { idField: 'id' }) as Observable<Producto[]>;
-        } catch (error) {
-          console.error('❌ Error al obtener productos:', error);
-          // En caso de error, retornamos un observable vacío
-          return of([]);
-        }
+            // Retornamos un observable que se actualiza en tiempo real
+            return collectionData(productosRef, { idField: 'id' }) as Observable<Producto[]>;
+          } catch (error) {
+            console.error('❌ Error al obtener productos:', error);
+            // En caso de error, retornamos un observable vacío
+            return of([]);
+          }
+        });
       }),
       catchError((error) => {
         console.error('❌ Error durante la inicialización o lectura:', error);
@@ -230,12 +232,14 @@ export class GestionProductosService {
   obtenerProductosDestacados(): Observable<Producto[]> {
     return from(this.inicializacionCompleta).pipe(
       switchMap(() => {
-        const q = query(
-          this.productosCollection,
-          where('activo', '==', true),
-          where('esDestacado', '==', true),
-        );
-        return collectionData(q, { idField: 'id' }) as Observable<Producto[]>;
+        return runInInjectionContext(this.injector, () => {
+          const q = query(
+            this.productosCollection,
+            where('activo', '==', true),
+            where('esDestacado', '==', true),
+          );
+          return collectionData(q, { idField: 'id' }) as Observable<Producto[]>;
+        });
       }),
       catchError((error) => {
         console.error('❌ Error al obtener productos destacados:', error);
@@ -377,9 +381,11 @@ export class GestionProductosService {
   obtenerProductosActivos(): Observable<Producto[]> {
     return from(this.inicializacionCompleta).pipe(
       switchMap(() => {
-        const productosRef = collection(this.firestore, 'productos');
-        const q = query(productosRef, where('activo', '==', true));
-        return collectionData(q, { idField: 'id' }) as Observable<Producto[]>;
+        return runInInjectionContext(this.injector, () => {
+          const productosRef = collection(this.firestore, 'productos');
+          const q = query(productosRef, where('activo', '==', true));
+          return collectionData(q, { idField: 'id' }) as Observable<Producto[]>;
+        });
       }),
       catchError((error) => {
         console.error('❌ Error al obtener productos activos:', error);

@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { GestionProductosService, Producto } from '../services/gestion-productos.service';
@@ -10,7 +10,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-detalle-producto',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './detalle-producto.html',
   styleUrls: ['./detalle-producto.css'],
 })
@@ -51,5 +51,14 @@ export class DetalleProductoComponent implements OnInit {
       timer: 2000,
       timerProgressBar: true,
     });
+  }
+
+  /**
+   * Maneja el error cuando una imagen no se puede cargar.
+   * @param event - El evento de error de la imagen.
+   */
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
   }
 }

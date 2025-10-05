@@ -101,7 +101,7 @@
 
 .card-icon {
   font-size: 2.5rem;
-  color: var(--bs-primary); /* Usa el color primario de Bootstrap */
+  color: #0077b6; /* Color azul */
   margin-bottom: 1rem;
 }
 

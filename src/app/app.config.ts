@@ -76,6 +76,7 @@ export const appConfig: ApplicationConfig = {
       { path: '', component: Home, pathMatch: 'full' },
       { path: 'productos', component: TiendaComponent }, // Nueva ruta de la tienda
       { path: 'productos/:id', component: DetalleProductoComponent }, // Ruta para el detalle del producto
+      { path: 'producto/:id', component: DetalleProductoComponent }, // Ruta alternativa para el detalle del producto
       { path: 'primer-usuario', component: PrimerUsuario },
       { path: 'perfil', component: PerfilUsuarioComponent, canActivate: [authGuard] }, // Nueva ruta de perfil
       { path: 'pago-exitoso', component: PagoExitoso },
