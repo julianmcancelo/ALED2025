@@ -28,11 +28,18 @@
         @for (item of carritoService.items(); track item.producto.id) {
         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <div class="flex items-center space-x-3">
-            <img
-              [src]="item.producto.imagen"
-              [alt]="item.producto.nombre"
-              class="w-16 h-16 object-cover rounded-md"
-            />
+            @if (item.producto.imagen) {
+              <img
+                [src]="item.producto.imagen"
+                [alt]="item.producto.nombre"
+                class="w-16 h-16 object-cover rounded-md"
+                (error)="onImageError($event)"
+              />
+            } @else {
+              <div class="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-md">
+                <i class="bi bi-box-seam text-2xl text-[#0077b6] opacity-40"></i>
+              </div>
+            }
             <div>
               <h6 class="font-medium text-gray-900">{{ item.producto.nombre }}</h6>
               <p class="text-sm text-gray-500">

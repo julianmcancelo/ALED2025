@@ -31,21 +31,55 @@
     <!-- Tarjeta de Datos de Entrega -->
     <div class="col-md-6">
       <div class="card">
-        <div class="card-header">
+        <div class="card-header bg-gradient-to-r from-[#0077b6] to-[#2c3e50] text-white">
           <h5 class="card-title mb-0"><i class="bi bi-truck me-2"></i>Datos de Entrega</h5>
         </div>
         <div class="card-body">
-          <ul class="list-group list-group-flush">
-            <!-- Usamos el operador '??' para mostrar un texto por defecto si el dato no existe -->
-            <li class="list-group-item"><strong>Domicilio:</strong> {{ user.domicilio ?? 'No especificado' }}</li>
-            <li class="list-group-item"><strong>Ciudad:</strong> {{ user.ciudad ?? 'No especificado' }}</li>
-            <li class="list-group-item"><strong>Código Postal:</strong> {{ user.codigoPostal ?? 'No especificado' }}</li>
-          </ul>
-          <div class="mt-3">
-            <button class="btn btn-sm btn-outline-primary">
-              <i class="bi bi-pencil-square me-1"></i> Editar Domicilio
-            </button>
-          </div>
+          @if (user.direccion || user.ciudad || user.codigoPostal || user.telefono) {
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex align-items-start">
+                <i class="bi bi-house-door text-[#0077b6] me-2 mt-1"></i>
+                <div>
+                  <strong>Dirección:</strong><br>
+                  <span class="text-muted">{{ user.direccion || 'No especificado' }}</span>
+                </div>
+              </li>
+              <li class="list-group-item d-flex align-items-start">
+                <i class="bi bi-geo-alt text-[#0077b6] me-2 mt-1"></i>
+                <div>
+                  <strong>Ciudad:</strong><br>
+                  <span class="text-muted">{{ user.ciudad || 'No especificado' }}</span>
+                </div>
+              </li>
+              <li class="list-group-item d-flex align-items-start">
+                <i class="bi bi-mailbox text-[#0077b6] me-2 mt-1"></i>
+                <div>
+                  <strong>Código Postal:</strong><br>
+                  <span class="text-muted">{{ user.codigoPostal || 'No especificado' }}</span>
+                </div>
+              </li>
+              <li class="list-group-item d-flex align-items-start">
+                <i class="bi bi-telephone text-[#0077b6] me-2 mt-1"></i>
+                <div>
+                  <strong>Teléfono:</strong><br>
+                  <span class="text-muted">{{ user.telefono || 'No especificado' }}</span>
+                </div>
+              </li>
+            </ul>
+            <div class="mt-3">
+              <button class="btn btn-sm btn-primary" (click)="editarDatosEnvio()">
+                <i class="bi bi-pencil-square me-1"></i> Editar Datos de Envío
+              </button>
+            </div>
+          } @else {
+            <div class="text-center py-4">
+              <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+              <p class="text-muted mt-3 mb-3">No has configurado tus datos de envío</p>
+              <button class="btn btn-primary" (click)="editarDatosEnvio()">
+                <i class="bi bi-plus-circle me-1"></i> Agregar Datos de Envío
+              </button>
+            </div>
+          }
         </div>
       </div>
     </div>
