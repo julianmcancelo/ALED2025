@@ -1,109 +1,234 @@
+/**
+ * ============================================================================
+ * SERVICIO DEL CARRITO DE COMPRAS
+ * ============================================================================
+ * 
+ * Este servicio gestiona todo el estado y las operaciones del carrito de compras.
+ * Utiliza SIGNALS de Angular (nueva API desde v16) para manejar el estado
+ * de forma reactiva y eficiente.
+ * 
+ * Características principales:
+ * - Estado reactivo con Signals
+ * - Cálculos automáticos con Computed Signals
+ * - Persistencia en localStorage (implementada en el componente)
+ * - Operaciones CRUD sobre el carrito
+ * 
+ * Autores: Cancelo Julian & Nicolas Otero
+ * Materia: ALED III - T.A.S.
+ * ============================================================================
+ */
+
 import { Injectable, signal, computed } from '@angular/core';
 
 /**
- * @interface Producto
- * Define la estructura de un objeto de producto.
- * Esto nos ayuda a asegurar que todos los productos tengan la misma forma.
+ * Interfaz que define la estructura de un producto.
+ * 
+ * TypeScript usa estas interfaces para:
+ * - Validar tipos en tiempo de compilación
+ * - Autocompletado en el IDE
+ * - Documentación del código
  */
 export interface Producto {
-  id?: string; // Cambiado a string opcional para máxima compatibilidad
-  nombre: string;
-  precio: number;
-  imagen?: string; // Hacemos la imagen opcional para mayor flexibilidad
+  id?: string;        // ID único del producto (opcional para flexibilidad)
+  nombre: string;     // Nombre del producto
+  precio: number;     // Precio en pesos argentinos
+  imagen?: string;    // URL de la imagen (opcional)
 }
 
 /**
- * @interface ElementoCarrito
- * Define la estructura de un elemento dentro del carrito.
- * Contiene el producto y la cantidad de ese producto.
+ * Interfaz que define un elemento dentro del carrito.
+ * 
+ * Un elemento del carrito combina:
+ * - El producto completo (con todos sus datos)
+ * - La cantidad de ese producto que el usuario quiere comprar
  */
 export interface ElementoCarrito {
-  producto: Producto;
-  cantidad: number;
+  producto: Producto;  // El producto completo
+  cantidad: number;    // Cuántas unidades quiere el usuario
 }
 
 /**
- * @class CarritoService
- * Servicio para gestionar el estado y las operaciones del carrito de compras.
- * Utiliza Angular Signals para manejar el estado de forma reactiva, lo que
- * significa que cualquier cambio se reflejará automáticamente en la interfaz.
+ * Servicio Injectable que gestiona el carrito de compras.
+ * 
+ * @Injectable({ providedIn: 'root' }) significa:
+ * - Es un Singleton (una sola instancia en toda la app)
+ * - Se puede inyectar en cualquier componente
+ * - Angular gestiona su ciclo de vida automáticamente
+ * 
+ * VENTAJAS DE USAR SIGNALS:
+ * 1. Rendimiento: Solo se actualizan los componentes que usan el signal
+ * 2. Simplicidad: Más fácil que RxJS para casos simples
+ * 3. Type-safe: TypeScript valida los tipos
+ * 4. Computed: Cálculos automáticos derivados
  */
 @Injectable({
-  providedIn: 'root', // Esto hace que el servicio esté disponible en toda la aplicación.
+  providedIn: 'root',  // Singleton a nivel de aplicación
 })
 export class CarritoService {
-  // --- SEÑALES DE ESTADO ---
-
+  
+  // ========================================================================
+  // SIGNALS DE ESTADO
+  // ========================================================================
+  
   /**
-   * @signal items
-   * Almacena la lista de elementos (productos y su cantidad) en el carrito.
-   * Es la fuente principal de verdad para el estado del carrito.
-   * La inicializamos con un array vacío.
+   * Signal que contiene todos los items del carrito.
+   * 
+   * Un Signal es como una "caja" que contiene un valor y notifica
+   * automáticamente cuando ese valor cambia.
+   * 
+   * Para leer el valor: this.items()
+   * Para modificar: this.items.set([...]) o this.items.update(fn)
+   * 
+   * Inicializado con array vacío: []
    */
   items = signal<ElementoCarrito[]>([]);
 
-  // --- SEÑALES COMPUTADAS ---
-  // Son señales de solo lectura que derivan su valor de otras señales.
-
+  // ========================================================================
+  // COMPUTED SIGNALS (Señales Computadas)
+  // ========================================================================
+  
   /**
-   * @computed totalItems
-   * Calcula la cantidad total de productos en el carrito.
-   * Suma las 'cantidades' de todos los elementos.
-   * Se actualiza automáticamente cada vez que la señal 'items' cambia.
+   * Computed Signal que calcula el total de items en el carrito.
+   * 
+   * CÓMO FUNCIONA:
+   * 1. Lee el signal 'items'
+   * 2. Suma todas las cantidades
+   * 3. Se recalcula AUTOMÁTICAMENTE cuando 'items' cambia
+   * 4. Es de solo lectura (no se puede modificar directamente)
+   * 
+   * Ejemplo: Si tengo 2 productos con cantidad 3 y 5 → totalItems = 8
+   * 
+   * VENTAJA: No necesitamos actualizar manualmente este valor,
+   * Angular lo hace por nosotros cuando 'items' cambia.
    */
-  totalItems = computed(() => this.items().reduce((total, item) => total + item.cantidad, 0));
-
-  /**
-   * @computed totalPrecio
-   * Calcula el precio total de todos los productos en el carrito.
-   * Multiplica el precio de cada producto por su cantidad y suma los resultados.
-   * Se actualiza automáticamente cada vez que la señal 'items' cambia.
-   */
-  totalPrecio = computed(() =>
-    this.items().reduce((total, item) => total + item.producto.precio * item.cantidad, 0),
+  totalItems = computed(() => 
+    this.items().reduce((total, item) => total + item.cantidad, 0)
   );
 
-  // --- MÉTODOS PÚBLICOS ---
+  /**
+   * Computed Signal que calcula el precio total del carrito.
+   * 
+   * CÓMO FUNCIONA:
+   * 1. Lee el signal 'items'
+   * 2. Para cada item: multiplica precio × cantidad
+   * 3. Suma todos los resultados
+   * 4. Se recalcula AUTOMÁTICAMENTE cuando 'items' cambia
+   * 
+   * Ejemplo:
+   * - Producto A: $100 × 2 unidades = $200
+   * - Producto B: $50 × 3 unidades = $150
+   * - Total: $350
+   * 
+   * Este valor se usa en:
+   * - Vista del carrito
+   * - Resumen de compra
+   * - Integración con Mercado Pago
+   */
+  totalPrecio = computed(() =>
+    this.items().reduce((total, item) => 
+      total + (item.producto.precio * item.cantidad), 0
+    )
+  );
+
+  // ========================================================================
+  // MÉTODOS PÚBLICOS - Operaciones sobre el carrito
+  // ========================================================================
 
   /**
-   * Añade un producto al carrito.
-   * Si el producto ya existe, incrementa su cantidad.
-   * Si no existe, lo añade como un nuevo elemento con cantidad 1.
-   * @param producto - El producto que se va a añadir.
+   * Agrega un producto al carrito.
+   * 
+   * LÓGICA:
+   * 1. Busca si el producto ya existe en el carrito (por ID)
+   * 2. Si existe: incrementa su cantidad en 1
+   * 3. Si no existe: lo agrega con cantidad 1
+   * 
+   * EJEMPLO DE USO:
+   * ```typescript
+   * const producto = { id: '123', nombre: 'Mate', precio: 8000 };
+   * this.carritoService.agregarProducto(producto);
+   * ```
+   * 
+   * @param producto - El producto que se va a agregar
    */
   agregarProducto(producto: Producto): void {
-    // Buscamos si el producto ya está en el carrito.
-    const itemExistente = this.items().find((item) => item.producto.id === producto.id);
+    // Buscamos si el producto ya está en el carrito
+    // find() devuelve el elemento si lo encuentra, o undefined si no
+    const itemExistente = this.items().find(
+      (item) => item.producto.id === producto.id
+    );
 
     if (itemExistente) {
-      // Si existe, actualizamos la cantidad.
-      // Usamos 'update' para modificar la señal basándonos en su valor actual.
+      // CASO 1: El producto YA está en el carrito
+      // Incrementamos su cantidad usando update()
+      // 
+      // update() recibe una función que:
+      // - Recibe el valor actual del signal
+      // - Devuelve el nuevo valor
+      // 
+      // Usamos map() para crear un nuevo array donde:
+      // - Si el item coincide con el producto: incrementamos cantidad
+      // - Si no coincide: lo dejamos igual
       this.items.update((items) =>
         items.map((item) =>
-          item.producto.id === producto.id ? { ...item, cantidad: item.cantidad + 1 } : item,
-        ),
+          item.producto.id === producto.id 
+            ? { ...item, cantidad: item.cantidad + 1 }  // Incrementar cantidad
+            : item                                       // Dejar igual
+        )
       );
     } else {
-      // Si no existe, lo añadimos al array.
-      this.items.update((items) => [...items, { producto, cantidad: 1 }]);
+      // CASO 2: El producto NO está en el carrito
+      // Lo agregamos como nuevo elemento con cantidad 1
+      // 
+      // Usamos el spread operator (...) para:
+      // - Mantener todos los items existentes
+      // - Agregar el nuevo item al final
+      this.items.update((items) => [
+        ...items,                          // Items existentes
+        { producto, cantidad: 1 }          // Nuevo item
+      ]);
     }
   }
 
   /**
    * Elimina un producto completamente del carrito.
-   * @param idProducto - El ID del producto a eliminar.
+   * 
+   * IMPORTANTE: Elimina el producto sin importar su cantidad.
+   * Si el usuario tenía 5 unidades, se eliminan todas.
+   * 
+   * EJEMPLO DE USO:
+   * ```typescript
+   * this.carritoService.eliminarProducto('123');
+   * ```
+   * 
+   * @param idProducto - El ID del producto a eliminar
    */
   eliminarProducto(idProducto: string): void {
-    // Cambiado a string
-    // Filtramos el array, quedándonos solo con los productos que NO coinciden con el ID.
-    this.items.update((items) => items.filter((item) => item.producto.id !== idProducto));
+    // Usamos filter() para crear un nuevo array que:
+    // - Incluye todos los items EXCEPTO el que queremos eliminar
+    // - filter() devuelve true para los items que queremos MANTENER
+    this.items.update((items) => 
+      items.filter((item) => item.producto.id !== idProducto)
+    );
   }
 
   /**
    * Vacía completamente el carrito de compras.
+   * 
+   * Elimina todos los productos del carrito de una sola vez.
+   * Útil para:
+   * - Después de completar una compra
+   * - Cuando el usuario quiere empezar de cero
+   * - Limpiar el carrito al cerrar sesión
+   * 
+   * EJEMPLO DE USO:
+   * ```typescript
+   * this.carritoService.vaciarCarrito();
+   * ```
    */
   vaciarCarrito(): void {
-    // Reemplazamos el estado actual con un array vacío.
+    // Usamos set() para reemplazar todo el contenido con un array vacío
+    // set() es más directo que update() cuando queremos reemplazar todo
     this.items.set([]);
   }
 }
+
