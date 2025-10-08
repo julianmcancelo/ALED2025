@@ -113,18 +113,6 @@ Implementamos autenticación personalizada, un panel de administración completo
 
 ---
 
-## Credenciales de Prueba
-
-### Usuario Administrador
-- **Email:** `admin@admin.com`
-- **Contraseña:** `admin123`
-
-### Usuario Normal
-- **Email:** `usuario@test.com`
-- **Contraseña:** `test123`
-
----
-
 ## Estructura del Proyecto
 
 ```
