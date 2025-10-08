@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../auth/auth';
-import { UserService } from '../services/user';
+import { UserService } from '../servicios/user';
 import Swal from 'sweetalert2';
 
 /**

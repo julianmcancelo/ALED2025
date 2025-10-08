@@ -22,7 +22,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 
 // Importamos nuestro servicio de usuario.
-import { UserService } from '../../services/user';
+import { UserService } from '../../servicios/user';
 
 /**
  * Validador personalizado para comprobar que dos campos de contraseña coinciden.

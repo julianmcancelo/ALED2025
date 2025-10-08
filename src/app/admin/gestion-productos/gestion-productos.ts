@@ -1,8 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GestionProductosService, Producto } from '../../services/gestion-productos.service';
-import { Categoria, CategoriaService } from '../../services/categoria.service'; // Importar servicio y modelo de categoría
+import { GestionProductosService, Producto } from '../../servicios/gestion-productos.service';
+import { Categoria, CategoriaService } from '../../servicios/categoria.service'; // Importar servicio y modelo de categoría
 import Swal from 'sweetalert2';
 
 @Component({

@@ -7,11 +7,11 @@ import { Title } from '@angular/platform-browser';
 import Swal from 'sweetalert2';
 
 // Importamos los componentes y servicios necesarios
-import { Header } from './header/header';
-import { Footer } from './footer/footer';
+import { Header } from './encabezado/header';
+import { Footer } from './pie-pagina/footer';
 import { Registro } from './auth/registro/registro';
-import { UserService } from './services/user';
-import { ConfiguracionService } from './services/configuracion';
+import { UserService } from './servicios/user';
+import { ConfiguracionService } from './servicios/configuracion';
 import { Firestore, collection, getDocs, limit, query } from '@angular/fire/firestore';
 
 @Component({

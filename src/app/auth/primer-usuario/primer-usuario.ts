@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { UserService } from '../../services/user';
+import { UserService } from '../../servicios/user';
 import Swal from 'sweetalert2';
 import * as bcrypt from 'bcryptjs'; // Importar bcrypt
 

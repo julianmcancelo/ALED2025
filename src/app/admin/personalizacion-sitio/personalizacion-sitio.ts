@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Necesario para usar ngModel
-import { ConfiguracionService } from '../../services/configuracion';
+import { ConfiguracionService } from '../../servicios/configuracion';
 
 /**
  * @component PersonalizacionSitio

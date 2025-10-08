@@ -16,7 +16,7 @@
  */
 
 import { Injectable, inject, signal } from '@angular/core';
-import { UserService } from '../services/user';
+import { UserService } from '../servicios/user';
 import { Router } from '@angular/router';
 import * as bcrypt from 'bcryptjs';  // Librería para hash de contraseñas
 import { Firestore, doc, onSnapshot } from '@angular/fire/firestore';

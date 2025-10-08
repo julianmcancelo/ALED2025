@@ -4,8 +4,8 @@ import { Router, RouterModule } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ConfiguracionService } from '../services/configuracion';
-import { NovedadesService, Novedad } from '../services/novedades.service'; // Importar NovedadesService
+import { ConfiguracionService } from '../servicios/configuracion';
+import { NovedadesService, Novedad } from '../servicios/novedades.service'; // Importar NovedadesService
 import { Registro } from '../auth/registro/registro';
 
 @Component({

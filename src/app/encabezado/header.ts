@@ -6,8 +6,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 // Importamos los componentes y servicios
 import { AuthService } from '../auth/auth';
-import { CarritoService } from '../services/carrito';
-import { ConfiguracionService } from '../services/configuracion'; // Importamos el nuevo servicio
+import { CarritoService } from '../servicios/carrito';
+import { ConfiguracionService } from '../servicios/configuracion'; // Importamos el nuevo servicio
 import { Carrito } from '../carrito/carrito';
 import { Registro } from '../auth/registro/registro';
 import { InicioDeSesion } from '../auth/inicio-sesion/inicio-sesion';

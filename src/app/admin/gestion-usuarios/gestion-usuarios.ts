@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { UserService } from '../../services/user';
+import { UserService } from '../../servicios/user';
 import { AuthService, AppUser } from '../../auth/auth'; // Importar AuthService y AppUser
 import { Observable } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // Para modales

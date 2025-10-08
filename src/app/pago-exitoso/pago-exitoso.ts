@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { CarritoService } from '../services/carrito';
+import { CarritoService } from '../servicios/carrito';
 
 @Component({
   selector: 'app-pago-exitoso',

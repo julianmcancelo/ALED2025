@@ -6,12 +6,12 @@ import {
   importProvidersFrom,
 } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
-import { UserService } from './services/user';
+import { UserService } from './servicios/user';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 // Importamos los componentes y el nuevo guardia
-import { Home } from './home/home';
+import { Home } from './inicio/home';
 import { TiendaComponent } from './tienda/tienda';
 import { DetalleProductoComponent } from './detalle-producto/detalle-producto';
 import { Admin } from './admin/admin';

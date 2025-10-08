@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { GestionProductosService, Producto } from '../services/gestion-productos.service';
-import { CarritoService } from '../services/carrito';
+import { GestionProductosService, Producto } from '../servicios/gestion-productos.service';
+import { CarritoService } from '../servicios/carrito';
 import Swal from 'sweetalert2';
 
 @Component({
