@@ -115,8 +115,8 @@ export const createPreferenceV1 = functions.region('us-central1').https.onReques
     // VALIDACIÓN 1: Verificamos que se hayan enviado items
     // Debe ser un array y no puede estar vacío
     if (!items || !Array.isArray(items) || items.length === 0) {
-      console.error('Error de validación: items array is missing or empty');
-      response.status(400).json({ error: "Bad Request: 'items' array is missing or empty." });
+      console.error('Error de validación: el array de items está vacío o no existe');
+      response.status(400).json({ error: "Solicitud incorrecta: el array 'items' está vacío o no existe." });
       return;
     }
 
@@ -127,8 +127,8 @@ export const createPreferenceV1 = functions.region('us-central1').https.onReques
       
       // Verificamos que el item tenga producto y cantidad
       if (!item.producto || !item.cantidad) {
-        console.error(`Error de validación: Item ${i} missing producto or cantidad`, item);
-        response.status(400).json({ error: `Item ${i} is missing required fields` });
+        console.error(`Error de validación: Item ${i} no tiene producto o cantidad`, item);
+        response.status(400).json({ error: `Item ${i} no tiene los campos requeridos` });
         return;
       }
       
@@ -137,15 +137,15 @@ export const createPreferenceV1 = functions.region('us-central1').https.onReques
       // nombre: nombre del producto para mostrar en Mercado Pago
       // precio: debe ser un número válido
       if (!item.producto.id || !item.producto.nombre || typeof item.producto.precio !== 'number') {
-        console.error(`Error de validación: Item ${i} producto missing required fields`, item.producto);
-        response.status(400).json({ error: `Item ${i} producto is missing required fields` });
+        console.error(`Error de validación: Item ${i} el producto no tiene los campos requeridos`, item.producto);
+        response.status(400).json({ error: `Item ${i} el producto no tiene los campos requeridos` });
         return;
       }
       
       // Verificamos que la cantidad sea un número positivo
       if (typeof item.cantidad !== 'number' || item.cantidad <= 0) {
-        console.error(`Error de validación: Item ${i} invalid cantidad`, item.cantidad);
-        response.status(400).json({ error: `Item ${i} has invalid cantidad` });
+        console.error(`Error de validación: Item ${i} cantidad inválida`, item.cantidad);
+        response.status(400).json({ error: `Item ${i} tiene una cantidad inválida` });
         return;
       }
     }
@@ -197,8 +197,8 @@ export const createPreferenceV1 = functions.region('us-central1').https.onReques
     // Si algo sale mal, capturamos el error y lo registramos detalladamente
     
     console.error('Error al crear la preferencia de pago:', error);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
+    console.error('Mensaje de error:', error.message);
+    console.error('Stack del error:', error.stack);
 
     // La SDK de Mercado Pago puede devolver información adicional en 'error.cause'
     if (error.cause) {
@@ -207,14 +207,14 @@ export const createPreferenceV1 = functions.region('us-central1').https.onReques
 
     // Si es un error de la API de Mercado Pago, registramos la respuesta
     if (error.response) {
-      console.error('Response status:', error.response.status);
-      console.error('Response data:', JSON.stringify(error.response.data, null, 2));
+      console.error('Estado de respuesta:', error.response.status);
+      console.error('Datos de respuesta:', JSON.stringify(error.response.data, null, 2));
     }
 
     // Devolvemos un error 500 (Internal Server Error) al frontend
     response.status(500).json({ 
       error: 'Error al crear la preferencia de pago.',
-      details: error.message 
+      detalles: error.message 
     });
   }
 });
@@ -296,7 +296,7 @@ export const receiveWebhookV1 = functions.region('us-central1').https.onRequest(
   if (hmac !== receivedHash) {
     // Si no coinciden, la petición no es legítima
     console.warn('Firma de Webhook inválida. Posible intento de fraude.');
-    response.status(403).send('Forbidden');
+    response.status(403).send('Prohibido - Firma inválida');
     return;
   }
 
@@ -315,43 +315,377 @@ export const receiveWebhookV1 = functions.region('us-central1').https.onRequest(
       if (payment.status === 'approved') {
         // ✅ PAGO APROBADO
         console.log(`✅ Pago aprobado: ${paymentId}`);
+        console.log('Detalles del pago:', JSON.stringify({
+          id: payment.id,
+          status: payment.status,
+          transaction_amount: payment.transaction_amount,
+          currency_id: payment.currency_id,
+          payer: payment.payer,
+          payment_method_id: payment.payment_method_id,
+          date_created: payment.date_created,
+          date_approved: payment.date_approved
+        }, null, 2));
         
-        // AQUÍ VA LA LÓGICA DE NEGOCIO:
-        // 1. Crear registro del pedido en Firestore
-        // 2. Actualizar stock de productos
-        // 3. Enviar email de confirmación al cliente
-        // 4. Generar factura
-        // 5. Notificar al administrador
-        // etc.
+        try {
+          // 1. CREAR REGISTRO DEL PEDIDO EN FIRESTORE
+          await crearPedido(payment);
+          console.log('✅ Pedido creado exitosamente en Firestore');
+          
+          // 2. ACTUALIZAR STOCK DE PRODUCTOS
+          if (payment.additional_info?.items && payment.additional_info.items.length > 0) {
+            await actualizarStock(payment.additional_info.items);
+            console.log('✅ Stock actualizado exitosamente');
+          } else {
+            console.warn('⚠️ No se encontraron items en el pago para actualizar stock');
+          }
+          
+          // 3. REGISTRAR TRANSACCIÓN EXITOSA
+          await registrarTransaccion(payment, 'success');
+          console.log('✅ Transacción registrada exitosamente');
+          
+        } catch (error) {
+          console.error('❌ Error procesando pago aprobado:', error);
+          // Registrar el error pero no fallar el webhook
+          await registrarTransaccion(payment, 'error', error);
+        }
         
-        // Ejemplo de cómo se vería:
-        // await crearPedido(payment);
-        // await actualizarStock(payment.items);
-        // await enviarEmailConfirmacion(payment.payer.email);
+      } else if (payment.status === 'pending') {
+        // ⏳ PAGO PENDIENTE
+        console.log(`⏳ Pago pendiente: ${paymentId} - Motivo: ${payment.status_detail}`);
+        await registrarTransaccion(payment, 'pending');
+        
+      } else if (payment.status === 'rejected') {
+        // ❌ PAGO RECHAZADO
+        console.log(`❌ Pago rechazado: ${paymentId} - Motivo: ${payment.status_detail}`);
+        await registrarTransaccion(payment, 'rejected');
+        
+      } else if (payment.status === 'refunded') {
+        // 💰 PAGO REEMBOLSADO
+        console.log(`💰 Pago reembolsado: ${paymentId}`);
+        // Aquí podrías restaurar el stock si es necesario
+        await registrarTransaccion(payment, 'refunded');
         
       } else {
-        // ⚠️ PAGO EN OTRO ESTADO (pendiente, rechazado, etc.)
-        console.log(`⚠️ Estado del pago: ${payment.status} (ID: ${paymentId})`);
-        
-        // Aquí podríamos manejar otros estados:
-        // - 'pending': Pago pendiente de confirmación
-        // - 'rejected': Pago rechazado
-        // - 'refunded': Pago reembolsado
-        // etc.
+        // ❓ ESTADO DESCONOCIDO
+        console.log(`❓ Estado desconocido del pago: ${payment.status} (ID: ${paymentId})`);
+        await registrarTransaccion(payment, 'unknown');
       }
       
       // Respondemos con éxito a Mercado Pago
       // Es importante responder rápido (< 5 segundos) para que no reintente
-      response.status(200).send('Webhook received successfully.');
+      response.status(200).send('Webhook recibido exitosamente.');
       
     } catch (error) {
       // Error al procesar el webhook
-      console.error('Error processing webhook:', error);
-      response.status(500).send('Error processing webhook.');
+      console.error('Error procesando webhook:', error);
+      response.status(500).send('Error procesando webhook.');
     }
   } else {
     // No es una notificación de pago, la ignoramos
     // Mercado Pago puede enviar otros tipos de notificaciones
-    response.status(200).send('Not a payment notification, skipping.');
+    response.status(200).send('No es una notificación de pago, omitiendo.');
   }
 });
+
+/**
+ * ============================================================================
+ * FUNCIONES AUXILIARES PARA PROCESAMIENTO DE PAGOS
+ * ============================================================================
+ */
+
+/**
+ * Interfaz que define la estructura completa de un pedido en el sistema
+ * 
+ * Esta interfaz establece todos los campos que debe tener un pedido
+ * cuando se almacena en Firestore después de un pago exitoso.
+ */
+interface Pedido {
+  id: string;                    // ID único del pedido (ej: "pedido_123456789")
+  paymentId: string;             // ID del pago en Mercado Pago
+  estado: 'completado' | 'pendiente' | 'rechazado' | 'reembolsado'; // Estado actual del pedido
+  total: number;                 // Monto total del pedido
+  moneda: string;                // Moneda utilizada (ej: "ARS")
+  metodoPago: string;            // Método de pago usado (ej: "visa", "mastercard")
+  items: Array<{                 // Array de productos comprados
+    id: string;                  // ID del producto
+    nombre: string;              // Nombre del producto
+    cantidad: number;            // Cantidad comprada
+    precio: number;              // Precio unitario
+    subtotal: number;            // Precio * cantidad
+  }>;
+  cliente: {                     // Información del cliente
+    email?: string;              // Email del cliente
+    nombre?: string;             // Nombre del cliente
+    apellido?: string;           // Apellido del cliente
+    telefono?: string;           // Teléfono del cliente
+  };
+  fechaCreacion: Date;           // Fecha cuando se creó el pedido
+  fechaAprobacion?: Date;        // Fecha cuando se aprobó el pago
+  detallesPago: any;             // Detalles completos del pago de Mercado Pago
+}
+
+/**
+ * Interfaz para registrar todas las transacciones del sistema
+ * 
+ * Esta interfaz define la estructura para el log de auditoría
+ * que registra TODAS las transacciones, exitosas o fallidas.
+ */
+interface Transaccion {
+  paymentId: string;             // ID del pago en Mercado Pago
+  estado: 'success' | 'pending' | 'rejected' | 'refunded' | 'error' | 'unknown'; // Estado de la transacción
+  fecha: Date;                   // Fecha y hora de la transacción
+  detalles: any;                 // Detalles del pago de Mercado Pago
+  error?: any;                   // Información del error (si existe)
+}
+
+/**
+ * ============================================================================
+ * FUNCIÓN: crearPedido
+ * ============================================================================
+ * 
+ * Crea un registro completo del pedido en Firestore cuando un pago es aprobado.
+ * 
+ * Esta función toma toda la información del pago de Mercado Pago y la convierte
+ * en un pedido estructurado que se guarda en nuestra base de datos.
+ * 
+ * @param payment - Objeto completo del pago recibido de Mercado Pago
+ * @returns Promise<void> - No retorna nada, pero puede lanzar errores
+ */
+async function crearPedido(payment: any): Promise<void> {
+  try {
+    // Obtenemos la instancia de Firestore para interactuar con la base de datos
+    const firestore = admin.firestore();
+    
+    // --- PREPARACIÓN DE LOS ITEMS DEL PEDIDO ---
+    // Convertimos los items de Mercado Pago al formato de nuestro sistema
+    const items = payment.additional_info?.items?.map((item: any) => ({
+      id: item.id,                                    // ID del producto
+      nombre: item.title,                             // Nombre del producto
+      cantidad: item.quantity,                        // Cantidad comprada
+      precio: item.unit_price,                        // Precio unitario
+      subtotal: item.quantity * item.unit_price       // Cálculo del subtotal
+    })) || []; // Si no hay items, usamos un array vacío
+
+    // --- CREACIÓN DEL OBJETO PEDIDO ---
+    // Estructuramos toda la información del pago en un pedido completo
+    const pedido: Pedido = {
+      id: `pedido_${payment.id}`,                    // ID único del pedido
+      paymentId: payment.id.toString(),              // ID del pago en Mercado Pago
+      estado: 'completado',                          // Estado del pedido (completado porque el pago fue aprobado)
+      total: payment.transaction_amount,             // Monto total del pedido
+      moneda: payment.currency_id,                   // Moneda utilizada (ARS, USD, etc.)
+      metodoPago: payment.payment_method_id,         // Método de pago usado (visa, mastercard, etc.)
+      items: items,                                  // Array de productos comprados
+      cliente: {                                     // Información del cliente que realizó la compra
+        email: payment.payer?.email,                 // Email del cliente
+        nombre: payment.payer?.first_name,           // Nombre del cliente
+        apellido: payment.payer?.last_name,          // Apellido del cliente
+        telefono: payment.payer?.phone?.number       // Teléfono del cliente (si está disponible)
+      },
+      fechaCreacion: new Date(),                     // Fecha actual cuando se crea el pedido
+      fechaAprobacion: payment.date_approved ? new Date(payment.date_approved) : new Date(), // Fecha de aprobación del pago
+      detallesPago: {                                // Detalles completos del pago para auditoría
+        id: payment.id,                              // ID del pago
+        status: payment.status,                      // Estado del pago
+        status_detail: payment.status_detail,        // Detalle del estado
+        payment_type_id: payment.payment_type_id,    // Tipo de pago
+        installments: payment.installments,          // Número de cuotas
+        card: payment.card ? {                       // Información de la tarjeta (si aplica)
+          last_four_digits: payment.card.last_four_digits,        // Últimos 4 dígitos
+          cardholder_name: payment.card.cardholder?.name          // Nombre del titular
+        } : null                                     // null si no se pagó con tarjeta
+      }
+    };
+
+    // Guardar en Firestore
+    await firestore.collection('pedidos').doc(pedido.id).set(pedido);
+    console.log(`✅ Pedido ${pedido.id} creado exitosamente`);
+    
+  } catch (error) {
+    console.error('❌ Error al crear pedido:', error);
+    throw error;
+  }
+}
+
+/**
+ * ============================================================================
+ * FUNCIÓN: actualizarStock
+ * ============================================================================
+ * 
+ * Actualiza automáticamente el stock de los productos después de una compra exitosa.
+ * 
+ * Esta función recorre todos los items comprados y reduce el stock correspondiente
+ * en la base de datos. Utiliza transacciones batch para garantizar consistencia.
+ * 
+ * @param items - Array de items comprados con sus cantidades
+ * @returns Promise<void> - No retorna nada, pero puede lanzar errores
+ */
+async function actualizarStock(items: any[]): Promise<void> {
+  try {
+    // Obtenemos la instancia de Firestore
+    const firestore = admin.firestore();
+    
+    // Creamos un batch para actualizar múltiples documentos de forma atómica
+    // Esto garantiza que todas las actualizaciones se hagan juntas o ninguna
+    const batch = firestore.batch();
+    
+    // --- PROCESAMIENTO DE CADA ITEM COMPRADO ---
+    for (const item of items) {
+      // Referencia al documento del producto en Firestore
+      const productoRef = firestore.collection('productos').doc(item.id);
+      
+      // Obtenemos el documento actual del producto
+      const productoDoc = await productoRef.get();
+      
+      if (productoDoc.exists) {
+        // --- CÁLCULO DEL NUEVO STOCK ---
+        const productoData = productoDoc.data();
+        const stockActual = productoData?.stock || 0;        // Stock actual (0 si no existe)
+        const cantidadComprada = item.quantity;              // Cantidad que se compró
+        const nuevoStock = Math.max(0, stockActual - cantidadComprada); // Nuevo stock (mínimo 0)
+        
+        // Agregamos la actualización al batch
+        batch.update(productoRef, {
+          stock: nuevoStock,                                 // Nuevo stock calculado
+          fechaActualizacion: new Date()                     // Fecha de última actualización
+        });
+        
+        // Log informativo del cambio de stock
+        console.log(`📦 Producto ${item.id}: Stock ${stockActual} → ${nuevoStock} (vendidos: ${cantidadComprada})`);
+        
+        // --- ALERTA DE STOCK BAJO ---
+        // Si el stock queda muy bajo, registramos una advertencia
+        if (nuevoStock <= 5) {
+          console.warn(`⚠️ STOCK BAJO: Producto ${item.id} tiene solo ${nuevoStock} unidades restantes`);
+        }
+        
+        // --- ALERTA DE STOCK AGOTADO ---
+        if (nuevoStock === 0) {
+          console.warn(`🚨 STOCK AGOTADO: Producto ${item.id} se ha quedado sin stock`);
+        }
+        
+      } else {
+        // El producto no existe en la base de datos
+        console.warn(`⚠️ Producto ${item.id} no encontrado en la base de datos`);
+      }
+    }
+    
+    // --- EJECUCIÓN DE TODAS LAS ACTUALIZACIONES ---
+    // Ejecutamos todas las actualizaciones de stock de una vez
+    await batch.commit();
+    console.log('✅ Stock actualizado exitosamente para todos los productos');
+    
+  } catch (error) {
+    console.error('❌ Error al actualizar stock:', error);
+    throw error; // Re-lanzamos el error para que se maneje en el nivel superior
+  }
+}
+
+/**
+ * ============================================================================
+ * FUNCIÓN: registrarTransaccion
+ * ============================================================================
+ * 
+ * Registra TODAS las transacciones en la base de datos para auditoría y debugging.
+ * 
+ * Esta función crea un log completo de cada transacción que pasa por el sistema,
+ * incluyendo pagos exitosos, fallidos, pendientes, etc. Es crucial para:
+ * - Auditoría financiera
+ * - Debugging de problemas
+ * - Análisis de ventas
+ * - Cumplimiento normativo
+ * 
+ * @param payment - Objeto completo del pago de Mercado Pago
+ * @param estado - Estado de la transacción ('success', 'pending', 'rejected', etc.)
+ * @param error - Información del error (opcional, solo si hubo un error)
+ * @returns Promise<void> - No retorna nada, no lanza errores para no afectar el flujo principal
+ */
+async function registrarTransaccion(payment: any, estado: string, error?: any): Promise<void> {
+  try {
+    // Obtenemos la instancia de Firestore
+    const firestore = admin.firestore();
+    
+    // --- CREACIÓN DEL REGISTRO DE TRANSACCIÓN ---
+    // Estructuramos toda la información relevante de la transacción
+    const transaccion: Transaccion = {
+      paymentId: payment.id.toString(),              // ID del pago en Mercado Pago
+      estado: estado as any,                         // Estado de la transacción
+      fecha: new Date(),                             // Fecha y hora actual del registro
+      detalles: {                                    // Detalles completos del pago
+        status: payment.status,                      // Estado del pago en Mercado Pago
+        status_detail: payment.status_detail,        // Detalle específico del estado
+        transaction_amount: payment.transaction_amount, // Monto de la transacción
+        currency_id: payment.currency_id,            // Moneda utilizada
+        payment_method_id: payment.payment_method_id, // Método de pago usado
+        payer_email: payment.payer?.email,           // Email del pagador
+        date_created: payment.date_created,          // Fecha de creación del pago
+        date_approved: payment.date_approved         // Fecha de aprobación (si aplica)
+      },
+      error: error ? {                               // Información del error (si existe)
+        message: error.message,                      // Mensaje del error
+        stack: error.stack,                          // Stack trace del error
+        timestamp: new Date()                        // Momento exacto del error
+      } : undefined                                  // undefined si no hay error
+    };
+    
+    // --- GUARDADO EN FIRESTORE ---
+    // Guardamos el registro en la colección 'transacciones'
+    // Usamos .add() para que Firestore genere un ID único automáticamente
+    await firestore.collection('transacciones').add(transaccion);
+    
+    // Log de confirmación
+    console.log(`📝 Transacción registrada exitosamente: ${payment.id} - Estado: ${estado}`);
+    
+  } catch (error) {
+    // --- MANEJO DE ERRORES ---
+    // Si hay un error al registrar la transacción, lo logueamos pero NO lanzamos el error
+    // Esto es importante para que un fallo en el logging no afecte el procesamiento principal
+    console.error('❌ Error al registrar transacción en la base de datos:', error);
+    console.error('⚠️ La transacción no se registró, pero el procesamiento del pago continúa');
+    
+    // NO hacemos throw error aquí para no interrumpir el flujo principal del webhook
+  }
+}
+
+/**
+ * ============================================================================
+ * FIN DEL ARCHIVO - RESUMEN DE FUNCIONALIDADES
+ * ============================================================================
+ * 
+ * Este archivo implementa un sistema completo de procesamiento de pagos que incluye:
+ * 
+ * 🔧 FUNCIONES PRINCIPALES:
+ * 1. createPreferenceV1: Crea preferencias de pago en Mercado Pago
+ * 2. receiveWebhookV1: Procesa notificaciones de pagos de Mercado Pago
+ * 
+ * 🛠️ FUNCIONES AUXILIARES:
+ * 1. crearPedido: Registra pedidos completos en Firestore
+ * 2. actualizarStock: Actualiza automáticamente el inventario
+ * 3. registrarTransaccion: Crea logs de auditoría de todas las transacciones
+ * 
+ * 🔒 SEGURIDAD IMPLEMENTADA:
+ * - Validación HMAC-SHA256 de webhooks
+ * - Validación exhaustiva de datos de entrada
+ * - Configuración CORS restrictiva
+ * - Manejo robusto de errores
+ * 
+ * 📊 COLECCIONES FIRESTORE UTILIZADAS:
+ * - productos: Se actualiza el stock automáticamente
+ * - pedidos: Se crean registros de pedidos completos
+ * - transacciones: Log de auditoría de todas las operaciones
+ * 
+ * 🚀 FLUJO COMPLETO DE COMPRA:
+ * 1. Frontend solicita preferencia de pago → createPreferenceV1
+ * 2. Usuario paga en Mercado Pago
+ * 3. Mercado Pago notifica → receiveWebhookV1
+ * 4. Se valida la firma de seguridad
+ * 5. Se crea el pedido → crearPedido
+ * 6. Se actualiza el stock → actualizarStock
+ * 7. Se registra la transacción → registrarTransaccion
+ * 
+ * Autores: Cancelo Julian & Nicolas Otero
+ * Materia: ALED III - T.A.S.
+ * Profesor: Sebastian Saldivar
+ * Año: 2025
+ * ============================================================================
+ */

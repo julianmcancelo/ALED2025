@@ -300,7 +300,8 @@ export class Carrito {
 
     this.http.post<{ id: string }>(functionUrl, { items, metodoEntrega }).subscribe({
       next: (res) => {
-        window.location.href = `https://sandbox.mercadopago.com.ar/checkout/v1/redirect?preference_id=${res.id}`;
+        // PRODUCCIÓN: Usar la URL real de Mercado Pago (no sandbox)
+        window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?preference_id=${res.id}`;
       },
       error: (err) => {
         console.error('Error al crear la preferencia de Mercado Pago:', err);
