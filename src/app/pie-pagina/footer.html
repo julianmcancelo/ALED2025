@@ -1,14 +1,563 @@
 <!--
-  Footer fijo en la parte inferior con información del proyecto
+  Footer moderno inspirado en SHEIN con secciones organizadas
 -->
-<footer class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-[#2c3e50] to-[#0077b6] text-white py-3 px-6 shadow-lg z-30">
-  <div class="flex flex-wrap items-center justify-center text-sm space-x-3">
-    <span><strong class="font-semibold">Alumnos:</strong> Cancelo Julian & Nicolas Otero</span>
-    <span class="text-white opacity-50">|</span>
-    <span><strong class="font-semibold">Profesor:</strong> Sebastian Saldivar</span>
-    <span class="text-white opacity-50">|</span>
-    <span><strong class="font-semibold">Materia:</strong> ALED III - T.A.S.</span>
-    <span class="text-white opacity-50">|</span>
-    <span>&copy; 2025</span>
+<footer class="modern-footer">
+  <div class="footer-content">
+    <div class="container">
+      <div class="row">
+        <!-- Sección Sobre Nosotros -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <h5 class="footer-title">SOBRE NOSOTROS</h5>
+          <ul class="footer-links">
+            <li><a href="#" (click)="openModal('quienes-somos')">Quienes Somos</a></li>
+            <li><a href="#" (click)="openModal('nuestra-historia')">Nuestra Historia</a></li>
+            <li><a href="#" (click)="openModal('terminos')">Términos y Condiciones</a></li>
+            <li><a href="#" (click)="openModal('privacidad')">Política de Privacidad</a></li>
+          </ul>
+        </div>
+
+        <!-- Sección Ayuda & Apoyo -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <h5 class="footer-title">AYUDA & APOYO</h5>
+          <ul class="footer-links">
+            <li><a href="#" (click)="openModal('centro-ayuda')">Centro de Ayuda</a></li>
+            <li><a href="#" (click)="openModal('faq')">Preguntas Frecuentes</a></li>
+            <li><a href="#" (click)="openModal('contacto')">Contactanos</a></li>
+            <li><a href="#" (click)="openModal('devoluciones')">Devoluciones</a></li>
+          </ul>
+        </div>
+
+        <!-- Sección Servicio al Cliente -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <h5 class="footer-title">SERVICIO AL CLIENTE</h5>
+          <ul class="footer-links">
+            <li><a href="#" (click)="openModal('envios')">Envíos y Entregas</a></li>
+            <li><a href="#" (click)="openModal('seguimiento')">Seguimiento de Pedido</a></li>
+            <li><a href="#" (click)="openModal('garantia')">Garantía</a></li>
+          </ul>
+        </div>
+
+        <!-- Sección Newsletter y Redes -->
+        <div class="col-lg-3 col-md-6 mb-4">
+          <h5 class="footer-title">SÍGUENOS</h5>
+          <p class="newsletter-text">Suscríbete para recibir ofertas exclusivas y novedades</p>
+          
+          <div class="newsletter-form">
+            <form (submit)="onNewsletterSubmit($event)">
+              <div class="input-group">
+                <input type="email" class="form-control newsletter-input" placeholder="Tu dirección de email" required>
+                <button class="btn newsletter-btn" type="submit">Suscribir</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="social-links mt-3">
+            <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+            <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
+            <a href="#" class="social-link"><i class="bi bi-twitter"></i></a>
+            <a href="#" class="social-link"><i class="bi bi-youtube"></i></a>
+            <a href="#" class="social-link"><i class="bi bi-tiktok"></i></a>
+            <a href="#" class="social-link"><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Métodos de Pago -->
+      <div class="payment-section">
+        <h6 class="payment-title">ACEPTAMOS</h6>
+        <div class="payment-methods">
+          <div class="payment-card"><i class="bi bi-credit-card"></i> Visa</div>
+          <div class="payment-card"><i class="bi bi-credit-card-2-front"></i> Mastercard</div>
+          <div class="payment-card"><i class="bi bi-paypal"></i> PayPal</div>
+          <div class="payment-card"><i class="bi bi-bank"></i> Transferencia</div>
+          <div class="payment-card"><i class="bi bi-wallet2"></i> Mercado Pago</div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom -->
+      <div class="footer-bottom">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <p class="copyright">
+              {{ copyrightText }}
+            </p>
+          </div>
+          <div class="col-md-6">
+            <div class="project-info">
+              <span><strong>Desarrollado por:</strong> Cancelo Julian & Nicolas Otero</span>
+              <span class="separator">|</span>
+              <span><strong>Profesor:</strong> Sebastian Saldivar</span>
+              <span class="separator">|</span>
+              <span><strong>ALED III - T.A.S.</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </footer>
+
+<!-- MODALS -->
+<!-- Modal Quienes Somos -->
+<div class="modal fade" id="quienes-somos-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Quienes Somos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="about-content">
+          <h6>Información Corporativa</h6>
+          <p>ALED2025 E-commerce es una plataforma desarrollada por <strong>Cancelo Julian</strong> y <strong>Nicolas Otero</strong>, estudiantes de la Tecnicatura en Análisis de Sistemas del Instituto Beltrán.</p>
+          
+          <h6>Detalles del Proyecto</h6>
+          <p>Este proyecto corresponde al trabajo final de la materia ALED III - T.A.S., desarrollado bajo la supervisión académica del profesor Sebastian Saldivar.</p>
+          
+          <h6>Stack Tecnológico</h6>
+          <ul>
+            <li><strong>Frontend:</strong> Angular 20.3 con arquitectura standalone</li>
+            <li><strong>Base de Datos:</strong> Firebase/Firestore</li>
+            <li><strong>Pagos:</strong> Integración con Mercado Pago API</li>
+            <li><strong>UI Framework:</strong> Bootstrap 5</li>
+            <li><strong>Lenguaje:</strong> TypeScript</li>
+          </ul>
+          
+          <h6>Objetivo del Proyecto</h6>
+          <p>Desarrollar una solución de e-commerce completa que implemente las mejores prácticas de desarrollo web, demostrando competencias técnicas en desarrollo full-stack.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nuestra Historia -->
+<div class="modal fade" id="nuestra-historia-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nuestra Historia</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="history-content">
+          <h6>Antecedentes del Proyecto</h6>
+          <p>El proyecto ALED2025 E-commerce fue concebido como trabajo final para la materia ALED III - T.A.S. en el Instituto Beltrán, con el objetivo de aplicar conocimientos teóricos en un entorno práctico.</p>
+          
+          <h6>Equipo de Desarrollo</h6>
+          <p>El equipo está conformado por <strong>Julian Cancelo</strong> y <strong>Nicolas Otero</strong>, estudiantes de la Tecnicatura en Análisis de Sistemas con especialización en desarrollo web.</p>
+          
+          <h6>Planificación del Proyecto</h6>
+          <p>Se definió desarrollar una plataforma de e-commerce que cumpliera con estándares profesionales de la industria, implementando funcionalidades empresariales reales.</p>
+          
+          <h6>Implementación Técnica</h6>
+          <p>El desarrollo incluyó las siguientes funcionalidades:</p>
+          <ul>
+            <li>Sistema de autenticación y autorización</li>
+            <li>Panel administrativo con CRUD completo</li>
+            <li>Módulo de carrito de compras</li>
+            <li>Integración con gateway de pagos</li>
+            <li>Interfaz responsive multiplataforma</li>
+          </ul>
+          
+          <h6>Resultados Obtenidos</h6>
+          <p>El proyecto demuestra la aplicación exitosa de metodologías de desarrollo modernas y buenas prácticas de ingeniería de software.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Términos y Condiciones -->
+<div class="modal fade" id="terminos-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Términos y Condiciones</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="terms-content">
+          <p><strong>Última actualización:</strong> Enero 2025</p>
+          
+          <h6>1. Aceptación de Términos</h6>
+          <p>Al utilizar ALED2025 E-commerce, aceptas estos términos y condiciones en su totalidad.</p>
+          
+          <h6>2. Uso de la Plataforma</h6>
+          <p>Esta plataforma es un proyecto académico desarrollado por estudiantes del Instituto Beltrán para fines educativos.</p>
+          
+          <h6>3. Registro de Usuario</h6>
+          <p>Para realizar compras, debes registrarte proporcionando información veraz y actualizada.</p>
+          
+          <h6>4. Productos y Precios</h6>
+          <p>Los precios están sujetos a cambios sin previo aviso. Las imágenes son referenciales.</p>
+          
+          <h6>5. Pagos</h6>
+          <p>Los pagos se procesan a través de Mercado Pago, garantizando seguridad en las transacciones.</p>
+          
+          <h6>6. Limitación de Responsabilidad</h6>
+          <p>Este es un proyecto académico. No nos hacemos responsables por transacciones reales.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Política de Privacidad -->
+<div class="modal fade" id="privacidad-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Política de Privacidad</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="privacy-content">
+          <p><strong>Última actualización:</strong> Enero 2025</p>
+          
+          <h6>1. Información que Recopilamos</h6>
+          <p>Recopilamos información personal como nombre, email y datos de contacto para el funcionamiento de la plataforma.</p>
+          
+          <h6>2. Uso de la Información</h6>
+          <p>La información se utiliza únicamente para:</p>
+          <ul>
+            <li>Gestión de cuentas de usuario</li>
+            <li>Procesamiento de pedidos</li>
+            <li>Comunicación con usuarios</li>
+            <li>Mejora del servicio</li>
+          </ul>
+          
+          <h6>3. Protección de Datos</h6>
+          <p>Utilizamos Firebase/Firestore con medidas de seguridad estándar de la industria.</p>
+          
+          <h6>4. Compartir Información</h6>
+          <p>No compartimos información personal con terceros, excepto cuando sea requerido por ley.</p>
+          
+          <h6>5. Cookies</h6>
+          <p>Utilizamos cookies para mejorar la experiencia del usuario y mantener sesiones activas.</p>
+          
+          <h6>6. Contacto</h6>
+          <p>Para consultas sobre privacidad, contacta a través del formulario de contacto.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Centro de Ayuda -->
+<div class="modal fade" id="centro-ayuda-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Centro de Ayuda</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="help-content">
+          <h6>Soporte Técnico</h6>
+          <p>Nuestro equipo de soporte está disponible para resolver consultas técnicas y operativas de la plataforma.</p>
+          
+          <h6>Canales de Contacto</h6>
+          <ul>
+            <li><strong>Email:</strong> soporte@aled2025.com</li>
+            <li><strong>Horario de Atención:</strong> Lunes a Viernes 9:00 - 18:00 hs</li>
+            <li><strong>SLA de Respuesta:</strong> 24-48 horas hábiles</li>
+          </ul>
+          
+          <h6>Categorías de Consultas</h6>
+          <ul>
+            <li>Incidencias de registro y autenticación</li>
+            <li>Recuperación de credenciales de acceso</li>
+            <li>Consultas sobre estado de transacciones</li>
+            <li>Configuración de métodos de pago</li>
+            <li>Procesos de devolución y reembolso</li>
+          </ul>
+          
+          <h6>Recursos de Autoayuda</h6>
+          <p>Consulte la sección de Preguntas Frecuentes para resolver consultas comunes de manera inmediata.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal FAQ -->
+<div class="modal fade" id="faq-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Preguntas Frecuentes</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="faq-content">
+          <div class="faq-item">
+            <h6>1. Proceso de Registro de Usuario</h6>
+            <p>Acceda al formulario de registro, complete los campos requeridos y valide su dirección de correo electrónico mediante el enlace de confirmación.</p>
+          </div>
+          
+          <div class="faq-item">
+            <h6>2. Recuperación de Credenciales</h6>
+            <p>Utilice la opción "Recuperar Contraseña" en la pantalla de inicio de sesión e ingrese su dirección de correo registrada.</p>
+          </div>
+          
+          <div class="faq-item">
+            <h6>3. Métodos de Pago Disponibles</h6>
+            <p>La plataforma acepta tarjetas de crédito/débito, transferencias bancarias y procesamiento a través de Mercado Pago.</p>
+          </div>
+          
+          <div class="faq-item">
+            <h6>4. Cancelación de Transacciones</h6>
+            <p>Las cancelaciones son posibles antes del procesamiento del pedido. Contacte al soporte técnico para iniciar el proceso.</p>
+          </div>
+          
+          <div class="faq-item">
+            <h6>5. Seguimiento de Pedidos</h6>
+            <p>Acceda a su panel de usuario y consulte la sección "Historial de Pedidos" para verificar el estado de sus transacciones.</p>
+          </div>
+          
+          <div class="faq-item">
+            <h6>6. Políticas de Garantía</h6>
+            <p>Todos los productos incluyen garantía del fabricante según especificaciones técnicas y condiciones establecidas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Contacto -->
+<div class="modal fade" id="contacto-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Contáctanos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="contact-content">
+          <h6>Datos de Contacto Institucional</h6>
+          <div class="contact-info">
+            <p><strong>Email Corporativo:</strong> contacto@aled2025.com</p>
+            <p><strong>Teléfono:</strong> +54 11 1234-5678</p>
+            <p><strong>Sede:</strong> Instituto Beltrán - Buenos Aires, Argentina</p>
+          </div>
+          
+          <h6>Formulario de Consultas</h6>
+          <form class="contact-form" (submit)="onContactSubmit($event)">
+            <div class="mb-3">
+              <label class="form-label">Nombre Completo</label>
+              <input type="text" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Asunto</label>
+              <select class="form-control">
+                <option>Consulta General</option>
+                <option>Problema Técnico</option>
+                <option>Pedido</option>
+                <option>Devolución</option>
+                <option>Sugerencia</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Mensaje</label>
+              <textarea class="form-control" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Devoluciones -->
+<div class="modal fade" id="devoluciones-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Devoluciones</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="returns-content">
+          <h6>Políticas de Devolución</h6>
+          <p>Las devoluciones serán aceptadas dentro de un período de <strong>30 días calendario</strong> desde la fecha de adquisición.</p>
+          
+          <h6>Requisitos para Devolución</h6>
+          <ul>
+            <li>Producto en condiciones originales de venta</li>
+            <li>Embalaje y etiquetas originales sin alteraciones</li>
+            <li>Comprobante de compra válido</li>
+            <li>Ausencia de uso o deterioro por parte del cliente</li>
+          </ul>
+          
+          <h6>Procedimiento de Devolución</h6>
+          <ol>
+            <li>Iniciar solicitud a través del canal de soporte</li>
+            <li>Proporcionar número de transacción</li>
+            <li>Especificar motivo de la devolución</li>
+            <li>Recibir autorización y guía de envío</li>
+            <li>Despachar producto según instrucciones</li>
+            <li>Procesamiento de reembolso en 5-7 días hábiles</li>
+          </ol>
+          
+          <h6>Condiciones de Reembolso</h6>
+          <p>Los reembolsos se acreditarán al método de pago original utilizado. Los costos de envío no son reembolsables.</p>
+          
+          <h6>Productos Excluidos</h6>
+          <ul>
+            <li>Artículos personalizados o bajo pedido</li>
+            <li>Productos de higiene y cuidado personal</li>
+            <li>Contenido digital y licencias de software</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Envíos -->
+<div class="modal fade" id="envios-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Envíos y Entregas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="shipping-content">
+          <h6>Modalidades de Envío</h6>
+          <div class="shipping-options">
+            <div class="shipping-option">
+              <strong>Envío Estándar</strong>
+              <p>Tiempo de entrega: 3-5 días hábiles - Costo: $500</p>
+            </div>
+            <div class="shipping-option">
+              <strong>Envío Express</strong>
+              <p>Tiempo de entrega: 1-2 días hábiles - Costo: $800</p>
+            </div>
+            <div class="shipping-option">
+              <strong>Envío Sin Costo</strong>
+              <p>Aplicable a compras superiores a $15.000</p>
+            </div>
+          </div>
+          
+          <h6>Áreas de Cobertura</h6>
+          <ul>
+            <li>Ciudad Autónoma de Buenos Aires</li>
+            <li>Conurbano Bonaerense</li>
+            <li>Interior del país (tiempos extendidos)</li>
+          </ul>
+          
+          <h6>Procesamiento de Pedidos</h6>
+          <p>El tiempo de preparación es de 1-2 días hábiles previo al despacho.</p>
+          
+          <h6>Opciones de Entrega</h6>
+          <ul>
+            <li>Entrega a domicilio</li>
+            <li>Retiro en punto de distribución</li>
+            <li>Red de puntos de entrega disponibles</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Seguimiento -->
+<div class="modal fade" id="seguimiento-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Seguimiento de Pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="tracking-content">
+          <h6>Procedimiento de Seguimiento</h6>
+          <ol>
+            <li>Acceder al panel de usuario</li>
+            <li>Navegar a la sección "Historial de Pedidos"</li>
+            <li>Seleccionar la transacción a consultar</li>
+            <li>Verificar estado actual del pedido</li>
+          </ol>
+          
+          <h6>Estados de Transacción</h6>
+          <div class="status-list">
+            <div class="status-item">
+              <strong>Confirmado:</strong> Transacción recibida y validada
+            </div>
+            <div class="status-item">
+              <strong>En Preparación:</strong> Procesamiento y empaquetado
+            </div>
+            <div class="status-item">
+              <strong>Despachado:</strong> Producto en tránsito
+            </div>
+            <div class="status-item">
+              <strong>Entregado:</strong> Recepción confirmada
+            </div>
+          </div>
+          
+          <h6>Sistema de Notificaciones</h6>
+          <p>Se enviarán notificaciones automáticas vía email para cada actualización de estado.</p>
+          
+          <h6>Incidencias de Entrega</h6>
+          <p>En caso de demoras o incidencias, contactar inmediatamente al servicio de soporte técnico.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal Garantía -->
+<div class="modal fade" id="garantia-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Garantía</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="warranty-content">
+          <h6>Cobertura de Garantía</h6>
+          <p>Todos los productos comercializados incluyen garantía oficial del fabricante según especificaciones técnicas.</p>
+          
+          <h6>Períodos de Cobertura</h6>
+          <ul>
+            <li><strong>Equipos Electrónicos:</strong> 12 meses</li>
+            <li><strong>Electrodomésticos:</strong> 12-24 meses según categoría</li>
+            <li><strong>Textiles y Accesorios:</strong> 6 meses</li>
+            <li><strong>Software y Licencias:</strong> 30 días</li>
+          </ul>
+          
+          <h6>Cobertura Incluida</h6>
+          <ul>
+            <li>Defectos de manufactura</li>
+            <li>Fallas de funcionamiento bajo uso normal</li>
+            <li>Problemas de calidad certificados</li>
+          </ul>
+          
+          <h6>Exclusiones de Garantía</h6>
+          <ul>
+            <li>Daños por uso inadecuado</li>
+            <li>Desgaste por uso normal</li>
+            <li>Daños accidentales o por terceros</li>
+            <li>Modificaciones no autorizadas</li>
+          </ul>
+          
+          <h6>Procedimiento de Reclamo</h6>
+          <ol>
+            <li>Contactar servicio técnico especializado</li>
+            <li>Presentar comprobante de adquisición</li>
+            <li>Describir detalladamente la falla</li>
+            <li>Seguir protocolo de diagnóstico</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

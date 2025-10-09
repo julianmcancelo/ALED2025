@@ -9,12 +9,39 @@
       </a>
 
       <!-- Navegación principal (desktop) -->
-      <div class="hidden md:flex items-center space-x-8">
-        <!-- Enlace a la Tienda -->
+      <div class="hidden md:flex items-center space-x-6">
+        <!-- Barra de búsqueda -->
+        <div class="relative">
+          <input 
+            type="text" 
+            placeholder="Buscar productos..." 
+            class="w-64 px-4 py-2 pl-10 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:border-transparent"
+            #searchInput
+            (keyup.enter)="buscarProductos(searchInput.value)"
+          >
+          <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- Enlaces de navegación -->
         <a class="text-gray-700 hover:text-[#0077b6] px-3 py-2 rounded-md text-sm font-medium transition-colors" 
            routerLink="/productos" 
            routerLinkActive="text-[#0077b6] bg-blue-50">
+          <i class="bi bi-shop mr-1"></i>
           Tienda
+        </a>
+        
+        <a class="text-gray-700 hover:text-[#0077b6] px-3 py-2 rounded-md text-sm font-medium transition-colors" 
+           routerLink="/ofertas" 
+           routerLinkActive="text-[#0077b6] bg-blue-50">
+          <i class="bi bi-tag mr-1"></i>
+          Ofertas
+        </a>
+        
+        <a class="text-gray-700 hover:text-[#0077b6] px-3 py-2 rounded-md text-sm font-medium transition-colors" 
+           routerLink="/categorias" 
+           routerLinkActive="text-[#0077b6] bg-blue-50">
+          <i class="bi bi-grid mr-1"></i>
+          Categorías
         </a>
         
         <!-- Botones de autenticación y carrito -->
@@ -92,6 +119,74 @@
             }
           </button>
         </div>
+      </div>
+
+      <!-- Botón menú móvil -->
+      <div class="md:hidden">
+        <button 
+          type="button" 
+          class="p-2 text-gray-700 hover:text-[#0077b6] focus:outline-none focus:ring-2 focus:ring-[#0077b6] rounded-md"
+          (click)="toggleMobileMenu()"
+        >
+          <i class="bi bi-list text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Menú móvil -->
+    <div class="md:hidden" [class.hidden]="!showMobileMenu">
+      <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+        <!-- Barra de búsqueda móvil -->
+        <div class="px-3 py-2">
+          <div class="relative">
+            <input 
+              type="text" 
+              placeholder="Buscar productos..." 
+              class="w-full px-4 py-2 pl-10 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:border-transparent"
+              #mobileSearchInput
+              (keyup.enter)="buscarProductos(mobileSearchInput.value)"
+            >
+            <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          </div>
+        </div>
+        
+        <!-- Enlaces de navegación móvil -->
+        <a routerLink="/productos" 
+           routerLinkActive="text-[#0077b6] bg-blue-50"
+           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#0077b6] hover:bg-gray-50 rounded-md">
+          <i class="bi bi-shop mr-2"></i>
+          Tienda
+        </a>
+        
+        <a routerLink="/ofertas" 
+           routerLinkActive="text-[#0077b6] bg-blue-50"
+           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#0077b6] hover:bg-gray-50 rounded-md">
+          <i class="bi bi-tag mr-2"></i>
+          Ofertas
+        </a>
+        
+        <a routerLink="/categorias" 
+           routerLinkActive="text-[#0077b6] bg-blue-50"
+           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#0077b6] hover:bg-gray-50 rounded-md">
+          <i class="bi bi-grid mr-2"></i>
+          Categorías
+        </a>
+
+        <!-- Botones de autenticación móvil -->
+        @if (currentUser() === null) {
+        <div class="px-3 py-2 space-y-2">
+          <button class="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" 
+                  (click)="openLoginDialog()">
+            <i class="bi bi-box-arrow-in-right mr-2"></i>
+            Iniciar Sesión
+          </button>
+          <button class="w-full px-4 py-2 text-sm font-medium text-white bg-[#0077b6] border border-transparent rounded-md hover:bg-[#005a8d]" 
+                  (click)="openRegisterDialog()">
+            <i class="bi bi-person-plus-fill mr-2"></i>
+            Registrarse
+          </button>
+        </div>
+        }
       </div>
     </div>
   </div>

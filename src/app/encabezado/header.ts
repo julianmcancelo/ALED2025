@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NgbDropdownModule, NgbOffcanvas } from '@ng-bootstrap/ng-bootstrap';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
@@ -28,6 +28,7 @@ export class Header {
   private offcanvasService = inject(NgbOffcanvas);
   private authService = inject(AuthService);
   private dialog = inject(MatDialog);
+  private router = inject(Router);
   protected carritoService = inject(CarritoService);
   protected configuracionService = inject(ConfiguracionService); // Inyectamos el servicio
 
@@ -36,6 +37,9 @@ export class Header {
 
   currentUser = this.authService.currentUserSignal;
   isAdmin = computed(() => this.currentUser()?.rol === 'admin');
+  
+  // Estado del menú móvil
+  showMobileMenu = false;
 
   openRegisterDialog(): void {
     this.dialog.open(Registro, { width: '550px' });
@@ -54,5 +58,26 @@ export class Header {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  /**
+   * Método para buscar productos
+   */
+  buscarProductos(termino: string): void {
+    if (termino.trim()) {
+      // Navegar a la página de productos con el término de búsqueda
+      this.router.navigate(['/productos'], { 
+        queryParams: { buscar: termino.trim() } 
+      });
+      // Cerrar menú móvil si está abierto
+      this.showMobileMenu = false;
+    }
+  }
+
+  /**
+   * Toggle del menú móvil
+   */
+  toggleMobileMenu(): void {
+    this.showMobileMenu = !this.showMobileMenu;
   }
 }

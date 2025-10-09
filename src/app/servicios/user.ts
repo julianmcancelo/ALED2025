@@ -14,6 +14,26 @@ import {
   getDoc,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
+import { AppUser } from '../auth/auth';
+
+/**
+ * Interfaz para los datos de usuario que se envían al crear/actualizar
+ */
+export interface UserData {
+  nombre: string;
+  apellido: string;
+  dni: string;
+  email: string;
+  password?: string; // Opcional para actualizaciones
+  rol: 'admin' | 'usuario';
+  novedades: boolean;
+  terminos: boolean;
+  // Campos opcionales para dirección
+  direccion?: string;
+  ciudad?: string;
+  codigoPostal?: string;
+  telefono?: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -25,14 +45,14 @@ export class UserService {
   /**
    * Obtiene todos los usuarios de la base de datos como un stream.
    */
-  getUsers(): Observable<any[]> {
-    return collectionData(this.usersCollection, { idField: 'id' });
+  getUsers(): Observable<AppUser[]> {
+    return collectionData(this.usersCollection, { idField: 'id' }) as Observable<AppUser[]>;
   }
 
   /**
    * Añade un nuevo usuario a la colección 'users'.
    */
-  addUser(user: any) {
+  addUser(user: Partial<UserData>) {
     return addDoc(this.usersCollection, user);
   }
 
@@ -42,7 +62,7 @@ export class UserService {
    * @param data - Un objeto parcial con los campos y nuevos valores a modificar.
    * @returns Una promesa que se resuelve cuando la actualización se completa.
    */
-  updateUser(id: string, data: Partial<any>): Promise<void> {
+  updateUser(id: string, data: Partial<UserData>): Promise<void> {
     const userDocRef = doc(this.firestore, `users/${id}`);
     return updateDoc(userDocRef, data);
   }
@@ -62,11 +82,11 @@ export class UserService {
    * @param id - El ID del documento del usuario a obtener.
    * @returns Una promesa que se resuelve con los datos del usuario (incluyendo el ID), o null si no se encuentra.
    */
-  async getUserById(id: string): Promise<any | null> {
+  async getUserById(id: string): Promise<AppUser | null> {
     const userDocRef = doc(this.firestore, `users/${id}`);
     const docSnap = await getDoc(userDocRef);
     if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
+      return { id: docSnap.id, ...docSnap.data() } as AppUser;
     }
     return null;
   }
@@ -75,8 +95,8 @@ export class UserService {
    * Crea el primer usuario administrador en la base de datos.
    * @param user - Los datos del usuario (nombre, email, contraseña).
    */
-  createAdminUser(user: any) {
-    const userWithRole = { ...user, rol: 'admin' };
+  createAdminUser(user: Partial<UserData>) {
+    const userWithRole = { ...user, rol: 'admin' as const };
     return this.addUser(userWithRole);
   }
 
@@ -96,7 +116,7 @@ export class UserService {
    * @param email - El email del usuario a buscar.
    * @returns Una promesa que se resuelve con los datos del usuario o null si no se encuentra.
    */
-  async getUserByEmail(email: string): Promise<any | null> {
+  async getUserByEmail(email: string): Promise<AppUser | null> {
     const userCollectionRef = collection(this.firestore, 'users');
     const q = query(userCollectionRef, where('email', '==', email));
     const querySnapshot = await getDocs(q);
@@ -105,8 +125,8 @@ export class UserService {
       return null;
     }
     // Devuelve los datos del primer documento encontrado incluyendo el ID.
-    const doc = querySnapshot.docs[0];
-    return { id: doc.id, ...doc.data() };
+    const docSnapshot = querySnapshot.docs[0];
+    return { id: docSnapshot.id, ...docSnapshot.data() } as AppUser;
   }
 
   /**

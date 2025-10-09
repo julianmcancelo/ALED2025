@@ -6,52 +6,159 @@
     <!-- SLIDER DE NOVEDADES -->
     @if (novedades$ | async; as novedades) { @if (novedades.length > 0) {
     <div class="container my-5">
-      <h2 class="text-center mb-4">Novedades y Ofertas</h2>
-      <div
-        id="productCarousel"
-        class="carousel slide carousel-fade shadow-lg"
-        data-bs-ride="carousel"
-      >
-        <div class="carousel-inner">
-          @for (novedad of novedades; track novedad.id; let i = $index) {
-          <div class="carousel-item" [class.active]="i === 0">
-            <img [src]="novedad.imagenUrl" class="d-block w-100" [alt]="novedad.titulo" />
-            <div class="carousel-caption">
-              <h5>{{ novedad.titulo }}</h5>
-              <p class="d-none d-sm-block">{{ novedad.descripcion }}</p>
-              @if (novedad.enlaceUrl) {
-              <a [routerLink]="novedad.enlaceUrl" class="btn btn-sm btn-outline-light"
-                >Ver Detalle</a
-              >
-              }
+      <div class="premium-slider-container">
+        <div
+          id="productCarousel"
+          class="carousel slide premium-carousel"
+          data-bs-ride="carousel"
+          data-bs-interval="5000"
+        >
+          <!-- Indicadores mejorados -->
+          <div class="carousel-indicators premium-indicators">
+            @for (novedad of novedades; track novedad.id; let i = $index) {
+            <button
+              type="button"
+              data-bs-target="#productCarousel"
+              [attr.data-bs-slide-to]="i"
+              [class.active]="i === 0"
+              [attr.aria-label]="'Slide ' + (i + 1)"
+            ></button>
+            }
+          </div>
+
+          <div class="carousel-inner premium-carousel-inner">
+            @for (novedad of novedades; track novedad.id; let i = $index) {
+            <div class="carousel-item premium-slide" [class.active]="i === 0">
+              <div class="slide-image-container">
+                <img [src]="novedad.imagenUrl" class="slide-image" [alt]="novedad.titulo" />
+                <div class="image-overlay"></div>
+              </div>
+              
+              <div class="slide-content">
+                <div class="content-wrapper">
+                  <div class="badge-container">
+                    <span class="offer-badge">Oferta</span>
+                  </div>
+                  <h3 class="slide-title">{{ novedad.titulo }}</h3>
+                  <p class="slide-description">{{ novedad.descripcion }}</p>
+                  
+                  <div class="slide-actions">
+                    @if (novedad.enlaceUrl) {
+                    <a [routerLink]="novedad.enlaceUrl" class="btn-premium">
+                      <i class="bi bi-eye me-2"></i>
+                      Ver Detalle
+                      <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+          
+          <!-- Controles mejorados -->
+          <button
+            class="carousel-control-prev premium-control premium-control-prev"
+            type="button"
+            data-bs-target="#productCarousel"
+            data-bs-slide="prev"
+          >
+            <div class="control-icon">
+              <i class="bi bi-chevron-left"></i>
+            </div>
+            <span class="visually-hidden">Anterior</span>
+          </button>
+          
+          <button
+            class="carousel-control-next premium-control premium-control-next"
+            type="button"
+            data-bs-target="#productCarousel"
+            data-bs-slide="next"
+          >
+            <div class="control-icon">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+            <span class="visually-hidden">Siguiente</span>
+          </button>
+        </div>
+        
+        <!-- Información adicional -->
+        <div class="slider-footer">
+          <div class="row text-center">
+            <div class="col-md-4">
+              <i class="bi bi-truck feature-icon"></i>
+              <p class="feature-text">Envío gratis</p>
+            </div>
+            <div class="col-md-4">
+              <i class="bi bi-shield-check feature-icon"></i>
+              <p class="feature-text">Compra protegida</p>
+            </div>
+            <div class="col-md-4">
+              <i class="bi bi-credit-card feature-icon"></i>
+              <p class="feature-text">Hasta 12 cuotas</p>
             </div>
           </div>
-          }
         </div>
-        <button
-          class="carousel-control-prev"
-          type="button"
-          data-bs-target="#productCarousel"
-          data-bs-slide="prev"
-        >
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Previous</span>
-        </button>
-        <button
-          class="carousel-control-next"
-          type="button"
-          data-bs-target="#productCarousel"
-          data-bs-slide="next"
-        >
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Next</span>
-        </button>
       </div>
     </div>
     } }
 
+    <!-- Sección de características destacadas -->
+    <div class="features-highlight-section my-5">
+      <div class="row">
+        <div class="col-12 text-center mb-4">
+          <h3 class="section-title">¿Por qué elegir nuestra plataforma?</h3>
+          <p class="section-subtitle">Tecnología moderna y experiencia de usuario excepcional</p>
+        </div>
+      </div>
+      
+      <div class="row g-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="feature-highlight-card">
+            <div class="feature-highlight-icon">
+              <i class="bi bi-lightning-charge-fill"></i>
+            </div>
+            <h5 class="feature-highlight-title">Rendimiento Óptimo</h5>
+            <p class="feature-highlight-text">Desarrollado con Angular 20.3 para máxima velocidad y eficiencia</p>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+          <div class="feature-highlight-card">
+            <div class="feature-highlight-icon">
+              <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <h5 class="feature-highlight-title">Seguridad Garantizada</h5>
+            <p class="feature-highlight-text">Autenticación robusta con Firebase y protección de datos</p>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+          <div class="feature-highlight-card">
+            <div class="feature-highlight-icon">
+              <i class="bi bi-phone-fill"></i>
+            </div>
+            <h5 class="feature-highlight-title">Diseño Responsive</h5>
+            <p class="feature-highlight-text">Experiencia perfecta en todos los dispositivos y pantallas</p>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+          <div class="feature-highlight-card">
+            <div class="feature-highlight-icon">
+              <i class="bi bi-credit-card-2-front-fill"></i>
+            </div>
+            <h5 class="feature-highlight-title">Pagos Seguros</h5>
+            <p class="feature-highlight-text">Integración completa con Mercado Pago para transacciones confiables</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Sección de créditos con tarjetas -->
-    <div class="credits-section row justify-content-center gx-4 gy-3 mt-5">
+    <div class="credits-section-container mt-5">
+      <div class="row justify-content-center gx-4 gy-3">
       <div class="col-md-5">
         <div class="credit-card">
           <i class="bi bi-people-fill card-icon"></i>
@@ -66,16 +173,19 @@
           <p class="card-text">Profesor Sebastian Saldivar</p>
         </div>
       </div>
+      </div>
     </div>
 
     <!-- Contenedor para los botones de acción -->
-    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-5">
+    <div class="action-buttons-container mt-5">
+      <div class="d-grid gap-2 d-md-flex justify-content-md-center">
       <button class="btn btn-primary btn-lg" type="button" (click)="irATienda()">
         <i class="bi bi-shop me-2"></i>Explorar Tienda
       </button>
       <button class="btn btn-outline-secondary btn-lg" type="button" (click)="irARegistro()">
         ¡Crea tu cuenta!
       </button>
+      </div>
     </div>
   </div>
 </div>

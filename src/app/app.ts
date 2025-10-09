@@ -76,7 +76,7 @@ export class App implements OnInit {
         dni: '00000000',
         email: 'admin@admin.com',
         password: hashedPassword,
-        rol: 'admin', // Asignamos el rol de administrador
+        rol: 'admin' as const, // Asignamos el rol de administrador
         novedades: false,
         terminos: true,
       };

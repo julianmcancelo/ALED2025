@@ -3,8 +3,28 @@
 
   <!-- Encabezado de la tienda -->
   <header class="text-center mb-12">
-    <h1 class="text-4xl font-bold text-gray-900 mb-4">Nuestros Productos</h1>
-    <p class="text-xl text-gray-600">Explora nuestro catálogo y encuentra lo que buscas.</p>
+    @if (terminoBusqueda) {
+      <!-- Encabezado para resultados de búsqueda -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+        <h1 class="text-3xl font-bold text-[#0077b6] mb-2">
+          <i class="bi bi-search mr-2"></i>
+          Resultados de Búsqueda
+        </h1>
+        <p class="text-lg text-gray-700 mb-2">
+          Buscando: <span class="font-semibold text-[#0077b6]">"{{ terminoBusqueda }}"</span>
+        </p>
+        <p class="text-sm text-gray-600">
+          {{ totalProductos }} producto{{ totalProductos === 1 ? '' : 's' }} encontrado{{ totalProductos === 1 ? '' : 's' }}
+        </p>
+      </div>
+    } @else {
+      <!-- Encabezado normal de la tienda -->
+      <h1 class="text-4xl font-bold text-gray-900 mb-4">Nuestros Productos</h1>
+      <p class="text-xl text-gray-600 mb-2">Explora nuestro catálogo y encuentra lo que buscas.</p>
+      <p class="text-sm text-gray-500">
+        {{ totalProductos }} producto{{ totalProductos === 1 ? '' : 's' }} disponible{{ totalProductos === 1 ? '' : 's' }}
+      </p>
+    }
   </header>
 
   <!-- Usamos @if para manejar el estado del observable de productos -->
@@ -67,11 +87,31 @@
         }
       </div>
     } @else {
-      <!-- Mensaje que se muestra si no hay productos activos -->
+      <!-- Mensaje que se muestra si no hay productos -->
       <div class="text-center py-12">
-        <i class="bi bi-emoji-frown text-6xl text-gray-400 mb-4"></i>
-        <h3 class="text-2xl font-semibold text-gray-900 mb-2">No hay productos disponibles</h3>
-        <p class="text-gray-600">Vuelve a intentarlo más tarde.</p>
+        @if (terminoBusqueda) {
+          <!-- Mensaje específico para búsquedas sin resultados -->
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 max-w-md mx-auto">
+            <i class="bi bi-search text-6xl text-yellow-500 mb-4"></i>
+            <h3 class="text-2xl font-semibold text-gray-900 mb-2">Sin resultados</h3>
+            <p class="text-gray-600 mb-4">
+              No encontramos productos que coincidan con <span class="font-semibold">"{{ terminoBusqueda }}"</span>
+            </p>
+            <div class="text-sm text-gray-500">
+              <p class="mb-2">💡 Sugerencias:</p>
+              <ul class="text-left space-y-1">
+                <li>• Verifica la ortografía</li>
+                <li>• Usa términos más generales</li>
+                <li>• Prueba con sinónimos</li>
+              </ul>
+            </div>
+          </div>
+        } @else {
+          <!-- Mensaje general cuando no hay productos -->
+          <i class="bi bi-emoji-frown text-6xl text-gray-400 mb-4"></i>
+          <h3 class="text-2xl font-semibold text-gray-900 mb-2">No hay productos disponibles</h3>
+          <p class="text-gray-600">Vuelve a intentarlo más tarde.</p>
+        }
       </div>
     }
   } @else {

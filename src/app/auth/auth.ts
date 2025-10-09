@@ -19,7 +19,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { UserService } from '../servicios/user';
 import { Router } from '@angular/router';
 import * as bcrypt from 'bcryptjs';  // Librería para hash de contraseñas
-import { Firestore, doc, onSnapshot } from '@angular/fire/firestore';
+import { Firestore, doc, onSnapshot, DocumentSnapshot } from '@angular/fire/firestore';
 import { Unsubscribe } from 'firebase/firestore';
 
 /**
@@ -34,6 +34,7 @@ export interface AppUser {
   nombre: string;                // Nombre del usuario
   apellido: string;              // Apellido del usuario
   rol: 'admin' | 'usuario';      // Rol: solo puede ser 'admin' o 'usuario'
+  password?: string;             // Contraseña hasheada (opcional para seguridad)
   
   // --- Campos opcionales para dirección de entrega ---
   // El símbolo '?' indica que son opcionales (pueden no existir)
@@ -129,7 +130,7 @@ export class AuthService {
     }
 
     const userDocRef = doc(this.firestore, 'users', userId);
-    this.userSubscription = onSnapshot(userDocRef, (snapshot) => {
+    this.userSubscription = onSnapshot(userDocRef, (snapshot: DocumentSnapshot) => {
       if (snapshot.exists()) {
         const updatedUser = { id: snapshot.id, ...snapshot.data() } as AppUser; // Usar 'id'
         this.currentUserSignal.set(updatedUser);
@@ -146,15 +147,14 @@ export class AuthService {
       throw new Error('El correo electrónico o la contraseña son incorrectos.');
     }
 
-    const passwordIsValid = bcrypt.compareSync(password, userProfile.password);
+    const passwordIsValid = userProfile.password && bcrypt.compareSync(password, userProfile.password);
     if (!passwordIsValid) {
       throw new Error('El correo electrónico o la contraseña son incorrectos.');
     }
 
     const appUser: AppUser = {
-      id: userProfile.id, // Usar 'id' en lugar de 'uid'
-      email: userProfile.email,
       ...userProfile,
+      id: userProfile.id, // Usar 'id' en lugar de 'uid'
     };
 
     localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(appUser));

@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Observable, map, switchMap } from 'rxjs';
 import { GestionProductosService, Producto } from '../servicios/gestion-productos.service';
 import { CarritoService } from '../servicios/carrito';
 import Swal from 'sweetalert2';
@@ -22,17 +22,56 @@ export class TiendaComponent implements OnInit {
   private productosService = inject(GestionProductosService);
   private carritoService = inject(CarritoService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   // --- PROPIEDADES ---
   /**
-   * Observable que contiene la lista de productos activos.
+   * Observable que contiene la lista de productos activos o filtrados por búsqueda.
    * La plantilla se suscribirá a este observable usando el pipe 'async'.
    */
   productos$!: Observable<Producto[]>;
 
+  /**
+   * Término de búsqueda actual (para mostrar en la interfaz)
+   */
+  terminoBusqueda: string = '';
+
+  /**
+   * Número total de productos encontrados (para estadísticas)
+   */
+  totalProductos: number = 0;
+
   ngOnInit(): void {
-    // Al iniciar el componente, obtenemos el stream de productos activos.
-    this.productos$ = this.productosService.obtenerProductosActivos();
+    console.log('🏪 Inicializando componente Tienda...');
+    
+    // Escuchamos los cambios en los query parameters para detectar búsquedas
+    this.productos$ = this.route.queryParams.pipe(
+      switchMap(params => {
+        const buscar = params['buscar'] || '';
+        this.terminoBusqueda = buscar;
+        
+        console.log(`🔍 Parámetros de búsqueda detectados: "${buscar}"`);
+        
+        if (buscar) {
+          console.log(`📋 Realizando búsqueda de productos con término: "${buscar}"`);
+          return this.productosService.buscarProductos(buscar);
+        } else {
+          console.log('📦 Mostrando todos los productos activos');
+          return this.productosService.obtenerProductosActivos();
+        }
+      }),
+      map(productos => {
+        this.totalProductos = productos.length;
+        console.log(`✅ Productos cargados: ${productos.length}`);
+        
+        // Mostramos información de los productos para debugging
+        if (this.terminoBusqueda) {
+          console.log(`🎯 Resultados de búsqueda para "${this.terminoBusqueda}": ${productos.length} productos`);
+        }
+        
+        return productos;
+      })
+    );
   }
 
   /**
