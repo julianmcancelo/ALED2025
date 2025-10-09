@@ -25,9 +25,10 @@ import { GestionProductos } from './admin/gestion-productos/gestion-productos'; 
 import { GestionPedidosComponent } from './admin/gestion-pedidos/gestion-pedidos.component';
 import { PerfilUsuarioComponent } from './perfil-usuario/perfil-usuario';
 import { authGuard } from './auth/auth.guard';
-import { PagoExitoso } from './pago-exitoso/pago-exitoso';
-import { PagoFallido } from './pago-fallido/pago-fallido';
-import { PagoPendiente } from './pago-pendiente/pago-pendiente';
+import { PagoExitosoComponent } from './pago-exitoso/pago-exitoso.component';
+import { PagoFallidoComponent } from './pago-fallido/pago-fallido.component';
+import { PagoPendienteComponent } from './pago-pendiente/pago-pendiente.component';
+import { MisPedidosComponent } from './mis-pedidos/mis-pedidos.component';
 
 // Importaciones de Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
@@ -80,9 +81,10 @@ export const appConfig: ApplicationConfig = {
       { path: 'producto/:id', component: DetalleProductoComponent }, // Ruta alternativa para el detalle del producto
       { path: 'primer-usuario', component: PrimerUsuario },
       { path: 'perfil', component: PerfilUsuarioComponent, canActivate: [authGuard] }, // Nueva ruta de perfil
-      { path: 'pago-exitoso', component: PagoExitoso },
-      { path: 'pago-fallido', component: PagoFallido },
-      { path: 'pago-pendiente', component: PagoPendiente },
+      { path: 'mis-pedidos', component: MisPedidosComponent, canActivate: [authGuard] }, // Nueva ruta de mis pedidos
+      { path: 'pago-exitoso', component: PagoExitosoComponent },
+      { path: 'pago-fallido', component: PagoFallidoComponent },
+      { path: 'pago-pendiente', component: PagoPendienteComponent },
       {
         path: 'administracion',
         component: Admin,

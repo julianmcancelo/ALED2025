@@ -1,11 +1,11 @@
 "use strict";
 /**
  * ============================================================================
- * ALED 2025 - BACKEND FUNCTIONS (IMPLEMENTACIÓN COMPLETA)
+ * ALED 2025 - BACKEND FUNCTIONS (NUEVA IMPLEMENTACIÓN)
  * ============================================================================
  *
  * Sistema completo de e-commerce con integración a Mercado Pago
- * Registra TODOS los estados de pago para usuario y administrador
+ * Implementación limpia y optimizada para producción
  *
  * Autores: Cancelo Julian & Nicolas Otero
  * Materia: ALED III - T.A.S.
@@ -13,7 +13,7 @@
  * ============================================================================
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserOrders = exports.testConnection = exports.receiveWebhook = exports.createPreference = void 0;
+exports.testConnection = exports.receiveWebhook = exports.createPreference = void 0;
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 const mercadopago_1 = require("mercadopago");
@@ -53,25 +53,26 @@ function setCorsHeaders(response, origin) {
 exports.createPreference = functions.region('us-central1').https.onRequest(async (req, res) => {
     var _a, _b, _c;
     console.log('🚀 Iniciando createPreference - Producción');
+    // Configurar CORS
     setCorsHeaders(res, req.headers.origin);
+    // Manejar preflight
     if (req.method === 'OPTIONS') {
         res.status(204).send('');
+        return;
     }
     try {
+        // Validar método HTTP
         if (req.method !== 'POST') {
             res.status(405).json({ error: 'Método no permitido' });
             return;
         }
         // Validar datos de entrada
-        const { items, usuario } = req.body;
+        const { items } = req.body;
         if (!items || !Array.isArray(items) || items.length === 0) {
             res.status(400).json({ error: 'Items del carrito requeridos' });
             return;
         }
-        if (!usuario || !usuario.email) {
-            res.status(400).json({ error: 'Información del usuario requerida' });
-            return;
-        }
+        // Validar estructura de cada item
         for (const item of items) {
             if (!((_a = item.producto) === null || _a === void 0 ? void 0 : _a.id) || !((_b = item.producto) === null || _b === void 0 ? void 0 : _b.nombre) || !((_c = item.producto) === null || _c === void 0 ? void 0 : _c.precio) || !item.cantidad) {
                 res.status(400).json({ error: 'Estructura de item inválida' });
@@ -79,6 +80,7 @@ exports.createPreference = functions.region('us-central1').https.onRequest(async
             }
         }
         console.log('📦 Items recibidos:', items.length);
+        // Crear preferencia
         const preference = new mercadopago_1.Preference(mpClient);
         const preferenceData = {
             items: items.map((item) => ({
@@ -88,67 +90,17 @@ exports.createPreference = functions.region('us-central1').https.onRequest(async
                 unit_price: Number(item.producto.precio),
                 currency_id: 'ARS'
             })),
-            payer: {
-                name: usuario.nombre,
-                surname: usuario.apellido,
-                email: usuario.email,
-                phone: {
-                    area_code: '11',
-                    number: usuario.telefono || '1234567890'
-                },
-                address: {
-                    street_name: usuario.direccion || 'Sin especificar',
-                    street_number: '123',
-                    zip_code: usuario.codigoPostal || '1000'
-                }
-            },
             back_urls: {
                 success: 'https://aled3-6b4ee.web.app/pago-exitoso',
                 failure: 'https://aled3-6b4ee.web.app/pago-fallido',
                 pending: 'https://aled3-6b4ee.web.app/pago-pendiente'
             },
             auto_return: 'approved',
-            notification_url: 'https://us-central1-aled3-6b4ee.cloudfunctions.net/receiveWebhook',
-            external_reference: `user_${usuario.id}_${Date.now()}`
+            notification_url: 'https://us-central1-aled3-6b4ee.cloudfunctions.net/receiveWebhook'
         };
         console.log('💳 Creando preferencia en Mercado Pago...');
         const result = await preference.create({ body: preferenceData });
         console.log('✅ Preferencia creada:', result.id);
-        // Crear un registro preliminar del pedido con los datos que tenemos
-        try {
-            const firestore = admin.firestore();
-            const pedidoPreliminar = {
-                id: `pedido_preliminar_${result.id}`,
-                preferenceId: result.id,
-                estado: 'creado',
-                total: items.reduce((sum, item) => sum + (item.cantidad * item.producto.precio), 0),
-                moneda: 'ARS',
-                items: items.map((item) => ({
-                    id: item.producto.id,
-                    nombre: item.producto.nombre,
-                    cantidad: item.cantidad,
-                    precio: item.producto.precio,
-                    subtotal: item.cantidad * item.producto.precio
-                })),
-                cliente: {
-                    email: usuario.email,
-                    nombre: usuario.nombre,
-                    apellido: usuario.apellido,
-                    telefono: usuario.telefono || 'No disponible',
-                    direccion: usuario.direccion || 'No disponible',
-                    codigoPostal: usuario.codigoPostal || 'No disponible'
-                },
-                fechaCreacion: admin.firestore.FieldValue.serverTimestamp(),
-                fechaActualizacion: admin.firestore.FieldValue.serverTimestamp(),
-                externalReference: `user_${usuario.id}_${Date.now()}`
-            };
-            await firestore.collection('pedidos').doc(pedidoPreliminar.id).set(pedidoPreliminar);
-            console.log('📝 Pedido preliminar creado:', pedidoPreliminar.id);
-        }
-        catch (error) {
-            console.error('⚠️ Error creando pedido preliminar:', error);
-            // No fallar la respuesta por esto
-        }
         res.status(200).json({
             id: result.id,
             init_point: result.init_point,
@@ -157,6 +109,10 @@ exports.createPreference = functions.region('us-central1').https.onRequest(async
     }
     catch (error) {
         console.error('❌ Error creando preferencia:', error);
+        console.error('Detalles:', error.message);
+        if (error.cause) {
+            console.error('Causa:', JSON.stringify(error.cause, null, 2));
+        }
         res.status(500).json({
             error: 'Error interno del servidor',
             message: error.message
@@ -168,12 +124,14 @@ exports.createPreference = functions.region('us-central1').https.onRequest(async
 // ============================================================================
 exports.receiveWebhook = functions.region('us-central1').https.onRequest(async (req, res) => {
     console.log('🔔 Webhook recibido de Mercado Pago');
+    // Configurar CORS
     setCorsHeaders(res, req.headers.origin);
     if (req.method === 'OPTIONS') {
         res.status(204).send('');
         return;
     }
     try {
+        // Extraer headers de seguridad
         const signature = req.headers['x-signature'];
         const requestId = req.headers['x-request-id'];
         if (!signature || !requestId) {
@@ -181,6 +139,7 @@ exports.receiveWebhook = functions.region('us-central1').https.onRequest(async (
             res.status(400).send('Headers requeridos faltantes');
             return;
         }
+        // Validar firma HMAC
         const isValidSignature = validateWebhookSignature(req.body, signature, requestId);
         if (!isValidSignature) {
             console.warn('🚨 Firma de webhook inválida - Posible ataque');
@@ -188,11 +147,14 @@ exports.receiveWebhook = functions.region('us-central1').https.onRequest(async (
             return;
         }
         console.log('✅ Firma de webhook válida');
+        // Procesar solo notificaciones de pago
         if (req.body.type === 'payment') {
             const paymentId = req.body.data.id;
             console.log('💰 Procesando pago:', paymentId);
+            // Obtener detalles del pago
             const payment = await new mercadopago_1.Payment(mpClient).get({ id: paymentId });
             console.log('📊 Estado del pago:', payment.status);
+            // Procesar según el estado
             switch (payment.status) {
                 case 'approved':
                     await processApprovedPayment(payment);
@@ -208,7 +170,7 @@ exports.receiveWebhook = functions.region('us-central1').https.onRequest(async (
                     break;
                 default:
                     console.log('❓ Estado desconocido:', payment.status);
-                    await processUnknownPayment(payment);
+                    await logTransaction(payment, 'unknown');
             }
             res.status(200).send('OK');
         }
@@ -223,8 +185,11 @@ exports.receiveWebhook = functions.region('us-central1').https.onRequest(async (
     }
 });
 // ============================================================================
-// FUNCIONES DE PROCESAMIENTO DE PAGOS
+// FUNCIONES AUXILIARES
 // ============================================================================
+/**
+ * Valida la firma HMAC del webhook
+ */
 function validateWebhookSignature(body, signature, requestId) {
     try {
         const [ts, hash] = signature.split(',');
@@ -242,88 +207,58 @@ function validateWebhookSignature(body, signature, requestId) {
         return false;
     }
 }
+/**
+ * Procesa pagos aprobados
+ */
 async function processApprovedPayment(payment) {
     var _a, _b;
     console.log('✅ Procesando pago aprobado:', payment.id);
     try {
-        await createOrderWithStatus(payment, 'completado');
-        console.log('📝 Pedido completado creado');
+        // 1. Crear pedido
+        await createOrder(payment);
+        console.log('📝 Pedido creado');
+        // 2. Actualizar stock
         if (((_b = (_a = payment.additional_info) === null || _a === void 0 ? void 0 : _a.items) === null || _b === void 0 ? void 0 : _b.length) > 0) {
             await updateStock(payment.additional_info.items);
             console.log('📦 Stock actualizado');
         }
+        // 3. Registrar transacción
         await logTransaction(payment, 'approved');
-        console.log('📊 Transacción aprobada registrada');
+        console.log('📊 Transacción registrada');
     }
     catch (error) {
         console.error('❌ Error procesando pago aprobado:', error);
         await logTransaction(payment, 'error', error);
     }
 }
+/**
+ * Procesa pagos pendientes
+ */
 async function processPendingPayment(payment) {
-    console.log('⏳ Procesando pago pendiente:', payment.id);
-    try {
-        await createOrderWithStatus(payment, 'pendiente');
-        console.log('📝 Pedido pendiente creado');
-        await logTransaction(payment, 'pending');
-        console.log('📊 Transacción pendiente registrada');
-    }
-    catch (error) {
-        console.error('❌ Error procesando pago pendiente:', error);
-        await logTransaction(payment, 'error', error);
-    }
+    console.log('⏳ Pago pendiente:', payment.id);
+    await logTransaction(payment, 'pending');
 }
+/**
+ * Procesa pagos rechazados
+ */
 async function processRejectedPayment(payment) {
-    console.log('❌ Procesando pago rechazado:', payment.id);
-    try {
-        await createOrderWithStatus(payment, 'rechazado');
-        console.log('📝 Pedido rechazado registrado');
-        await logTransaction(payment, 'rejected');
-        console.log('📊 Transacción rechazada registrada');
-    }
-    catch (error) {
-        console.error('❌ Error procesando pago rechazado:', error);
-        await logTransaction(payment, 'error', error);
-    }
+    console.log('❌ Pago rechazado:', payment.id);
+    await logTransaction(payment, 'rejected');
 }
+/**
+ * Procesa reembolsos
+ */
 async function processRefundedPayment(payment) {
-    var _a, _b;
-    console.log('💰 Procesando reembolso:', payment.id);
-    try {
-        await updateOrderStatus(payment, 'reembolsado');
-        console.log('📝 Pedido marcado como reembolsado');
-        if (((_b = (_a = payment.additional_info) === null || _a === void 0 ? void 0 : _a.items) === null || _b === void 0 ? void 0 : _b.length) > 0) {
-            await restoreStock(payment.additional_info.items);
-            console.log('📦 Stock restaurado');
-        }
-        await logTransaction(payment, 'refunded');
-        console.log('📊 Transacción de reembolso registrada');
-    }
-    catch (error) {
-        console.error('❌ Error procesando reembolso:', error);
-        await logTransaction(payment, 'error', error);
-    }
+    console.log('💰 Pago reembolsado:', payment.id);
+    await logTransaction(payment, 'refunded');
+    // Aquí podrías restaurar el stock si es necesario
 }
-async function processUnknownPayment(payment) {
-    console.log('❓ Procesando estado desconocido:', payment.id, payment.status);
-    try {
-        await createOrderWithStatus(payment, 'desconocido');
-        console.log('📝 Pedido con estado desconocido registrado');
-        await logTransaction(payment, 'unknown');
-        console.log('📊 Transacción desconocida registrada');
-    }
-    catch (error) {
-        console.error('❌ Error procesando estado desconocido:', error);
-        await logTransaction(payment, 'error', error);
-    }
-}
-// ============================================================================
-// FUNCIONES DE BASE DE DATOS
-// ============================================================================
-async function createOrderWithStatus(payment, estado) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1;
+/**
+ * Crea un pedido en Firestore
+ */
+async function createOrder(payment) {
+    var _a, _b, _c, _d, _e, _f, _g;
     const firestore = admin.firestore();
-    console.log('📋 Datos completos del pago recibido:', JSON.stringify(payment, null, 2));
     const items = ((_b = (_a = payment.additional_info) === null || _a === void 0 ? void 0 : _a.items) === null || _b === void 0 ? void 0 : _b.map((item) => ({
         id: item.id,
         nombre: item.title,
@@ -331,61 +266,35 @@ async function createOrderWithStatus(payment, estado) {
         precio: item.unit_price,
         subtotal: item.quantity * item.unit_price
     }))) || [];
-    // Intentar obtener datos del cliente de múltiples fuentes
-    const clienteData = {
-        email: ((_c = payment.payer) === null || _c === void 0 ? void 0 : _c.email) || ((_e = (_d = payment.additional_info) === null || _d === void 0 ? void 0 : _d.payer) === null || _e === void 0 ? void 0 : _e.email) || 'no-disponible@email.com',
-        nombre: ((_f = payment.payer) === null || _f === void 0 ? void 0 : _f.first_name) || ((_h = (_g = payment.additional_info) === null || _g === void 0 ? void 0 : _g.payer) === null || _h === void 0 ? void 0 : _h.first_name) || 'Nombre no disponible',
-        apellido: ((_j = payment.payer) === null || _j === void 0 ? void 0 : _j.last_name) || ((_l = (_k = payment.additional_info) === null || _k === void 0 ? void 0 : _k.payer) === null || _l === void 0 ? void 0 : _l.last_name) || 'Apellido no disponible',
-        telefono: ((_o = (_m = payment.payer) === null || _m === void 0 ? void 0 : _m.phone) === null || _o === void 0 ? void 0 : _o.number) || ((_r = (_q = (_p = payment.additional_info) === null || _p === void 0 ? void 0 : _p.payer) === null || _q === void 0 ? void 0 : _q.phone) === null || _r === void 0 ? void 0 : _r.number) || 'No disponible',
-        direccion: ((_t = (_s = payment.payer) === null || _s === void 0 ? void 0 : _s.address) === null || _t === void 0 ? void 0 : _t.street_name) || ((_w = (_v = (_u = payment.additional_info) === null || _u === void 0 ? void 0 : _u.payer) === null || _v === void 0 ? void 0 : _v.address) === null || _w === void 0 ? void 0 : _w.street_name) || 'No disponible',
-        codigoPostal: ((_y = (_x = payment.payer) === null || _x === void 0 ? void 0 : _x.address) === null || _y === void 0 ? void 0 : _y.zip_code) || ((_1 = (_0 = (_z = payment.additional_info) === null || _z === void 0 ? void 0 : _z.payer) === null || _0 === void 0 ? void 0 : _0.address) === null || _1 === void 0 ? void 0 : _1.zip_code) || 'No disponible'
-    };
-    console.log('👤 Datos del cliente extraídos:', clienteData);
     const order = {
         id: `pedido_${payment.id}`,
         paymentId: payment.id.toString(),
-        estado: estado,
+        estado: 'completado',
         total: payment.transaction_amount,
         moneda: payment.currency_id,
         metodoPago: payment.payment_method_id,
         items: items,
-        cliente: clienteData,
+        cliente: {
+            email: (_c = payment.payer) === null || _c === void 0 ? void 0 : _c.email,
+            nombre: (_d = payment.payer) === null || _d === void 0 ? void 0 : _d.first_name,
+            apellido: (_e = payment.payer) === null || _e === void 0 ? void 0 : _e.last_name,
+            telefono: (_g = (_f = payment.payer) === null || _f === void 0 ? void 0 : _f.phone) === null || _g === void 0 ? void 0 : _g.number
+        },
         fechaCreacion: admin.firestore.FieldValue.serverTimestamp(),
-        fechaAprobacion: payment.date_approved ? new Date(payment.date_approved) : null,
-        fechaActualizacion: admin.firestore.FieldValue.serverTimestamp(),
-        motivoRechazo: payment.status_detail || null,
-        externalReference: payment.external_reference || null,
+        fechaAprobacion: payment.date_approved ? new Date(payment.date_approved) : admin.firestore.FieldValue.serverTimestamp(),
         detallesPago: {
             id: payment.id,
             status: payment.status,
             status_detail: payment.status_detail,
             payment_type_id: payment.payment_type_id,
-            installments: payment.installments,
-            failure_detail: payment.failure_detail || null,
-            payer_info: payment.payer || null
+            installments: payment.installments
         }
     };
-    console.log('💾 Guardando pedido:', order.id);
     await firestore.collection('pedidos').doc(order.id).set(order);
-    console.log('✅ Pedido guardado exitosamente');
 }
-async function updateOrderStatus(payment, nuevoEstado) {
-    const firestore = admin.firestore();
-    const pedidoId = `pedido_${payment.id}`;
-    await firestore.collection('pedidos').doc(pedidoId).update({
-        estado: nuevoEstado,
-        fechaActualizacion: admin.firestore.FieldValue.serverTimestamp(),
-        motivoRechazo: payment.status_detail || null,
-        detallesPago: {
-            id: payment.id,
-            status: payment.status,
-            status_detail: payment.status_detail,
-            payment_type_id: payment.payment_type_id,
-            installments: payment.installments,
-            failure_detail: payment.failure_detail || null
-        }
-    });
-}
+/**
+ * Actualiza el stock de productos
+ */
 async function updateStock(items) {
     const firestore = admin.firestore();
     const batch = firestore.batch();
@@ -408,25 +317,9 @@ async function updateStock(items) {
     }
     await batch.commit();
 }
-async function restoreStock(items) {
-    const firestore = admin.firestore();
-    const batch = firestore.batch();
-    for (const item of items) {
-        const productRef = firestore.collection('productos').doc(item.id);
-        const productDoc = await productRef.get();
-        if (productDoc.exists) {
-            const productData = productDoc.data();
-            const currentStock = (productData === null || productData === void 0 ? void 0 : productData.stock) || 0;
-            const restoredStock = currentStock + item.quantity;
-            batch.update(productRef, {
-                stock: restoredStock,
-                fechaActualizacion: admin.firestore.FieldValue.serverTimestamp()
-            });
-            console.log(`📦 Stock restaurado - Producto ${item.id}: ${currentStock} → ${restoredStock}`);
-        }
-    }
-    await batch.commit();
-}
+/**
+ * Registra transacciones para auditoría
+ */
 async function logTransaction(payment, status, error) {
     var _a;
     try {
@@ -443,8 +336,7 @@ async function logTransaction(payment, status, error) {
                 payment_method_id: payment.payment_method_id,
                 payer_email: (_a = payment.payer) === null || _a === void 0 ? void 0 : _a.email,
                 date_created: payment.date_created,
-                date_approved: payment.date_approved,
-                failure_detail: payment.failure_detail || null
+                date_approved: payment.date_approved
             },
             error: error ? {
                 message: error.message,
@@ -470,7 +362,7 @@ exports.testConnection = functions.region('us-central1').https.onRequest(async (
     }
     try {
         const firestore = admin.firestore();
-        await firestore.collection('test').doc('connection').get();
+        const testDoc = await firestore.collection('test').doc('connection').get();
         res.status(200).json({
             status: 'OK',
             timestamp: new Date().toISOString(),
@@ -482,33 +374,4 @@ exports.testConnection = functions.region('us-central1').https.onRequest(async (
         res.status(500).json({ error: 'Connection failed' });
     }
 });
-// ============================================================================
-// FUNCIÓN: OBTENER PEDIDOS DE USUARIO
-// ============================================================================
-exports.getUserOrders = functions.region('us-central1').https.onRequest(async (req, res) => {
-    setCorsHeaders(res, req.headers.origin);
-    if (req.method === 'OPTIONS') {
-        res.status(204).send('');
-        return;
-    }
-    try {
-        const { email } = req.query;
-        if (!email) {
-            res.status(400).json({ error: 'Email requerido' });
-            return;
-        }
-        const firestore = admin.firestore();
-        const ordersSnapshot = await firestore
-            .collection('pedidos')
-            .where('cliente.email', '==', email)
-            .orderBy('fechaCreacion', 'desc')
-            .get();
-        const orders = ordersSnapshot.docs.map(doc => (Object.assign({ id: doc.id }, doc.data())));
-        res.status(200).json({ orders });
-    }
-    catch (error) {
-        console.error('❌ Error obteniendo pedidos:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
-});
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index-new.js.map

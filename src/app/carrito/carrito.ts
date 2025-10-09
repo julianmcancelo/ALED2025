@@ -293,14 +293,41 @@ export class Carrito {
     const items = this.carritoService.items();
     if (items.length === 0) return;
 
+    // Obtener información del usuario actual
+    const usuario = this.authService.currentUserSignal();
+    if (!usuario) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sesión requerida',
+        text: 'Debes iniciar sesión para realizar una compra.',
+        confirmButtonText: 'Iniciar Sesión'
+      });
+      return;
+    }
+
     this.cargandoMP.set(true);
     this.activeOffcanvas.dismiss('Processing payment');
+    const functionUrl = 'https://us-central1-aled3-6b4ee.cloudfunctions.net/createPreference';
 
-    const functionUrl = 'https://us-central1-aled3-6b4ee.cloudfunctions.net/createPreferenceV1';
+    // Enviar items del carrito junto con información del usuario
+    const payload = {
+      items,
+      usuario: {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        email: usuario.email,
+        telefono: usuario.telefono,
+        direccion: usuario.direccion,
+        ciudad: usuario.ciudad,
+        codigoPostal: usuario.codigoPostal
+      },
+      metodoEntrega
+    };
 
-    this.http.post<{ id: string }>(functionUrl, { items, metodoEntrega }).subscribe({
+    this.http.post<{ id: string }>(functionUrl, payload).subscribe({
       next: (res) => {
-        // PRODUCCIÓN: Usar la URL real de Mercado Pago (no sandbox)
+        // PRODUCCIÓN: Usando Mercado Pago en producción
         window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?preference_id=${res.id}`;
       },
       error: (err) => {
