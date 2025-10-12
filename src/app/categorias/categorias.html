@@ -1,0 +1,133 @@
+<!-- Contenedor principal de la página de categorías -->
+<div class="container-custom py-8">
+
+  <!-- Encabezado de categorías -->
+  <header class="text-center mb-12">
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">
+      <i class="bi bi-grid-3x3-gap-fill mr-3 text-[#0077b6]"></i>
+    </h1>
+    <p class="text-xl text-gray-600 mb-2">
+      Explora nuestros productos organizados por categorías
+    </p>
+    <p class="text-sm text-gray-500">
+      {{ totalProductos }} producto{{ totalProductos === 1 ? '' : 's' }} en {{ (categorias$ | async)?.length || 0 }} categoría{{ (categorias$ | async)?.length === 1 ? '' : 's' }}
+    </p>
+  </header>
+
+  @if (categorias$ | async; as categorias) {
+    <!-- Si hay categorías, las mostramos en una cuadrícula -->
+    @if (categorias.length > 0) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        @for (categoria of categorias; track categoria.nombre) {
+          <div class="categoria-card group cursor-pointer" (click)="verProductosDeCategoria(categoria.nombre)">
+            
+            <!-- Imagen de la categoría -->
+            <div class="relative overflow-hidden rounded-t-xl">
+              <img 
+                [src]="categoria.imagen" 
+                [alt]="'Categoría ' + categoria.nombre"
+                class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+                (error)="onImageError($event)"
+              >
+              
+              <!-- Overlay con efecto hover -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div class="absolute bottom-4 left-4 right-4">
+                  <button class="w-full bg-white/90 text-[#0077b6] py-2 px-4 rounded-lg font-semibold backdrop-blur-sm hover:bg-white transition-colors">
+                    <i class="bi bi-arrow-right-circle-fill mr-2"></i>
+                    Ver Productos
+                  </button>
+                </div>
+              </div>
+
+              <!-- Badge con cantidad de productos -->
+              <div class="absolute top-4 right-4">
+                <span class="bg-[#0077b6] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                  {{ categoria.cantidad }} producto{{ categoria.cantidad === 1 ? '' : 's' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Información de la categoría -->
+            <div class="bg-white p-6 rounded-b-xl border border-t-0 border-gray-200 group-hover:border-[#0077b6] transition-colors">
+              <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-[#0077b6] transition-colors">
+                {{ categoria.nombre }}
+              </h3>
+              
+              <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                {{ categoria.descripcion }}
+              </p>
+
+              <!-- Estadísticas -->
+              <div class="flex items-center justify-between text-sm text-gray-500">
+                <span class="flex items-center">
+                  <i class="bi bi-box-seam mr-1"></i>
+                  {{ categoria.cantidad }} disponible{{ categoria.cantidad === 1 ? '' : 's' }}
+                </span>
+                
+                <span class="flex items-center text-[#0077b6] font-medium group-hover:text-[#005a8d] transition-colors">
+                  Explorar
+                  <i class="bi bi-chevron-right ml-1"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Sección adicional con información útil -->
+      <div class="mt-16 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">
+            <i class="bi bi-lightbulb-fill text-yellow-500 mr-2"></i>
+            ¿No encuentras lo que buscas?
+          </h2>
+          <p class="text-gray-600 mb-6 max-w-2xl mx-auto">
+            Utiliza nuestro buscador inteligente para encontrar productos específicos por nombre, descripción o características.
+          </p>
+          
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <button 
+              class="bg-[#0077b6] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#005a8d] transition-colors flex items-center justify-center"
+              (click)="router.navigate(['/productos'])"
+            >
+              <i class="bi bi-search mr-2"></i>
+              Ver Todos los Productos
+            </button>
+            
+            <button 
+              class="border-2 border-[#0077b6] text-[#0077b6] px-6 py-3 rounded-lg font-semibold hover:bg-[#0077b6] hover:text-white transition-colors flex items-center justify-center"
+              (click)="router.navigate(['/'])"
+            >
+              <i class="bi bi-house-fill mr-2"></i>
+              Volver al Inicio
+            </button>
+          </div>
+        </div>
+      </div>
+
+    } @else {
+      <!-- Mensaje que se muestra si no hay categorías -->
+      <div class="text-center py-12">
+        <i class="bi bi-folder-x text-6xl text-gray-400 mb-4"></i>
+        <h3 class="text-2xl font-semibold text-gray-900 mb-2">No hay categorías disponibles</h3>
+        <p class="text-gray-600 mb-6">Parece que aún no hay productos organizados en categorías.</p>
+        
+        <button 
+          class="bg-[#0077b6] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#005a8d] transition-colors"
+          (click)="router.navigate(['/productos'])"
+        >
+          <i class="bi bi-arrow-left mr-2"></i>
+          Ver Todos los Productos
+        </button>
+      </div>
+    }
+  } @else {
+    <!-- Indicador de carga que se muestra mientras se obtienen los datos -->
+    <div class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077b6] mb-4"></div>
+      <p class="text-gray-600">Cargando categorías...</p>
+    </div>
+  }
+
+</div>

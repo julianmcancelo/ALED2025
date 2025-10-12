@@ -2,9 +2,8 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { UserService } from '../../servicios/user';
+import { UserSupabaseService } from '../../servicios/user-supabase.service';
 import Swal from 'sweetalert2';
-import * as bcrypt from 'bcryptjs'; // Importar bcrypt
 
 // Importaciones de Angular Material
 import { MatCardModule } from '@angular/material/card';
@@ -28,13 +27,15 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class PrimerUsuario {
   registerForm: FormGroup;
-  private userService = inject(UserService);
+  isLoading = false;
+  private userService = inject(UserSupabaseService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
   constructor() {
     this.registerForm = this.fb.group({
       nombre: ['', Validators.required],
+      apellido: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
@@ -45,33 +46,56 @@ export class PrimerUsuario {
       return;
     }
 
+    this.isLoading = true;
+
     try {
-      const { nombre, email, password } = this.registerForm.value;
+      const { nombre, apellido, email, password } = this.registerForm.value;
 
-      // --- ENCRIPTACIÓN DE LA CONTRASEÑA ---
-      // 1. Generamos un 'salt' para asegurar que el hash sea único.
-      const salt = bcrypt.genSaltSync(10);
-      // 2. Hasheamos la contraseña.
-      const hashedPassword = bcrypt.hashSync(password, salt);
+      console.log('🔐 Creando primer usuario administrador...');
 
-      // 3. Enviamos los datos con la contraseña ya hasheada al servicio.
-      await this.userService.createAdminUser({ nombre, email, password: hashedPassword });
+      // Crear el primer usuario administrador usando el servicio Supabase
+      const nuevoAdmin = await this.userService.createUser({
+        nombre,
+        apellido,
+        email,
+        password,
+        dni: '', // DNI opcional para el primer admin
+        rol: 'admin',
+        novedades: false,
+        terminos: true
+      }).toPromise();
+
+      console.log('✅ Primer administrador creado exitosamente:', nuevoAdmin?.email);
 
       await Swal.fire({
         icon: 'success',
         title: '¡Administrador creado!',
-        text: 'Usuario administrador creado con éxito',
-        confirmButtonText: 'Continuar',
+        text: `Usuario administrador "${nombre}" creado con éxito. Ya puedes iniciar sesión.`,
+        confirmButtonText: 'Ir al inicio',
+        timer: 3000,
+        timerProgressBar: true
       });
+
       this.router.navigate(['/']); // Redirige a la página principal
-    } catch (error) {
-      console.error('Error al crear el primer usuario:', error);
+    } catch (error: any) {
+      console.error('❌ Error al crear el primer usuario:', error);
+      
+      let errorMessage = 'Hubo un error al crear el usuario administrador.';
+      
+      if (error?.message?.includes('duplicate key')) {
+        errorMessage = 'Ya existe un usuario con ese email.';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
       await Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: 'Hubo un error al crear el usuario. Revisa la consola.',
-        confirmButtonText: 'Entendido',
+        title: 'Error al crear administrador',
+        text: errorMessage,
+        confirmButtonText: 'Intentar de nuevo',
       });
+    } finally {
+      this.isLoading = false;
     }
   }
 }

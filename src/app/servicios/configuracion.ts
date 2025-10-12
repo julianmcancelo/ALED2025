@@ -1,5 +1,5 @@
-import { Injectable, inject, signal } from '@angular/core';
-import { Firestore, doc, setDoc, onSnapshot, DocumentData } from '@angular/fire/firestore';
+import { Injectable, signal } from '@angular/core';
+import { supabase, TABLES } from '../config/supabase.config';
 
 /**
  * @interface ConfiguracionSitio
@@ -16,15 +16,12 @@ export interface ConfiguracionSitio {
 
 /**
  * @class ConfiguracionService
- * Gestiona la configuración global del sitio almacenada en Firestore.
+ * Gestiona la configuración global del sitio almacenada en Supabase.
  */
 @Injectable({
   providedIn: 'root',
 })
 export class ConfiguracionService {
-  // --- INYECCIÓN DE DEPENDENCIAS ---
-  private firestore: Firestore = inject(Firestore);
-
   // --- SEÑAL DE ESTADO (SIGNAL) ---
   /**
    * @signal configuracionSignal
@@ -32,63 +29,123 @@ export class ConfiguracionService {
    * Se inicializa con un valor por defecto mientras se cargan los datos.
    */
   configuracionSignal = signal<ConfiguracionSitio>({
-    titulo: 'Cargando...',
-    subtitulo: '...',
+    titulo: 'ALED2025 - E-commerce',
+    subtitulo: 'Proyecto desarrollado con Angular y Supabase',
   });
 
   constructor() {
+    console.log('⚙️ Inicializando ConfiguracionService con Supabase...');
     // --- LÓGICA DE ARRANQUE: CARGAR CONFIGURACIÓN ---
-    // Nos conectamos a Firestore en cuanto el servicio es creado.
-    this.escucharCambiosDeConfiguracion();
+    this.cargarConfiguracion();
   }
 
   /**
-   * Se suscribe a los cambios del documento de configuración en Firestore.
-   * onSnapshot nos da actualizaciones en tiempo real.
+   * Carga la configuración desde Supabase.
    * @private
    */
-  private escucharCambiosDeConfiguracion(): void {
-    const docRef = doc(this.firestore, 'configuracion', 'sitio');
+  private async cargarConfiguracion(): Promise<void> {
+    try {
+      console.log('📋 Cargando configuración desde Supabase...');
+      
+      // Intentar cargar configuración desde Supabase
+      const { data, error } = await supabase
+        .from(TABLES.CONFIGURACION)
+        .select('*')
+        .eq('clave', 'sitio')
+        .single();
 
-    onSnapshot(
-      docRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          // Si el documento existe, actualizamos la señal con sus datos.
-          this.configuracionSignal.set(snapshot.data() as ConfiguracionSitio);
-        } else {
-          // Si el documento no existe, lo creamos con valores por defecto.
-          console.warn(
-            'No se encontró configuración en Firestore. Creando documento por defecto...',
-          );
-          // Esta llamada a 'actualizarConfiguracion' creará el documento.
-          this.actualizarConfiguracion({
-            titulo: 'Proyecto Final',
-            subtitulo:
-              'Una aplicación de demostración que integra un sistema de autenticación y un carrito de compras funcional.',
-          });
-        }
-      },
-      (error) => {
-        // Manejo de errores en caso de que falle la conexión.
-        console.error('Error al escuchar la configuración del sitio:', error);
+      if (error && error.code !== 'PGRST116' && error.code !== 'PGRST205') {
+        // Error diferente a "no encontrado" o "tabla no existe"
+        console.error('❌ Error al cargar configuración:', error);
+        // No lanzar error, usar configuración por defecto
+        console.log('⚠️ Usando configuración por defecto debido a error');
+        return;
+      }
+
+      if (data) {
+        // Si existe configuración, la usamos
+        console.log('✅ Configuración cargada desde Supabase');
         this.configuracionSignal.set({
-          titulo: 'Error al cargar',
-          subtitulo: 'Intente de nuevo más tarde.',
+          titulo: data.titulo || 'ALED2025 - E-commerce',
+          subtitulo: data.subtitulo || 'Proyecto desarrollado con Angular y Supabase'
         });
-      },
-    );
+      } else {
+        // Si no existe, crear configuración por defecto
+        console.log('📝 Creando configuración por defecto...');
+        await this.crearConfiguracionPorDefecto();
+      }
+
+    } catch (error: any) {
+      console.error('❌ Error al cargar configuración:', error);
+      // Mantener valores por defecto en caso de error
+      this.configuracionSignal.set({
+        titulo: 'ALED2025 - E-commerce',
+        subtitulo: 'Proyecto desarrollado con Angular y Supabase'
+      });
+    }
   }
 
   /**
-   * Actualiza el documento de configuración en Firestore.
+   * Crea la configuración por defecto en Supabase.
+   * @private
+   */
+  private async crearConfiguracionPorDefecto(): Promise<void> {
+    try {
+      const configuracionDefecto = {
+        clave: 'sitio',
+        titulo: 'ALED2025 - E-commerce',
+        subtitulo: 'Proyecto desarrollado con Angular y Supabase por Cancelo Julian & Nicolas Otero'
+      };
+
+      const { error } = await supabase
+        .from(TABLES.CONFIGURACION)
+        .insert(configuracionDefecto);
+
+      if (error) {
+        console.error('❌ Error al crear configuración por defecto:', error);
+      } else {
+        console.log('✅ Configuración por defecto creada');
+        this.configuracionSignal.set({
+          titulo: configuracionDefecto.titulo,
+          subtitulo: configuracionDefecto.subtitulo
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ Error al crear configuración por defecto:', error);
+    }
+  }
+
+  /**
+   * Actualiza la configuración en Supabase.
    * @param nuevosDatos - Un objeto parcial con los datos a actualizar.
    * @returns Una promesa que se resuelve cuando la operación de escritura finaliza.
    */
-  actualizarConfiguracion(nuevosDatos: Partial<ConfiguracionSitio>): Promise<void> {
-    const docRef = doc(this.firestore, 'configuracion', 'sitio');
-    // Usamos setDoc con { merge: true } para actualizar solo los campos que enviamos,
-    // sin sobrescribir el documento entero. Si el documento no existe, lo crea.
-    return setDoc(docRef, nuevosDatos, { merge: true });
+  async actualizarConfiguracion(nuevosDatos: Partial<ConfiguracionSitio>): Promise<void> {
+    try {
+      console.log('💾 Actualizando configuración en Supabase...');
+      
+      const { error } = await supabase
+        .from(TABLES.CONFIGURACION)
+        .update(nuevosDatos)
+        .eq('clave', 'sitio');
+
+      if (error) {
+        console.error('❌ Error al actualizar configuración:', error);
+        throw error;
+      }
+
+      console.log('✅ Configuración actualizada correctamente');
+      
+      // Actualizar la señal local
+      const configuracionActual = this.configuracionSignal();
+      this.configuracionSignal.set({
+        ...configuracionActual,
+        ...nuevosDatos
+      });
+
+    } catch (error: any) {
+      console.error('❌ Error al actualizar configuración:', error);
+      throw error;
+    }
   }
 }

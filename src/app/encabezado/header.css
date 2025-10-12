@@ -1,12 +1,52 @@
+/* Estilos personalizados para el header */
 .navbar {
   position: fixed; /* Fija el elemento en la ventana */
-  top: 0; /* Lo pega a la parte superior */
-  left: 0;
-  right: 0;
-  z-index: 1030; /* Un z-index alto para que esté por encima de otros elementos */
+  top: 0;
 }
 
-/*
+/* Animación para el dropdown de categorías */
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Transiciones suaves para iconos */
+.bi-chevron-down {
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Efectos hover para los items del dropdown */
+.group:hover .group-hover\:text-\[\#0077b6\] {
+  color: #0077b6;
+}
+
+/* Sombra personalizada para el dropdown */
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Z-index alto para el dropdown */
+.z-50 {
+  z-index: 50;
+}
+
+/* Animación de entrada para el dropdown */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Aplicar animación al dropdown */
+.absolute.top-full {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* 
   Asegura que el menú desplegable del usuario se alinee a la derecha,
   evitando que se salga de la pantalla en vistas más pequeñas.
 */

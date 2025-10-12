@@ -14,6 +14,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   styleUrl: './sidebar.css',
 })
 export class Sidebar {
+  constructor() {
+    console.log('📋 Componente Sidebar inicializado');
+  }
+  
   // La lógica de navegación se maneja directamente en el template
   // con las directivas 'routerLink' y 'routerLinkActive'.
 }

@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { CarritoService } from '../servicios/carrito';
 import { AuthService } from '../auth/auth';
-import { UserService } from '../servicios/user';
+import { UserSupabaseService } from '../servicios/user-supabase.service';
 import { InicioDeSesion } from '../auth/inicio-sesion/inicio-sesion';
 import { Registro } from '../auth/registro/registro';
 import { AuthRequeridoComponent } from '../auth/auth-requerido/auth-requerido';
@@ -23,7 +23,7 @@ export class Carrito {
   protected activeOffcanvas = inject(NgbActiveOffcanvas);
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  private userService = inject(UserService);
+  private userService = inject(UserSupabaseService);
   private dialog = inject(MatDialog);
 
   cargandoMP = signal(false);
@@ -126,8 +126,8 @@ export class Carrito {
     const currentUser = this.authService.currentUserSignal();
     if (!currentUser?.id) return;
 
-    // Obtener datos del usuario desde Firestore
-    const userData = await this.userService.getUserById(currentUser.id);
+    // Obtener datos del usuario desde Supabase
+    const userData = await this.userService.getUserById(currentUser.id).toPromise();
 
     // Verificar si tiene datos de envío
     const tieneDatosEnvio = userData?.direccion && userData?.ciudad && userData?.codigoPostal;
@@ -269,8 +269,8 @@ export class Carrito {
     if (result.isConfirmed && result.value) {
       const currentUser = this.authService.currentUserSignal();
       if (currentUser?.id) {
-        // Guardar datos en Firestore
-        await this.userService.updateUser(currentUser.id, result.value);
+        // Guardar datos en Supabase
+        await this.userService.updateUser(currentUser.id, result.value).toPromise();
         
         Swal.fire({
           icon: 'success',

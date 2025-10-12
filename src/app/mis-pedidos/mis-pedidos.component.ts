@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth';
 import { Router } from '@angular/router';
-import { Firestore, collection, collectionData } from '@angular/fire/firestore';
+import { GestionPedidosService } from '../servicios/gestion-pedidos.service';
 
 interface Pedido {
   id: string;
@@ -230,7 +230,7 @@ export class MisPedidosComponent implements OnInit {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private firestore = inject(Firestore);
+  private gestionPedidosService = inject(GestionPedidosService);
 
   pedidos = signal<Pedido[]>([]);
   cargando = signal(false);
@@ -252,23 +252,10 @@ export class MisPedidosComponent implements OnInit {
     this.error.set(null);
 
     try {
-      const pedidosCollection = collection(this.firestore, 'pedidos');
-      
-      // Primero obtenemos todos los pedidos y luego filtramos por email
-      collectionData(pedidosCollection, { idField: 'docId' }).subscribe({
-        next: (todosPedidos: any[]) => {
-          // Filtrar pedidos del usuario actual
-          const pedidosUsuario = todosPedidos.filter(pedido => 
-            pedido.cliente?.email === user.email
-          );
-          
-          // Ordenar por fecha de creación (más recientes primero)
-          pedidosUsuario.sort((a, b) => {
-            const fechaA = a.fechaCreacion?.seconds || 0;
-            const fechaB = b.fechaCreacion?.seconds || 0;
-            return fechaB - fechaA;
-          });
-          
+      // Obtener pedidos del usuario actual usando el servicio de Supabase
+      this.gestionPedidosService.obtenerPedidosDeCliente(user.id).subscribe({
+        next: (pedidosUsuario: any[]) => {
+          console.log('📋 Pedidos del usuario obtenidos:', pedidosUsuario.length);
           console.log(`✅ ${pedidosUsuario.length} pedidos cargados para ${user.email}`);
           this.pedidos.set(pedidosUsuario as Pedido[]);
           this.cargando.set(false);

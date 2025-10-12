@@ -11,7 +11,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 
-// Importamos nuestro servicio de autenticación.
+// Importamos nuestros servicios de autenticación.
+import { UserSupabaseService } from '../../servicios/user-supabase.service';
 import { AuthService } from '../auth';
 
 @Component({
@@ -35,10 +36,12 @@ export class InicioDeSesion implements OnInit {
   loginError: string | null = null;
   isLoading = false;
 
-  // Inyectamos las dependencias.
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private dialogRef = inject(MatDialogRef<InicioDeSesion>);
+  constructor(
+    private fb: FormBuilder,
+    private userSupabaseService: UserSupabaseService,
+    private authService: AuthService,
+    private dialogRef: MatDialogRef<InicioDeSesion>
+  ) { }
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -58,7 +61,19 @@ export class InicioDeSesion implements OnInit {
 
     try {
       // Simplemente llamamos al método de login del servicio.
-      await this.authService.login(email, password);
+      const usuario = await this.userSupabaseService.verificarCredenciales(email, password);
+      if (!usuario) {
+        throw new Error('Credenciales inválidas');
+      }
+      
+      // Establecer el usuario en el AuthService usando el método de guardado forzado
+      this.authService.forceSaveSession(usuario);
+      
+      // Verificar que se guardó correctamente
+      setTimeout(() => {
+        this.authService.debugSession();
+      }, 200);
+      
       // Si la promesa se resuelve, el login fue exitoso y cerramos el diálogo.
       await Swal.fire({
         icon: 'success',

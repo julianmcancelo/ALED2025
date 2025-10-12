@@ -2,7 +2,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Firestore, collection, collectionData } from '@angular/fire/firestore';
+import { GestionPedidosService } from '../../servicios/gestion-pedidos.service';
 import Swal from 'sweetalert2';
 
 // Interfaces para los pedidos de Mercado Pago
@@ -347,7 +347,7 @@ interface PedidoMercadoPago {
   `]
 })
 export class GestionPedidosComponent implements OnInit {
-  private firestore = inject(Firestore);
+  private gestionPedidosService = inject(GestionPedidosService);
 
   // --- SIGNALS PARA ESTADO REACTIVO ---
   pedidos = signal<PedidoMercadoPago[]>([]);
@@ -409,14 +409,13 @@ export class GestionPedidosComponent implements OnInit {
    */
 
   /**
-   * Carga todos los pedidos desde Firestore
+   * Carga todos los pedidos desde Supabase
    */
   cargarPedidos(): void {
     console.log('📋 Cargando pedidos de Mercado Pago...');
     this.cargando.set(true);
     
-    const pedidosCollection = collection(this.firestore, 'pedidos');
-    collectionData(pedidosCollection, { idField: 'docId' }).subscribe({
+    this.gestionPedidosService.obtenerTodosLosPedidos().subscribe({
       next: (pedidos: any[]) => {
         console.log(`✅ ${pedidos.length} pedidos cargados`);
         this.pedidos.set(pedidos as PedidoMercadoPago[]);

@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Observable, map, switchMap } from 'rxjs';
-import { GestionProductosService, Producto } from '../servicios/gestion-productos.service';
+import { ProductosSupabaseService, ProductoConCategoria } from '../servicios/productos-supabase.service';
 import { CarritoService } from '../servicios/carrito';
 import Swal from 'sweetalert2';
 
@@ -19,7 +19,7 @@ import Swal from 'sweetalert2';
 })
 export class TiendaComponent implements OnInit {
   // --- INYECCIÓN DE DEPENDENCIAS ---
-  private productosService = inject(GestionProductosService);
+  private productosService = inject(ProductosSupabaseService);
   private carritoService = inject(CarritoService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -29,7 +29,7 @@ export class TiendaComponent implements OnInit {
    * Observable que contiene la lista de productos activos o filtrados por búsqueda.
    * La plantilla se suscribirá a este observable usando el pipe 'async'.
    */
-  productos$!: Observable<Producto[]>;
+  productos$!: Observable<ProductoConCategoria[]>;
 
   /**
    * Término de búsqueda actual (para mostrar en la interfaz)
@@ -41,18 +41,31 @@ export class TiendaComponent implements OnInit {
    */
   totalProductos: number = 0;
 
+  /**
+   * Indica si estamos en la página de ofertas
+   */
+  esOferta: boolean = false;
+
   ngOnInit(): void {
     console.log('🏪 Inicializando componente Tienda...');
     
-    // Escuchamos los cambios en los query parameters para detectar búsquedas
+    // Verificamos si estamos en la ruta de ofertas
+    this.esOferta = this.router.url.includes('/ofertas');
+    
+    // Escuchamos los cambios en los query parameters y la URL para detectar búsquedas y ofertas
     this.productos$ = this.route.queryParams.pipe(
       switchMap(params => {
         const buscar = params['buscar'] || '';
         this.terminoBusqueda = buscar;
         
         console.log(`🔍 Parámetros de búsqueda detectados: "${buscar}"`);
+        console.log(`🏷️ Es página de ofertas: ${this.esOferta}`);
         
-        if (buscar) {
+        if (this.esOferta && !buscar) {
+          // Si estamos en ofertas y no hay búsqueda específica, mostramos productos destacados
+          console.log('🎯 Mostrando productos destacados (ofertas)');
+          return this.productosService.obtenerProductosDestacados();
+        } else if (buscar) {
           console.log(`📋 Realizando búsqueda de productos con término: "${buscar}"`);
           return this.productosService.buscarProductos(buscar);
         } else {
@@ -67,6 +80,8 @@ export class TiendaComponent implements OnInit {
         // Mostramos información de los productos para debugging
         if (this.terminoBusqueda) {
           console.log(`🎯 Resultados de búsqueda para "${this.terminoBusqueda}": ${productos.length} productos`);
+        } else if (this.esOferta) {
+          console.log(`🏷️ Productos en oferta mostrados: ${productos.length} productos`);
         }
         
         return productos;
@@ -78,7 +93,7 @@ export class TiendaComponent implements OnInit {
    * Añade un producto al carrito de compras.
    * @param producto - El producto que se va a añadir.
    */
-  agregarAlCarrito(producto: Producto): void {
+  agregarAlCarrito(producto: ProductoConCategoria): void {
     this.carritoService.agregarProducto(producto);
     // Mostramos una notificación amigable al usuario.
     Swal.fire({
@@ -97,7 +112,7 @@ export class TiendaComponent implements OnInit {
    * Navega a la página de detalles del producto.
    * @param producto - El producto del cual se quieren ver los detalles.
    */
-  verDetalles(producto: Producto): void {
+  verDetalles(producto: ProductoConCategoria): void {
     this.router.navigate(['/producto', producto.id]);
   }
 

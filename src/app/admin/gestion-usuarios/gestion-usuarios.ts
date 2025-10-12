@@ -6,7 +6,7 @@ import * as bcrypt from 'bcryptjs';
 import Swal from 'sweetalert2';
 
 // Importamos nuestros servicios y componentes.
-import { UserService } from '../../servicios/user';
+import { UserSupabaseService } from '../../servicios/user-supabase.service';
 import { AuthService, AppUser } from '../../auth/auth';
 import { EditarUsuarioComponent } from './editar-usuario';
 
@@ -18,7 +18,7 @@ import { EditarUsuarioComponent } from './editar-usuario';
   styleUrls: ['./gestion-usuarios.css'],
 })
 export class GestionUsuarios {
-  private userService = inject(UserService);
+  private userService = inject(UserSupabaseService);
   private authService = inject(AuthService);
   public dialog = inject(MatDialog);
 
@@ -97,10 +97,9 @@ export class GestionUsuarios {
       // Es ideal para validaciones asíncronas.
       preConfirm: async (password) => {
         try {
-          // Obtenemos el perfil completo del admin para acceder a su contraseña hasheada.
-          const adminProfile = await this.userService.getUserByEmail(admin.email!);
-          // Comparamos la contraseña ingresada con el hash usando bcrypt.
-          if (!adminProfile || !adminProfile.password || !bcrypt.compareSync(password, adminProfile.password)) {
+          // Verificamos las credenciales del admin usando el servicio
+          const credencialesValidas = await this.userService.verificarCredenciales(admin.email!, password);
+          if (!credencialesValidas) {
             // Si no coincide, mostramos un mensaje de error de validación.
             Swal.showValidationMessage('La contraseña es incorrecta');
             return false; // Evita que la promesa se resuelva y la alerta se cierre.

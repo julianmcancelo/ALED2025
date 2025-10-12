@@ -22,7 +22,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 
 // Importamos nuestro servicio de usuario.
-import { UserService } from '../../servicios/user';
+import { UserSupabaseService } from '../../servicios/user-supabase.service';
 
 /**
  * Validador personalizado para comprobar que dos campos de contraseña coinciden.
@@ -58,7 +58,7 @@ export class Registro implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private userService: UserService,
+    private userService: UserSupabaseService,
     public dialogRef: MatDialogRef<Registro>,
     private snackBar: MatSnackBar,
   ) {}
@@ -88,47 +88,52 @@ export class Registro implements OnInit {
     this.registrationError = null;
     const { dni, email } = this.registerForm.value;
 
-    const esUnico = await this.userService.verificarUsuarioUnico(dni, email);
-    if (!esUnico) {
-      this.isLoading = false;
-      await Swal.fire({
-        icon: 'error',
-        title: 'Usuario ya existe',
-        text: 'El DNI o el correo electrónico ya están registrados.',
-        confirmButtonText: 'Entendido'
-      });
-      return;
-    }
-
-    const userData = { ...this.registerForm.value };
-    const salt = bcrypt.genSaltSync(10);
-    userData.password = bcrypt.hashSync(userData.password, salt);
-    delete userData.confirmPassword;
-    userData.rol = 'usuario';
-
-    this.userService
-      .addUser(userData)
-      .then(async () => {
-        await Swal.fire({
-          icon: 'success',
-          title: '¡Registro exitoso!',
-          text: 'Usuario registrado con éxito',
-          timer: 2000,
-          showConfirmButton: false
-        });
-        this.dialogRef.close();
-      })
-      .catch(async (error: any) => {
-        console.error('Error al registrar el usuario:', error);
+    try {
+      // Verificar si el usuario ya existe por email
+      const usuarioExistente = await this.userService.getUserByEmail(email).toPromise();
+      if (usuarioExistente) {
+        this.isLoading = false;
         await Swal.fire({
           icon: 'error',
-          title: 'Error en el registro',
-          text: 'Ocurrió un error inesperado. Intente más tarde.',
+          title: 'Usuario ya existe',
+          text: 'El correo electrónico ya está registrado.',
           confirmButtonText: 'Entendido'
         });
-      })
-      .finally(() => {
-        this.isLoading = false;
+        return;
+      }
+
+      const userData = {
+        nombre: this.registerForm.value.nombre,
+        apellido: this.registerForm.value.apellido,
+        dni: this.registerForm.value.dni,
+        email: this.registerForm.value.email,
+        password: this.registerForm.value.password,
+        rol: 'cliente' as const,
+        novedades: this.registerForm.value.novedades || false,
+        terminos: this.registerForm.value.terminos || false
+      };
+
+      await this.userService.createUser(userData).toPromise();
+      
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Registro exitoso!',
+        text: 'Usuario registrado con éxito',
+        timer: 2000,
+        showConfirmButton: false
       });
+      this.dialogRef.close();
+      
+    } catch (error: any) {
+      console.error('Error al registrar el usuario:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error en el registro',
+        text: 'Ocurrió un error inesperado. Intente más tarde.',
+        confirmButtonText: 'Entendido'
+      });
+    } finally {
+      this.isLoading = false;
+    }
   }
 }

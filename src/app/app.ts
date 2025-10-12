@@ -2,7 +2,6 @@ import { Component, OnInit, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterOutlet } from '@angular/router';
-import * as bcrypt from 'bcryptjs';
 import { Title } from '@angular/platform-browser';
 import Swal from 'sweetalert2';
 
@@ -10,9 +9,9 @@ import Swal from 'sweetalert2';
 import { Header } from './encabezado/header';
 import { Footer } from './pie-pagina/footer';
 import { Registro } from './auth/registro/registro';
-import { UserService } from './servicios/user';
+import { UserSupabaseService } from './servicios/user-supabase.service';
 import { ConfiguracionService } from './servicios/configuracion';
-import { Firestore, collection, getDocs, limit, query } from '@angular/fire/firestore';
+import { AuthSupabaseService } from './servicios/auth-supabase.service';
 
 @Component({
   selector: 'app-root',
@@ -27,11 +26,11 @@ export class App implements OnInit {
   // Inyección de servicios moderna con inject()
   private titleService = inject(Title);
   private configuracionService = inject(ConfiguracionService);
+  private userSupabaseService = inject(UserSupabaseService);
+  private authSupabaseService = inject(AuthSupabaseService);
 
   constructor(
-    public dialog: MatDialog,
-    private firestore: Firestore,
-    private userService: UserService,
+    public dialog: MatDialog
   ) {
     // Creamos un efecto que reacciona a los cambios en la configuración.
     effect(() => {
@@ -52,60 +51,39 @@ export class App implements OnInit {
   }
 
   /**
-   * Comprueba si existen usuarios en la base de datos.
+   * Comprueba si existen usuarios en Supabase.
    * Si no existe ninguno, crea un usuario administrador por defecto.
    */
   async verificarYCrearAdmin(): Promise<void> {
-    const userCollectionRef = collection(this.firestore, 'users');
-    // Creamos una consulta que solo pida 1 documento para ser más eficiente.
-    const q = query(userCollectionRef, limit(1));
+    try {
+      console.log('🔍 Verificando usuarios existentes en Supabase...');
+      
+      // Verificar si hay usuarios en Supabase
+      this.userSupabaseService.users$.subscribe(async (usuarios: any[]) => {
+        console.log(`👤 Usuarios encontrados: ${usuarios.length}`);
+        
+        if (usuarios.length === 0) {
+          console.log('👤 No hay usuarios. El APP_INITIALIZER se encargará de la redirección.');
+          // Ya no creamos usuario automáticamente, el APP_INITIALIZER maneja esto
+        } else {
+          console.log('✅ La base de datos ya tiene usuarios. Sistema listo.');
+          
+          // TEMPORAL: Crear usuario de prueba si no existe
+          // Descomenta la siguiente línea si necesitas un usuario de prueba
+          // await this.userSupabaseService.crearUsuarioPrueba();
+        }
+      });
 
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      // La colección está vacía, no hay usuarios.
-      console.log('No se encontraron usuarios. Creando administrador por defecto...');
-
-      // Hasheamos la contraseña por defecto.
-      const salt = bcrypt.genSaltSync(10);
-      const hashedPassword = bcrypt.hashSync('admin123', salt);
-
-      const adminUser = {
-        nombre: 'Admin',
-        apellido: 'Principal',
-        dni: '00000000',
-        email: 'admin@admin.com',
-        password: hashedPassword,
-        rol: 'admin' as const, // Asignamos el rol de administrador
-        novedades: false,
-        terminos: true,
-      };
-
-      try {
-        await this.userService.addUser(adminUser);
-        console.log('Usuario administrador creado con éxito.');
-        await Swal.fire({
-          icon: 'info',
-          title: 'Usuario administrador creado',
-          html: `
-            <p>Se ha creado un usuario administrador por defecto:</p>
-            <p><strong>Email:</strong> admin@admin.com</p>
-            <p><strong>Contraseña:</strong> admin123</p>
-          `,
-          confirmButtonText: 'Entendido'
-        });
-      } catch (error) {
-        console.error('Error al crear el usuario administrador:', error);
-        await Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error al crear el usuario administrador',
-          confirmButtonText: 'Entendido'
-        });
-      }
-    } else {
-      // La colección ya tiene usuarios.
-      console.log('La base de datos ya tiene usuarios. No se requiere ninguna acción.');
+    } catch (error: any) {
+      console.error('❌ Error al verificar usuarios:', error);
+      
+      await Swal.fire({
+        icon: 'warning',
+        title: '⚠️ Error de Conexión',
+        text: 'No se pudo conectar con Supabase. Verifica la configuración.',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#ffc107'
+      });
     }
   }
 

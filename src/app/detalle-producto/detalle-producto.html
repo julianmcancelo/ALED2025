@@ -16,8 +16,8 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Columna de la Imagen -->
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-          @if (producto.imagen) {
-            <img [src]="producto.imagen" 
+          @if (producto.imagen_url) {
+            <img [src]="producto.imagen_url" 
                  class="w-full h-auto object-cover" 
                  [alt]="producto.nombre"
                  (error)="onImageError($event)">

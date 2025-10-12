@@ -1,0 +1,140 @@
+/* Estilos para el componente de categorías */
+
+.container-custom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Tarjeta de categoría con efectos modernos */
+.categoria-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.categoria-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: #0077b6;
+}
+
+/* Efectos de imagen */
+.categoria-card img {
+  transition: transform 0.3s ease;
+}
+
+.categoria-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Animaciones para el contenido */
+.categoria-card h3 {
+  transition: color 0.3s ease;
+}
+
+.categoria-card:hover h3 {
+  color: #0077b6;
+}
+
+/* Badge de cantidad */
+.categoria-card .bg-primary {
+  background: linear-gradient(135deg, #0077b6 0%, #005a8d 100%);
+  backdrop-filter: blur(10px);
+}
+
+/* Efectos de hover para botones */
+.categoria-card button {
+  transition: all 0.3s ease;
+}
+
+.categoria-card:hover button {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 119, 182, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container-custom {
+    padding: 0 0.5rem;
+  }
+  
+  .categoria-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animaciones de entrada */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.categoria-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Delay para animaciones escalonadas */
+.categoria-card:nth-child(1) { animation-delay: 0.1s; }
+.categoria-card:nth-child(2) { animation-delay: 0.2s; }
+.categoria-card:nth-child(3) { animation-delay: 0.3s; }
+.categoria-card:nth-child(4) { animation-delay: 0.4s; }
+.categoria-card:nth-child(5) { animation-delay: 0.5s; }
+.categoria-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Efectos de gradiente para el fondo */
+.bg-gradient-to-r {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+}
+
+/* Estilos para el texto truncado */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Efectos de loading */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Hover effects para iconos */
+.bi {
+  transition: transform 0.2s ease;
+}
+
+.categoria-card:hover .bi-chevron-right {
+  transform: translateX(4px);
+}
+
+/* Efectos de focus para accesibilidad */
+.categoria-card:focus {
+  outline: 2px solid #0077b6;
+  outline-offset: 2px;
+}
+
+/* Estilos para botones secundarios */
+button:focus {
+  outline: 2px solid #0077b6;
+  outline-offset: 2px;
+}

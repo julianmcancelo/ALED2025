@@ -1,81 +1,171 @@
-import { Injectable, inject } from '@angular/core';
-import {
-  Firestore,
-  collection,
-  collectionData,
-  addDoc,
-  doc,
-  updateDoc,
-  deleteDoc,
-} from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, from } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { supabase, TABLES } from '../config/supabase.config';
 
 /**
  * @interface Categoria
  * Define la estructura de un objeto de categoría.
  */
 export interface Categoria {
-  id?: string; // El ID del documento de Firestore
+  id?: string;
   nombre: string;
+  descripcion?: string;
+  activo?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 /**
  * @class CategoriaService
- * Proporciona métodos para gestionar las categorías de productos en Firestore.
+ * Servicio para gestionar las categorías en Supabase.
+ * Proporciona métodos para crear, leer, actualizar y eliminar categorías.
  */
 @Injectable({
   providedIn: 'root',
 })
 export class CategoriaService {
-  // --- INYECCIÓN DE DEPENDENCIAS ---
-  private firestore: Firestore = inject(Firestore);
 
-  // --- REFERENCIA A LA COLECCIÓN ---
-  /**
-   * Referencia a la colección 'categorias' en Firestore.
-   */
-  private categoriasCollection = collection(this.firestore, 'categorias');
-
-  // --- MÉTODOS CRUD ---
-
-  /**
-   * Obtiene todas las categorías en tiempo real.
-   * @returns Un Observable que emite un array de categorías cada vez que hay cambios.
-   */
-  obtenerCategorias(): Observable<Categoria[]> {
-    // collectionData con idField nos devuelve un observable que se actualiza automáticamente.
-    return collectionData(this.categoriasCollection, {
-      idField: 'id',
-    }) as Observable<Categoria[]>;
+  constructor() {
+    console.log('📂 Inicializando CategoriaService con Supabase...');
   }
 
   /**
-   * Crea una nueva categoría en Firestore.
-   * @param nombre - El nombre de la nueva categoría.
-   * @returns Una promesa que se resuelve con la referencia al nuevo documento.
+   * Obtiene todas las categorías de la base de datos como un stream.
+   * @returns Un Observable que emite un array de categorías.
    */
-  crearCategoria(nombre: string): Promise<any> {
-    return addDoc(this.categoriasCollection, { nombre });
+  obtenerCategorias(): Observable<Categoria[]> {
+    return from(supabase
+      .from(TABLES.CATEGORIAS)
+      .select('*')
+      .eq('activo', true)
+      .order('nombre', { ascending: true })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('❌ Error al obtener categorías:', error);
+          throw error;
+        }
+        console.log('✅ Categorías obtenidas:', data?.length || 0);
+        return data || [];
+      }),
+      catchError(error => {
+        console.error('❌ Error en obtenerCategorias:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Crea una nueva categoría en la base de datos.
+   * @param nombre - El nombre de la nueva categoría.
+   * @returns Una promesa que se resuelve cuando la adición se completa.
+   */
+  async crearCategoria(nombre: string): Promise<any> {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.CATEGORIAS)
+        .insert([
+          {
+            nombre: nombre.trim(),
+            activo: true
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Error al crear categoría:', error);
+        throw error;
+      }
+
+      console.log('✅ Categoría creada:', nombre);
+      return data;
+    } catch (error) {
+      console.error('❌ Error en crearCategoria:', error);
+      throw error;
+    }
   }
 
   /**
    * Actualiza el nombre de una categoría existente.
    * @param id - El ID de la categoría a actualizar.
-   * @param nombre - El nuevo nombre para la categoría.
+   * @param nombre - El nuevo nombre de la categoría.
    * @returns Una promesa que se resuelve cuando la actualización se completa.
    */
-  actualizarCategoria(id: string, nombre: string): Promise<void> {
-    const categoriaDocRef = doc(this.firestore, `categorias/${id}`);
-    return updateDoc(categoriaDocRef, { nombre });
+  async actualizarCategoria(id: string, nombre: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from(TABLES.CATEGORIAS)
+        .update({ 
+          nombre: nombre.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error('❌ Error al actualizar categoría:', error);
+        throw error;
+      }
+
+      console.log('✅ Categoría actualizada:', id);
+    } catch (error) {
+      console.error('❌ Error en actualizarCategoria:', error);
+      throw error;
+    }
   }
 
   /**
-   * Elimina una categoría de Firestore.
+   * Elimina una categoría de la base de datos (soft delete).
    * @param id - El ID de la categoría a eliminar.
    * @returns Una promesa que se resuelve cuando la eliminación se completa.
    */
-  eliminarCategoria(id: string): Promise<void> {
-    const categoriaDocRef = doc(this.firestore, `categorias/${id}`);
-    return deleteDoc(categoriaDocRef);
+  async eliminarCategoria(id: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from(TABLES.CATEGORIAS)
+        .update({ 
+          activo: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error('❌ Error al eliminar categoría:', error);
+        throw error;
+      }
+
+      console.log('✅ Categoría eliminada (soft delete):', id);
+    } catch (error) {
+      console.error('❌ Error en eliminarCategoria:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene una categoría por ID
+   * @param id - El ID de la categoría
+   * @returns Observable con la categoría o null
+   */
+  obtenerCategoriaPorId(id: string): Observable<Categoria | null> {
+    return from(supabase
+      .from(TABLES.CATEGORIAS)
+      .select('*')
+      .eq('id', id)
+      .eq('activo', true)
+      .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('❌ Error al obtener categoría por ID:', error);
+          return null;
+        }
+        return data;
+      }),
+      catchError(error => {
+        console.error('❌ Error en obtenerCategoriaPorId:', error);
+        return from([null]);
+      })
+    );
   }
 }

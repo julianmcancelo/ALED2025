@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { GestionProductosService, Producto } from '../servicios/gestion-productos.service';
+import { ProductosSupabaseService, ProductoConCategoria } from '../servicios/productos-supabase.service';
 import { CarritoService } from '../servicios/carrito';
 import Swal from 'sweetalert2';
 
@@ -17,10 +17,10 @@ import Swal from 'sweetalert2';
 export class DetalleProductoComponent implements OnInit {
   // --- INYECCIÓN DE DEPENDENCIAS ---
   private route = inject(ActivatedRoute);
-  private productosService = inject(GestionProductosService);
+  private productosService = inject(ProductosSupabaseService);
   private carritoService = inject(CarritoService);
 
-  producto$!: Observable<Producto | null>;
+  producto$!: Observable<ProductoConCategoria | null>;
 
   ngOnInit(): void {
     // Usamos el 'paramMap' del router para obtener el 'id' de la URL.
@@ -39,7 +39,7 @@ export class DetalleProductoComponent implements OnInit {
   /**
    * Añade el producto actual al carrito.
    */
-  agregarAlCarrito(producto: Producto): void {
+  agregarAlCarrito(producto: ProductoConCategoria): void {
     this.carritoService.agregarProducto(producto);
     Swal.fire({
       title: '¡Añadido!',

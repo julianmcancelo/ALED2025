@@ -1,18 +1,36 @@
 <div class="container">
   <mat-card>
-    <mat-card-title>Crear Primer Usuario Administrador</mat-card-title>
+    <mat-card-title>
+      <i class="bi bi-person-gear" style="margin-right: 0.5rem; color: #0077b6;"></i>
+      Configuración Inicial
+    </mat-card-title>
     <mat-card-content>
       <p>
-        Parece que es la primera vez que se inicia la aplicación. Por favor, crea el usuario
-        administrador inicial.
+        ¡Bienvenido a <strong>ALED2025</strong>! 🎉<br>
+        Esta es la primera vez que se inicia la aplicación. Para comenzar, necesitas crear el usuario administrador inicial que tendrá acceso completo al sistema.
       </p>
+      <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #0077b6;">
+        <p style="margin: 0; color: #0d47a1; font-size: 0.9rem;">
+          <i class="bi bi-info-circle" style="margin-right: 0.5rem;"></i>
+          <strong>Importante:</strong> Este usuario tendrá permisos completos para gestionar productos, usuarios y configuraciones del sistema.
+        </p>
+      </div>
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
         <!-- Campo Nombre -->
         <mat-form-field appearance="fill">
-          <mat-label>Nombre Completo</mat-label>
-          <input matInput formControlName="nombre" placeholder="Ej. Juan Pérez" required />
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" placeholder="Ej. Juan" required />
           <mat-error *ngIf="registerForm.get('nombre')?.hasError('required')">
             El nombre es obligatorio.
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Campo Apellido -->
+        <mat-form-field appearance="fill">
+          <mat-label>Apellido</mat-label>
+          <input matInput formControlName="apellido" placeholder="Ej. Pérez" required />
+          <mat-error *ngIf="registerForm.get('apellido')?.hasError('required')">
+            El apellido es obligatorio.
           </mat-error>
         </mat-form-field>
 
@@ -49,8 +67,20 @@
         </mat-form-field>
 
         <mat-card-actions>
-          <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid">
-            Crear Administrador
+          <button 
+            mat-raised-button 
+            color="primary" 
+            type="submit" 
+            [disabled]="registerForm.invalid || isLoading"
+          >
+            <span *ngIf="!isLoading">
+              <i class="bi bi-person-plus" style="margin-right: 0.5rem;"></i>
+              Crear Administrador
+            </span>
+            <span *ngIf="isLoading">
+              <i class="bi bi-hourglass-split" style="margin-right: 0.5rem;"></i>
+              Creando usuario...
+            </span>
           </button>
         </mat-card-actions>
       </form>

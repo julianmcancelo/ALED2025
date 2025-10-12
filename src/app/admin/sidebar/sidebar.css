@@ -1,39 +1,110 @@
 /* Contenedor principal del sidebar */
 .sidebar-container {
-  background-color: #f8f9fa; /* Un fondo gris claro para distinguirlo */
-  padding: 1rem;
-  border-right: 1px solid #dee2e6; /* Borde sutil a la derecha */
-  width: 250px; /* Ancho fijo */
-  flex-shrink: 0; /* Evita que se encoja */
+  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%) !important;
+  padding: 1.5rem 0;
+  width: 250px !important;
+  flex-shrink: 0;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 100vh !important;
+}
+
+/* Lista de navegación */
+.nav {
+  padding: 0 1rem;
 }
 
 /* Estilo para cada enlace de navegación */
 .nav-link {
-  color: #343a40;
+  color: #ecf0f1;
   margin-bottom: 0.5rem;
-  transition:
-    background-color 0.2s ease-in-out,
-    color 0.2s ease-in-out;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+}
+
+/* Iconos en los enlaces */
+.nav-link i {
+  font-size: 1.1rem;
+  width: 20px;
+  text-align: center;
 }
 
 /* Estilo para el enlace activo */
 .nav-link.active {
-  background-color: var(--bs-primary) !important; /* Usa el color primario de Bootstrap */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   color: white !important;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transform: translateX(5px);
 }
 
 /* Estilo al pasar el mouse sobre un enlace (que no esté activo) */
 .nav-link:not(.active):hover {
-  background-color: #e9ecef;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+/* Separador visual */
+.nav-item:not(:last-child) {
+  margin-bottom: 0.25rem;
 }
 
 /* --- Estilos Responsivos para Móviles --- */
 @media (max-width: 768px) {
   .sidebar-container {
-    width: 100%; /* Ocupa todo el ancho */
-    border-right: none;
-    border-bottom: 1px solid #dee2e6; /* Borde inferior en móviles */
+    width: 100%;
+    background: linear-gradient(90deg, #2c3e50 0%, #34495e 100%);
+    padding: 1rem 0;
   }
+  
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .nav-item {
+    flex: 1;
+    min-width: calc(50% - 0.25rem);
+  }
+  
+  .nav-link {
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .nav-link i {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* Animaciones */
+.nav-link {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.nav-link:hover::before {
+  left: 100%;
 }

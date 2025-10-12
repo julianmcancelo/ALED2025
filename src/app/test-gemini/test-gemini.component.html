@@ -1,0 +1,148 @@
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header bg-gradient text-white">
+      <h3 class="mb-0">🤖 Prueba de Gemini AI 2.5 Flash</h3>
+      <small>Servicio de IA más avanzado integrado</small>
+    </div>
+    <div class="card-body">
+      
+      <!-- Estado de disponibilidad -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="alert" [class]="disponibilidad.disponible ? 'alert-success' : 'alert-warning'">
+            <div class="d-flex align-items-center">
+              <div class="spinner-border spinner-border-sm me-2" 
+                   *ngIf="disponibilidad.verificando" role="status"></div>
+              <i class="bi" [class]="disponibilidad.disponible ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
+              <span class="ms-2">
+                <strong>Estado:</strong> 
+                {{ disponibilidad.verificando ? 'Verificando...' : 
+                   (disponibilidad.disponible ? 'Gemini AI 2.5 Flash DISPONIBLE' : 'Gemini AI no disponible') }}
+              </span>
+            </div>
+          </div>
+          <button class="btn btn-outline-primary btn-sm" (click)="verificarDisponibilidad()">
+            <i class="bi bi-arrow-clockwise"></i> Verificar Estado
+          </button>
+        </div>
+      </div>
+
+      <!-- Sección 1: Análisis de Producto -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h5><i class="bi bi-camera-fill me-2"></i>Análisis de Producto con IA</h5>
+          <div class="mb-3">
+            <label class="form-label">Subir imagen de producto:</label>
+            <input type="file" class="form-control" accept="image/*" 
+                   (change)="onFileSelected($event)" [disabled]="analizando">
+          </div>
+          
+          <div class="mb-3" *ngIf="imagenSeleccionada">
+            <img [src]="imagenPreview" class="img-thumbnail" style="max-width: 200px;">
+            <div class="mt-2">
+              <button class="btn btn-primary me-2" (click)="analizarProducto()" 
+                      [disabled]="analizando || !disponibilidad.disponible">
+                <span class="spinner-border spinner-border-sm me-2" 
+                      *ngIf="analizando" role="status"></span>
+                {{ analizando ? 'Analizando...' : 'Analizar con Gemini AI' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Resultados del análisis -->
+          <div *ngIf="resultadoAnalisis" class="alert alert-info">
+            <h6><i class="bi bi-lightbulb-fill"></i> Análisis Completo:</h6>
+            <div class="row">
+              <div class="col-md-6">
+                <p><strong>Producto:</strong> {{ resultadoAnalisis.nombre }}</p>
+                <p><strong>Categoría:</strong> {{ resultadoAnalisis.categoria }}</p>
+                <p><strong>Precio Sugerido:</strong> ${{ resultadoAnalisis.precio }}</p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>Tags:</strong></p>
+                <span class="badge bg-secondary me-1" *ngFor="let tag of resultadoAnalisis.tags">{{ tag }}</span>
+              </div>
+            </div>
+            <p><strong>Descripción:</strong> {{ resultadoAnalisis.descripcion }}</p>
+            <p><strong>Justificación del Precio:</strong> {{ resultadoAnalisis.justificacionPrecio }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 2: Generación de Contenido -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h5><i class="bi bi-pencil-square me-2"></i>Generación de Contenido</h5>
+          <div class="mb-3">
+            <label class="form-label">Escribe un prompt para Gemini AI:</label>
+            <textarea class="form-control" rows="3" 
+                      [(ngModel)]="promptPersonalizado" 
+                      placeholder="Ejemplo: Escribe una descripción atractiva para un smartphone..."></textarea>
+          </div>
+          <button class="btn btn-success me-2" (click)="generarContenido()" 
+                  [disabled]="generando || !promptPersonalizado || !disponibilidad.disponible">
+            <span class="spinner-border spinner-border-sm me-2" 
+                  *ngIf="generando" role="status"></span>
+            {{ generando ? 'Generando...' : 'Generar Contenido' }}
+          </button>
+          
+          <div *ngIf="contenidoGenerado" class="alert alert-success mt-3">
+            <h6><i class="bi bi-magic"></i> Contenido Generado:</h6>
+            <p class="mb-0">{{ contenidoGenerado }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 3: Mejora de Descripción -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h5><i class="bi bi-arrow-up-circle me-2"></i>Mejora de Descripción</h5>
+          <div class="row">
+            <div class="col-md-4">
+              <label class="form-label">Nombre del producto:</label>
+              <input type="text" class="form-control" [(ngModel)]="productoMejorar.nombre" 
+                     placeholder="Ej: iPhone 15 Pro">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Categoría:</label>
+              <input type="text" class="form-control" [(ngModel)]="productoMejorar.categoria" 
+                     placeholder="Ej: Electrónicos">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Descripción actual:</label>
+              <textarea class="form-control" rows="2" [(ngModel)]="productoMejorar.descripcion" 
+                        placeholder="Descripción básica..."></textarea>
+            </div>
+          </div>
+          <button class="btn btn-warning mt-3" (click)="mejorarDescripcion()" 
+                  [disabled]="mejorandoDescripcion || !productoMejorar.nombre || !disponibilidad.disponible">
+            <span class="spinner-border spinner-border-sm me-2" 
+                  *ngIf="mejorandoDescripcion" role="status"></span>
+            {{ mejorandoDescripcion ? 'Mejorando...' : 'Mejorar Descripción' }}
+          </button>
+          
+          <div *ngIf="descripcionMejorada" class="alert alert-warning mt-3">
+            <h6><i class="bi bi-star-fill"></i> Descripción Mejorada:</h6>
+            <p class="mb-0">{{ descripcionMejorada }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información del modelo -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card bg-light">
+            <div class="card-body">
+              <h6><i class="bi bi-info-circle"></i> Información del Modelo</h6>
+              <p class="mb-1"><strong>Modelo:</strong> {{ estadisticas.modelo }}</p>
+              <p class="mb-1"><strong>Temperatura:</strong> {{ estadisticas.configuracion.temperature }}</p>
+              <p class="mb-1"><strong>Max Tokens:</strong> {{ estadisticas.configuracion.maxOutputTokens }}</p>
+              <p class="mb-0"><strong>Formato de Respuesta:</strong> {{ estadisticas.configuracion.responseMimeType }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

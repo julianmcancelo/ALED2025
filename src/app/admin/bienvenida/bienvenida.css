@@ -1,13 +1,159 @@
+/* Contenedor principal */
 .welcome-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%; /* Ocupa toda la altura del contenedor padre */
   padding: 2rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.welcome-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header de bienvenida */
+.welcome-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.welcome-icon-container {
+  margin-bottom: 1.5rem;
 }
 
 .welcome-icon {
   font-size: 4rem;
-  color: #3f51b5; /* Color primario de Material */
-  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: pulse 2s infinite;
+}
+
+.welcome-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.welcome-subtitle {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  margin-bottom: 0;
+}
+
+/* Grid de tarjetas */
+.welcome-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+/* Tarjetas individuales */
+.welcome-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid #f1f2f6;
+}
+
+.welcome-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.card-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.card-icon i {
+  font-size: 2rem;
+  color: white;
+}
+
+.welcome-card:hover .card-icon {
+  transform: scale(1.1);
+}
+
+.welcome-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.welcome-card p {
+  color: #7f8c8d;
+  margin-bottom: 0;
+  line-height: 1.6;
+}
+
+/* Footer */
+.welcome-footer {
+  text-align: center;
+  padding: 2rem 0;
+  border-top: 1px solid #ecf0f1;
+}
+
+.welcome-footer p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Animaciones */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .welcome-container {
+    padding: 1rem;
+  }
+  
+  .welcome-title {
+    font-size: 2rem;
+  }
+  
+  .welcome-subtitle {
+    font-size: 1rem;
+  }
+  
+  .welcome-cards {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .welcome-card {
+    padding: 1.5rem;
+  }
+  
+  .card-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .card-icon i {
+    font-size: 1.5rem;
+  }
 }

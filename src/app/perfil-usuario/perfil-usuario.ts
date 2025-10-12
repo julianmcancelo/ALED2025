@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth';
-import { UserService } from '../servicios/user';
+import { UserSupabaseService } from '../servicios/user-supabase.service';
 import Swal from 'sweetalert2';
 
 /**
@@ -19,7 +19,7 @@ import Swal from 'sweetalert2';
 export class PerfilUsuarioComponent {
   // --- INYECCIÓN DE DEPENDENCIAS ---
   authService = inject(AuthService);
-  private userService = inject(UserService);
+  private userService = inject(UserSupabaseService);
 
   // Obtenemos la señal del usuario actual directamente desde el servicio.
   currentUser = this.authService.currentUserSignal;

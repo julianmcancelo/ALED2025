@@ -1,5 +1,5 @@
 <!-- Navbar con Tailwind CSS -->
-<nav class="bg-white shadow-sm border-b border-gray-200">
+<nav class="bg-white shadow-sm border-b border-gray-200" (click)="cerrarDropdowns()">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-16">
       <!-- Título/Branding de la aplicación -->
@@ -37,12 +37,61 @@
           Ofertas
         </a>
         
-        <a class="text-gray-700 hover:text-[#0077b6] px-3 py-2 rounded-md text-sm font-medium transition-colors" 
-           routerLink="/categorias" 
-           routerLinkActive="text-[#0077b6] bg-blue-50">
-          <i class="bi bi-grid mr-1"></i>
-          Categorías
-        </a>
+        <!-- Dropdown de Categorías -->
+        <div class="relative" (click)="$event.stopPropagation()">
+          <button 
+            class="text-gray-700 hover:text-[#0077b6] px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center"
+            (click)="toggleCategoriasDropdown()"
+            [class.text-[#0077b6]]="showCategoriasDropdown"
+          >
+            <i class="bi bi-grid mr-1"></i>
+            Categorías
+            <i class="bi bi-chevron-down ml-1 text-xs" [class.rotate-180]="showCategoriasDropdown"></i>
+          </button>
+          
+          <!-- Dropdown Menu -->
+          @if (showCategoriasDropdown) {
+            <div class="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-2">
+              <div class="px-4 py-2 border-b border-gray-100">
+                <h3 class="text-sm font-semibold text-gray-900">Categorías Disponibles</h3>
+              </div>
+              
+              @if (categorias$ | async; as categorias) {
+                @for (categoria of categorias; track categoria.nombre) {
+                  <button 
+                    class="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center justify-between group"
+                    (click)="navegarACategoria(categoria.nombre)"
+                  >
+                    <div class="flex items-center">
+                      <i class="{{ categoria.icono }} text-[#0077b6] mr-3"></i>
+                      <span class="text-sm font-medium text-gray-900 group-hover:text-[#0077b6]">
+                        {{ categoria.nombre }}
+                      </span>
+                    </div>
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                      {{ categoria.cantidad }}
+                    </span>
+                  </button>
+                }
+              } @else {
+                <div class="px-4 py-3 text-sm text-gray-500 text-center">
+                  <i class="bi bi-hourglass-split mr-2"></i>
+                  Cargando categorías...
+                </div>
+              }
+              
+              <div class="border-t border-gray-100 mt-2 pt-2">
+                <button 
+                  class="w-full text-left px-4 py-2 text-sm text-[#0077b6] hover:bg-blue-50 transition-colors"
+                  (click)="router.navigate(['/productos']); cerrarDropdowns()"
+                >
+                  <i class="bi bi-arrow-right mr-2"></i>
+                  Ver todos los productos
+                </button>
+              </div>
+            </div>
+          }
+        </div>
         
         <!-- Botones de autenticación y carrito -->
         <div class="flex items-center space-x-4">
@@ -92,6 +141,15 @@
               </a>
               }
               <div class="border-t border-gray-100"></div>
+              <!-- Botón temporal de debug -->
+              <button
+                ngbDropdownItem
+                (click)="debugUserStatus()"
+                class="flex items-center w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-50"
+              >
+                <i class="bi bi-bug mr-2"></i>
+                <span>Debug Usuario</span>
+              </button>
               <button
                 ngbDropdownItem
                 (click)="logout()"
@@ -165,12 +223,40 @@
           Ofertas
         </a>
         
-        <a routerLink="/categorias" 
-           routerLinkActive="text-[#0077b6] bg-blue-50"
-           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#0077b6] hover:bg-gray-50 rounded-md">
-          <i class="bi bi-grid mr-2"></i>
-          Categorías
-        </a>
+        <!-- Dropdown de Categorías Móvil -->
+        <div class="px-3 py-2">
+          <button 
+            class="w-full text-left flex items-center justify-between text-base font-medium text-gray-700 hover:text-[#0077b6] hover:bg-gray-50 rounded-md px-3 py-2"
+            (click)="toggleCategoriasDropdown()"
+          >
+            <div class="flex items-center">
+              <i class="bi bi-grid mr-2"></i>
+              Categorías
+            </div>
+            <i class="bi bi-chevron-down text-xs" [class.rotate-180]="showCategoriasDropdown"></i>
+          </button>
+          
+          @if (showCategoriasDropdown) {
+            <div class="mt-2 ml-4 space-y-1">
+              @if (categorias$ | async; as categorias) {
+                @for (categoria of categorias; track categoria.nombre) {
+                  <button 
+                    class="w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-[#0077b6] hover:bg-gray-50 rounded-md flex items-center justify-between"
+                    (click)="navegarACategoria(categoria.nombre)"
+                  >
+                    <div class="flex items-center">
+                      <i class="{{ categoria.icono }} text-[#0077b6] mr-2 text-sm"></i>
+                      {{ categoria.nombre }}
+                    </div>
+                    <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+                      {{ categoria.cantidad }}
+                    </span>
+                  </button>
+                }
+              }
+            </div>
+          }
+        </div>
 
         <!-- Botones de autenticación móvil -->
         @if (currentUser() === null) {

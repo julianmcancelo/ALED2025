@@ -1,6 +1,7 @@
-import { Injectable, inject } from '@angular/core';
-import { Firestore, collection, collectionData, doc, updateDoc, query, orderBy, where } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, from } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { supabase, TABLES } from '../config/supabase.config';
 
 /**
  * ============================================================================
@@ -28,42 +29,41 @@ export interface Pedido {
   paymentId: string;                // ID del pago en Mercado Pago
   estado: EstadoPedido;             // Estado actual del pedido
   total: number;                    // Monto total del pedido
-  moneda: string;                   // Moneda utilizada (ARS, USD, etc.)
-  metodoPago: string;               // Método de pago usado
-  items: ItemPedido[];              // Productos comprados
-  cliente: ClientePedido;           // Información del cliente
-  fechaCreacion: Date;              // Fecha de creación del pedido
-  fechaAprobacion?: Date;           // Fecha de aprobación del pago
-  fechaActualizacion?: Date;        // Última actualización del estado
-  notasAdmin?: string;              // Notas internas del administrador
+  fechaCreacion: string;            // Fecha de creación del pedido
+  fechaActualizacion?: string;      // Fecha de última actualización
   numeroSeguimiento?: string;       // Número de seguimiento del envío
-  detallesPago: any;               // Detalles del pago de Mercado Pago
+  notasAdmin?: string;              // Notas internas del administrador
+  
+  // Información del cliente
+  clienteId: string;                // ID del cliente
+  clienteNombre: string;            // Nombre del cliente
+  clienteEmail: string;             // Email del cliente
+  clienteTelefono?: string;         // Teléfono del cliente
+  
+  // Información de entrega
+  direccionEntrega: string;         // Dirección de entrega
+  ciudadEntrega: string;            // Ciudad de entrega
+  codigoPostalEntrega?: string;     // Código postal
+  
+  // Productos del pedido
+  productos: ProductoPedido[];      // Lista de productos en el pedido
 }
 
 /**
- * Interfaz para los items de un pedido
+ * Interfaz para un producto dentro de un pedido
  */
-export interface ItemPedido {
+export interface ProductoPedido {
   id: string;                       // ID del producto
   nombre: string;                   // Nombre del producto
-  cantidad: number;                 // Cantidad comprada
   precio: number;                   // Precio unitario
+  cantidad: number;                 // Cantidad solicitada
   subtotal: number;                 // Precio * cantidad
-}
-
-/**
- * Interfaz para la información del cliente
- */
-export interface ClientePedido {
-  email?: string;                   // Email del cliente
-  nombre?: string;                  // Nombre del cliente
-  apellido?: string;                // Apellido del cliente
-  telefono?: string;                // Teléfono del cliente
+  imagen?: string;                  // URL de la imagen del producto
 }
 
 /**
  * ============================================================================
- * SERVICIO DE GESTIÓN DE PEDIDOS
+ * SERVICIO DE GESTIÓN DE PEDIDOS CON SUPABASE
  * ============================================================================
  * 
  * Este servicio maneja todas las operaciones relacionadas con pedidos:
@@ -77,12 +77,8 @@ export interface ClientePedido {
 })
 export class GestionPedidosService {
 
-  // --- INYECCIÓN DE DEPENDENCIAS ---
-  private firestore: Firestore = inject(Firestore);
-  private pedidosCollection = collection(this.firestore, 'pedidos');
-
   constructor() {
-    console.log('🛒 Servicio de Gestión de Pedidos inicializado');
+    console.log('🛒 Servicio de Gestión de Pedidos inicializado con Supabase');
   }
 
   /**
@@ -98,12 +94,24 @@ export class GestionPedidosService {
   obtenerTodosLosPedidos(): Observable<Pedido[]> {
     console.log('📋 Obteniendo todos los pedidos...');
     
-    const q = query(
-      this.pedidosCollection,
-      orderBy('fechaCreacion', 'desc')
+    return from(supabase
+      .from(TABLES.PEDIDOS)
+      .select('*')
+      .order('fechaCreacion', { ascending: false })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('❌ Error al obtener pedidos:', error);
+          throw error;
+        }
+        console.log('✅ Pedidos obtenidos:', data?.length || 0);
+        return data || [];
+      }),
+      catchError(error => {
+        console.error('❌ Error en obtenerTodosLosPedidos:', error);
+        throw error;
+      })
     );
-    
-    return collectionData(q, { idField: 'id' }) as Observable<Pedido[]>;
   }
 
   /**
@@ -114,43 +122,54 @@ export class GestionPedidosService {
   obtenerPedidosPorEstado(estado: EstadoPedido): Observable<Pedido[]> {
     console.log(`🔍 Filtrando pedidos por estado: ${estado}`);
     
-    const q = query(
-      this.pedidosCollection,
-      where('estado', '==', estado),
-      orderBy('fechaCreacion', 'desc')
+    return from(supabase
+      .from(TABLES.PEDIDOS)
+      .select('*')
+      .eq('estado', estado)
+      .order('fechaCreacion', { ascending: false })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('❌ Error al filtrar pedidos por estado:', error);
+          throw error;
+        }
+        console.log(`✅ Pedidos filtrados por ${estado}:`, data?.length || 0);
+        return data || [];
+      }),
+      catchError(error => {
+        console.error('❌ Error en obtenerPedidosPorEstado:', error);
+        throw error;
+      })
     );
-    
-    return collectionData(q, { idField: 'id' }) as Observable<Pedido[]>;
   }
 
   /**
-   * Obtiene pedidos pendientes (recién recibidos)
-   * @returns Observable con pedidos pendientes
+   * Obtiene pedidos de un cliente específico
+   * @param clienteId - ID del cliente
+   * @returns Observable con pedidos del cliente
    */
-  obtenerPedidosPendientes(): Observable<Pedido[]> {
-    return this.obtenerPedidosPorEstado(EstadoPedido.PENDIENTE);
-  }
-
-  /**
-   * Obtiene pedidos en proceso (confirmados, preparando, enviados)
-   * @returns Observable con pedidos en proceso
-   */
-  obtenerPedidosEnProceso(): Observable<Pedido[]> {
-    console.log('⚙️ Obteniendo pedidos en proceso...');
+  obtenerPedidosDeCliente(clienteId: string): Observable<Pedido[]> {
+    console.log(`👤 Obteniendo pedidos del cliente: ${clienteId}`);
     
-    const estadosEnProceso = [
-      EstadoPedido.CONFIRMADO,
-      EstadoPedido.PREPARANDO,
-      EstadoPedido.ENVIADO
-    ];
-    
-    const q = query(
-      this.pedidosCollection,
-      where('estado', 'in', estadosEnProceso),
-      orderBy('fechaCreacion', 'desc')
+    return from(supabase
+      .from(TABLES.PEDIDOS)
+      .select('*')
+      .eq('clienteId', clienteId)
+      .order('fechaCreacion', { ascending: false })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('❌ Error al obtener pedidos del cliente:', error);
+          throw error;
+        }
+        console.log(`✅ Pedidos del cliente obtenidos:`, data?.length || 0);
+        return data || [];
+      }),
+      catchError(error => {
+        console.error('❌ Error en obtenerPedidosDeCliente:', error);
+        throw error;
+      })
     );
-    
-    return collectionData(q, { idField: 'id' }) as Observable<Pedido[]>;
   }
 
   /**
@@ -163,35 +182,35 @@ export class GestionPedidosService {
    * Actualiza el estado de un pedido
    * @param pedidoId - ID del pedido a actualizar
    * @param nuevoEstado - Nuevo estado del pedido
-   * @param notasAdmin - Notas opcionales del administrador
-   * @returns Promise que se resuelve cuando se actualiza
+   * @returns Promise que se resuelve cuando la actualización se completa
    */
-  async actualizarEstadoPedido(
-    pedidoId: string, 
-    nuevoEstado: EstadoPedido, 
-    notasAdmin?: string
-  ): Promise<void> {
+  async actualizarEstadoPedido(pedidoId: string, nuevoEstado: EstadoPedido): Promise<void> {
     try {
       console.log(`📝 Actualizando pedido ${pedidoId} a estado: ${nuevoEstado}`);
       
-      const pedidoRef = doc(this.firestore, 'pedidos', pedidoId);
-      
       const datosActualizacion: any = {
         estado: nuevoEstado,
-        fechaActualizacion: new Date()
+        fechaActualizacion: new Date().toISOString()
       };
-      
-      // Agregar notas si se proporcionan
-      if (notasAdmin) {
-        datosActualizacion.notasAdmin = notasAdmin;
+
+      // Si el estado es ENTREGADO, también actualizamos la fecha de entrega
+      if (nuevoEstado === EstadoPedido.ENTREGADO) {
+        datosActualizacion.fechaEntrega = new Date().toISOString();
       }
-      
-      await updateDoc(pedidoRef, datosActualizacion);
-      
-      console.log(`✅ Pedido ${pedidoId} actualizado exitosamente`);
-      
+
+      const { error } = await supabase
+        .from(TABLES.PEDIDOS)
+        .update(datosActualizacion)
+        .eq('id', pedidoId);
+
+      if (error) {
+        console.error('❌ Error al actualizar estado del pedido:', error);
+        throw error;
+      }
+
+      console.log(`✅ Estado del pedido actualizado: ${pedidoId} -> ${nuevoEstado}`);
     } catch (error) {
-      console.error('❌ Error al actualizar estado del pedido:', error);
+      console.error('❌ Error en actualizarEstadoPedido:', error);
       throw error;
     }
   }
@@ -200,107 +219,133 @@ export class GestionPedidosService {
    * Agrega número de seguimiento a un pedido
    * @param pedidoId - ID del pedido
    * @param numeroSeguimiento - Número de seguimiento del envío
-   * @returns Promise que se resuelve cuando se actualiza
+   * @returns Promise que se resuelve cuando la actualización se completa
    */
-  async agregarNumeroSeguimiento(
-    pedidoId: string, 
-    numeroSeguimiento: string
-  ): Promise<void> {
+  async agregarNumeroSeguimiento(pedidoId: string, numeroSeguimiento: string): Promise<void> {
     try {
       console.log(`📦 Agregando número de seguimiento al pedido ${pedidoId}: ${numeroSeguimiento}`);
       
-      const pedidoRef = doc(this.firestore, 'pedidos', pedidoId);
-      
-      await updateDoc(pedidoRef, {
-        numeroSeguimiento: numeroSeguimiento,
-        fechaActualizacion: new Date()
-      });
-      
-      console.log(`✅ Número de seguimiento agregado exitosamente`);
-      
+      const { error } = await supabase
+        .from(TABLES.PEDIDOS)
+        .update({
+          numeroSeguimiento: numeroSeguimiento,
+          fechaActualizacion: new Date().toISOString()
+        })
+        .eq('id', pedidoId);
+
+      if (error) {
+        console.error('❌ Error al agregar número de seguimiento:', error);
+        throw error;
+      }
+
+      console.log(`✅ Número de seguimiento agregado: ${pedidoId}`);
     } catch (error) {
-      console.error('❌ Error al agregar número de seguimiento:', error);
+      console.error('❌ Error en agregarNumeroSeguimiento:', error);
       throw error;
     }
   }
 
   /**
-   * Actualiza las notas del administrador para un pedido
+   * Actualiza las notas administrativas de un pedido
    * @param pedidoId - ID del pedido
-   * @param notas - Notas del administrador
-   * @returns Promise que se resuelve cuando se actualiza
+   * @param notas - Notas administrativas
+   * @returns Promise que se resuelve cuando la actualización se completa
    */
-  async actualizarNotasAdmin(pedidoId: string, notas: string): Promise<void> {
+  async actualizarNotasPedido(pedidoId: string, notas: string): Promise<void> {
     try {
       console.log(`📝 Actualizando notas del pedido ${pedidoId}`);
       
-      const pedidoRef = doc(this.firestore, 'pedidos', pedidoId);
-      
-      await updateDoc(pedidoRef, {
-        notasAdmin: notas,
-        fechaActualizacion: new Date()
-      });
-      
-      console.log(`✅ Notas actualizadas exitosamente`);
-      
+      const { error } = await supabase
+        .from(TABLES.PEDIDOS)
+        .update({
+          notasAdmin: notas,
+          fechaActualizacion: new Date().toISOString()
+        })
+        .eq('id', pedidoId);
+
+      if (error) {
+        console.error('❌ Error al actualizar notas del pedido:', error);
+        throw error;
+      }
+
+      console.log(`✅ Notas del pedido actualizadas: ${pedidoId}`);
     } catch (error) {
-      console.error('❌ Error al actualizar notas:', error);
+      console.error('❌ Error en actualizarNotasPedido:', error);
       throw error;
     }
   }
 
   /**
    * ============================================================================
-   * MÉTODOS AUXILIARES
+   * MÉTODOS DE UTILIDAD Y ESTADÍSTICAS
    * ============================================================================
    */
 
   /**
-   * Obtiene el texto en español para un estado de pedido
-   * @param estado - Estado del pedido
-   * @returns Texto en español del estado
+   * Obtiene estadísticas básicas de pedidos
+   * @returns Promise con estadísticas de pedidos
    */
-  obtenerTextoEstado(estado: EstadoPedido): string {
-    const textos = {
-      [EstadoPedido.PENDIENTE]: 'Pendiente',
-      [EstadoPedido.CONFIRMADO]: 'Confirmado',
-      [EstadoPedido.PREPARANDO]: 'Preparando',
-      [EstadoPedido.ENVIADO]: 'Enviado',
-      [EstadoPedido.ENTREGADO]: 'Entregado',
-      [EstadoPedido.CANCELADO]: 'Cancelado'
-    };
-    
-    return textos[estado] || 'Desconocido';
+  async obtenerEstadisticasPedidos(): Promise<{
+    total: number;
+    pendientes: number;
+    confirmados: number;
+    enviados: number;
+    entregados: number;
+    cancelados: number;
+  }> {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.PEDIDOS)
+        .select('estado');
+
+      if (error) {
+        console.error('❌ Error al obtener estadísticas:', error);
+        throw error;
+      }
+
+      const estadisticas = {
+        total: data?.length || 0,
+        pendientes: data?.filter(p => p.estado === EstadoPedido.PENDIENTE).length || 0,
+        confirmados: data?.filter(p => p.estado === EstadoPedido.CONFIRMADO).length || 0,
+        enviados: data?.filter(p => p.estado === EstadoPedido.ENVIADO).length || 0,
+        entregados: data?.filter(p => p.estado === EstadoPedido.ENTREGADO).length || 0,
+        cancelados: data?.filter(p => p.estado === EstadoPedido.CANCELADO).length || 0
+      };
+
+      console.log('📊 Estadísticas de pedidos:', estadisticas);
+      return estadisticas;
+    } catch (error) {
+      console.error('❌ Error en obtenerEstadisticasPedidos:', error);
+      throw error;
+    }
   }
 
   /**
-   * Obtiene la clase CSS para el color del estado
-   * @param estado - Estado del pedido
-   * @returns Clase CSS para el color
+   * Busca pedidos por término de búsqueda (cliente, email, ID de pago)
+   * @param termino - Término de búsqueda
+   * @returns Observable con pedidos que coinciden con la búsqueda
    */
-  obtenerColorEstado(estado: EstadoPedido): string {
-    const colores = {
-      [EstadoPedido.PENDIENTE]: 'text-yellow-600 bg-yellow-100',
-      [EstadoPedido.CONFIRMADO]: 'text-blue-600 bg-blue-100',
-      [EstadoPedido.PREPARANDO]: 'text-purple-600 bg-purple-100',
-      [EstadoPedido.ENVIADO]: 'text-orange-600 bg-orange-100',
-      [EstadoPedido.ENTREGADO]: 'text-green-600 bg-green-100',
-      [EstadoPedido.CANCELADO]: 'text-red-600 bg-red-100'
-    };
+  buscarPedidos(termino: string): Observable<Pedido[]> {
+    console.log(`🔍 Buscando pedidos con término: ${termino}`);
     
-    return colores[estado] || 'text-gray-600 bg-gray-100';
-  }
-
-  /**
-   * Formatea el total del pedido como moneda
-   * @param total - Monto total
-   * @param moneda - Código de moneda
-   * @returns String formateado como moneda
-   */
-  formatearTotal(total: number, moneda: string = 'ARS'): string {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: moneda
-    }).format(total);
+    return from(supabase
+      .from(TABLES.PEDIDOS)
+      .select('*')
+      .or(`clienteNombre.ilike.%${termino}%,clienteEmail.ilike.%${termino}%,paymentId.ilike.%${termino}%`)
+      .order('fechaCreacion', { ascending: false })
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          console.error('❌ Error al buscar pedidos:', error);
+          throw error;
+        }
+        console.log(`✅ Pedidos encontrados:`, data?.length || 0);
+        return data || [];
+      }),
+      catchError(error => {
+        console.error('❌ Error en buscarPedidos:', error);
+        throw error;
+      })
+    );
   }
 }

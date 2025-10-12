@@ -7,7 +7,7 @@
  * - Login (inicio de sesión)
  * - Logout (cierre de sesión)
  * - Persistencia de sesión en localStorage
- * - Actualización en tiempo real con Firestore
+ * - Actualización en tiempo real con Supabase
  * - Gestión del estado del usuario actual
  * 
  * Autores: Cancelo Julian & Nicolas Otero
@@ -16,37 +16,34 @@
  */
 
 import { Injectable, inject, signal } from '@angular/core';
-import { UserService } from '../servicios/user';
+import { UserSupabaseService } from '../servicios/user-supabase.service';
+import { AuthSupabaseService } from '../servicios/auth-supabase.service';
 import { Router } from '@angular/router';
-import * as bcrypt from 'bcryptjs';  // Librería para hash de contraseñas
-import { Firestore, doc, onSnapshot, DocumentSnapshot } from '@angular/fire/firestore';
-import { Unsubscribe } from 'firebase/firestore';
 
 /**
  * Interfaz que define la estructura de un usuario en nuestra aplicación.
- * 
- * Esta interfaz asegura que todos los objetos de usuario tengan
- * las propiedades necesarias y del tipo correcto (type safety).
+ * Esta es la interfaz unificada que se usa en toda la aplicación.
  */
 export interface AppUser {
-  id: string;                    // ID único del usuario en Firestore
-  email: string | null;          // Email del usuario (puede ser null)
-  nombre: string;                // Nombre del usuario
-  apellido: string;              // Apellido del usuario
-  rol: 'admin' | 'usuario';      // Rol: solo puede ser 'admin' o 'usuario'
-  password?: string;             // Contraseña hasheada (opcional para seguridad)
+  id: string;
+  email: string;
+  nombre: string;
+  apellido?: string;
+  rol: 'admin' | 'cliente';
+  activo: boolean;
   
-  // --- Campos opcionales para dirección de entrega ---
-  // El símbolo '?' indica que son opcionales (pueden no existir)
-  domicilio?: string;            // Campo legacy (compatibilidad con versiones anteriores)
-  direccion?: string;            // Nueva dirección (formato mejorado)
-  ciudad?: string;               // Ciudad de envío
-  codigoPostal?: string;         // Código postal
-  telefono?: string;             // Teléfono de contacto
+  // Campos opcionales para dirección de entrega
+  direccion?: string;
+  ciudad?: string;
+  codigoPostal?: string;
+  telefono?: string;
+  
+  // Campo legacy para compatibilidad
+  domicilio?: string;
 }
 
 /**
- * Servicio Injectable de Angular para gestión de autenticación.
+ * Servicio Injectable de Angular para gestión de autenticación con Supabase.
  * 
  * @Injectable({ providedIn: 'root' }) significa que este servicio es un Singleton:
  * - Se crea una sola instancia para toda la aplicación
@@ -59,38 +56,42 @@ export interface AppUser {
 export class AuthService {
   
   // --- INYECCIÓN DE DEPENDENCIAS ---
-  // Usamos inject() (forma moderna de Angular) en lugar del constructor
-  private userService: UserService = inject(UserService);  // Servicio para operaciones con usuarios en Firestore
-  private router: Router = inject(Router);                 // Router para navegación
-  private firestore: Firestore = inject(Firestore);        // Instancia de Firestore
+  private authSupabaseService = inject(AuthSupabaseService);
+  private userSupabaseService = inject(UserSupabaseService);
+  private router = inject(Router);
 
   // --- CONSTANTES ---
-  // Clave para guardar la sesión en localStorage del navegador
   private readonly USER_STORAGE_KEY = 'app_user_session';
-  
-  // Referencia a la suscripción de Firestore (para poder cancelarla después)
-  private userSubscription: Unsubscribe | null = null;
 
   // --- SIGNAL DEL USUARIO ACTUAL ---
-  // Signal es la nueva forma reactiva de Angular (desde v16)
-  // Ventajas sobre BehaviorSubject:
-  // - Más simple y directo
-  // - Mejor rendimiento
-  // - Integración nativa con Angular
-  // 
-  // Valores posibles:
-  // - undefined: No sabemos aún si hay sesión (estado inicial)
-  // - null: No hay sesión activa (usuario no logueado)
-  // - AppUser: Hay un usuario logueado
   currentUserSignal = signal<AppUser | null | undefined>(undefined);
 
   /**
    * Constructor del servicio.
-   * Se ejecuta una sola vez cuando Angular crea la instancia.
    */
   constructor() {
-    // Al iniciar el servicio, intentamos restaurar la sesión guardada
-    this.cargarSesionDesdeStorage();
+    console.log('🔐 Inicializando AuthService con Supabase...');
+    this.initializeAuth();
+  }
+
+  /**
+   * Inicializa la autenticación con Supabase
+   */
+  private initializeAuth(): void {
+    console.log('🔐 Inicializando sistema de autenticación...');
+    
+    // Asegurar que localStorage esté disponible antes de cargar
+    if (typeof window !== 'undefined' && window.localStorage) {
+      // Pequeño delay para asegurar que todo esté inicializado
+      setTimeout(() => {
+        this.cargarSesionDesdeStorage();
+      }, 100);
+    } else {
+      console.warn('⚠️ localStorage no disponible');
+      this.currentUserSignal.set(null);
+    }
+    
+    console.log('✅ Sistema de autenticación inicializado');
   }
 
   private cargarSesionDesdeStorage(): void {
@@ -100,80 +101,157 @@ export class AuthService {
       if (userDataString) {
         const appUser: AppUser = JSON.parse(userDataString);
 
-        // --- VALIDACIÓN DE SESIÓN ---
-        // Verificamos que el objeto de usuario tenga un ID. Si no lo tiene, la sesión es inválida.
         if (appUser && appUser.id) {
           this.currentUserSignal.set(appUser);
-          this.listenToCurrentUser(appUser.id);
+          console.log('✅ Sesión restaurada desde localStorage:', {
+            email: appUser.email,
+            rol: appUser.rol,
+            id: appUser.id
+          });
         } else {
-          // Si los datos son inválidos, limpiamos todo.
-          console.error('Sesión inválida encontrada en localStorage. Limpiando...');
+          console.warn('⚠️ Sesión inválida en localStorage. Limpiando...');
           localStorage.removeItem(this.USER_STORAGE_KEY);
           this.currentUserSignal.set(null);
         }
       } else {
+        console.log('ℹ️ No hay sesión guardada en localStorage');
         this.currentUserSignal.set(null);
       }
     } catch (error) {
-      console.error('Error al cargar la sesión desde localStorage:', error);
+      console.error('❌ Error al cargar sesión desde localStorage:', error);
       this.currentUserSignal.set(null);
     }
   }
 
   /**
-   * Se suscribe a los cambios del documento del usuario actual en Firestore.
-   * @param userId - El ID del usuario a escuchar.
+   * Inicia sesión con email y contraseña
    */
-  private listenToCurrentUser(userId: string): void {
-    if (this.userSubscription) {
-      this.userSubscription();
-    }
-
-    const userDocRef = doc(this.firestore, 'users', userId);
-    this.userSubscription = onSnapshot(userDocRef, (snapshot: DocumentSnapshot) => {
-      if (snapshot.exists()) {
-        const updatedUser = { id: snapshot.id, ...snapshot.data() } as AppUser; // Usar 'id'
-        this.currentUserSignal.set(updatedUser);
-        localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(updatedUser));
-      } else {
-        this.logout();
+  async login(email: string, password: string): Promise<void> {
+    try {
+      console.log('🔑 Iniciando sesión con Supabase...');
+      
+      const user = await this.authSupabaseService.login(email, password).toPromise();
+      
+      if (user) {
+        console.log('✅ Login exitoso');
+        this.currentUserSignal.set(user);
+        localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(user));
+        this.router.navigate(['/']);
       }
+    } catch (error: any) {
+      console.error('❌ Error en login:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Registra un nuevo usuario
+   */
+  async register(userData: {
+    email: string;
+    password: string;
+    nombre: string;
+    apellido: string;
+  }): Promise<void> {
+    try {
+      console.log('📝 Registrando usuario con Supabase...');
+      
+      const user = await this.authSupabaseService.register(userData).toPromise();
+      
+      if (user) {
+        console.log('✅ Registro exitoso');
+        this.currentUserSignal.set(user);
+        localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(user));
+        this.router.navigate(['/']);
+      }
+    } catch (error: any) {
+      console.error('❌ Error en registro:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cierra la sesión del usuario
+   */
+  async logout(): Promise<void> {
+    try {
+      console.log('🚪 Cerrando sesión...');
+      
+      // Solo limpiar el estado local, no usar authSupabaseService
+      this.currentUserSignal.set(null);
+      localStorage.removeItem(this.USER_STORAGE_KEY);
+      
+      console.log('✅ Sesión cerrada correctamente');
+      this.router.navigate(['/']);
+    } catch (error: any) {
+      console.error('❌ Error al cerrar sesión:', error);
+      // Limpiar de todas formas
+      this.currentUserSignal.set(null);
+      localStorage.removeItem(this.USER_STORAGE_KEY);
+      this.router.navigate(['/']);
+    }
+  }
+
+  /**
+   * Verifica si el usuario actual es administrador
+   */
+  isAdmin(): boolean {
+    const user = this.currentUserSignal();
+    return user?.rol === 'admin';
+  }
+
+  /**
+   * Obtiene el usuario actual
+   */
+  getCurrentUser(): AppUser | null | undefined {
+    return this.currentUserSignal();
+  }
+
+  /**
+   * Fuerza la recarga de la sesión desde localStorage
+   */
+  reloadSession(): void {
+    console.log('🔄 Forzando recarga de sesión...');
+    this.cargarSesionDesdeStorage();
+  }
+
+  /**
+   * Método de debugging para verificar el estado de la sesión
+   */
+  debugSession(): void {
+    const user = this.currentUserSignal();
+    const localStorage_data = localStorage.getItem(this.USER_STORAGE_KEY);
+    
+    console.log('🔍 DEBUG SESSION:', {
+      currentUser: user,
+      localStorage_key: this.USER_STORAGE_KEY,
+      localStorage_data: localStorage_data,
+      localStorage_parsed: localStorage_data ? JSON.parse(localStorage_data) : null,
+      localStorage_available: typeof window !== 'undefined' && !!window.localStorage,
+      all_localStorage_keys: Object.keys(localStorage),
+      timestamp: new Date().toISOString()
     });
   }
 
-  async login(email: string, password: string): Promise<void> {
-    const userProfile = await this.userService.getUserByEmail(email);
-    if (!userProfile) {
-      throw new Error('El correo electrónico o la contraseña son incorrectos.');
+  /**
+   * Fuerza el guardado de la sesión actual
+   */
+  forceSaveSession(user: AppUser): void {
+    console.log('💾 Forzando guardado de sesión:', user.email);
+    
+    try {
+      this.currentUserSignal.set(user);
+      localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(user));
+      
+      // Verificar que se guardó correctamente
+      const saved = localStorage.getItem(this.USER_STORAGE_KEY);
+      if (saved) {
+        console.log('✅ Sesión guardada correctamente');
+      } else {
+        console.error('❌ Error: No se pudo guardar la sesión');
+      }
+    } catch (error) {
+      console.error('❌ Error al guardar sesión:', error);
     }
-
-    const passwordIsValid = userProfile.password && bcrypt.compareSync(password, userProfile.password);
-    if (!passwordIsValid) {
-      throw new Error('El correo electrónico o la contraseña son incorrectos.');
-    }
-
-    const appUser: AppUser = {
-      ...userProfile,
-      id: userProfile.id, // Usar 'id' en lugar de 'uid'
-    };
-
-    localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(appUser));
-    this.currentUserSignal.set(appUser);
-
-    this.listenToCurrentUser(appUser.id); // Usar 'id'
-
-    this.router.navigate(['/']);
-  }
-
-  async logout(): Promise<void> {
-    // Al cerrar sesión, cancelamos la suscripción a los cambios.
-    if (this.userSubscription) {
-      this.userSubscription();
-      this.userSubscription = null;
-    }
-
-    localStorage.removeItem(this.USER_STORAGE_KEY);
-    this.currentUserSignal.set(null);
-    this.router.navigate(['/']);
   }
 }
