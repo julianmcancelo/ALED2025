@@ -30,6 +30,7 @@ import { PagoFallidoComponent } from './pago-fallido/pago-fallido.component';
 import { PagoPendienteComponent } from './pago-pendiente/pago-pendiente.component';
 import { MisPedidosComponent } from './mis-pedidos/mis-pedidos.component';
 import { CategoriasComponent } from './categorias/categorias';
+import { OfertasComponent } from './ofertas/ofertas';
 
 // Importaciones de Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
@@ -79,6 +80,7 @@ export const appConfig: ApplicationConfig = {
       { path: '', component: Home, pathMatch: 'full' },
       { path: 'productos', component: TiendaComponent }, // Nueva ruta de la tienda
       { path: 'categorias', component: CategoriasComponent }, // Nueva ruta de categorías
+      { path: 'ofertas', component: OfertasComponent }, // Nueva ruta de ofertas
       { path: 'productos/:id', component: DetalleProductoComponent }, // Ruta para el detalle del producto
       { path: 'producto/:id', component: DetalleProductoComponent }, // Ruta alternativa para el detalle del producto
       { path: 'primer-usuario', component: PrimerUsuario },

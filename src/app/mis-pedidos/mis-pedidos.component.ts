@@ -1,9 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../auth/auth';
 import { Router } from '@angular/router';
-import { Firestore, collection, collectionData } from '@angular/fire/firestore';
 
 interface Pedido {
   id: string;
@@ -230,17 +229,20 @@ export class MisPedidosComponent implements OnInit {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private firestore = inject(Firestore);
 
   pedidos = signal<Pedido[]>([]);
   cargando = signal(false);
   error = signal<string | null>(null);
 
+  // Configuración de Supabase
+  private supabaseUrl = 'https://gyhzptzltqrxvgmwmkzm.supabase.co';
+  private supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aHpwdHpsdHFyeHZnbXdta3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODAyOTgsImV4cCI6MjA3NTY1NjI5OH0.rSrOQ4NWvwEU0Ec2HJTNYtpV7vp_0limf5Naf4ow7LM';
+
   ngOnInit(): void {
     this.cargarPedidos();
   }
 
-  cargarPedidos(): void {
+  async cargarPedidos(): Promise<void> {
     const user = this.authService.currentUserSignal();
     
     if (!user || !user.email) {
@@ -252,36 +254,53 @@ export class MisPedidosComponent implements OnInit {
     this.error.set(null);
 
     try {
-      const pedidosCollection = collection(this.firestore, 'pedidos');
+      console.log('🔍 Cargando pedidos para usuario:', user.email);
       
-      // Primero obtenemos todos los pedidos y luego filtramos por email
-      collectionData(pedidosCollection, { idField: 'docId' }).subscribe({
-        next: (todosPedidos: any[]) => {
-          // Filtrar pedidos del usuario actual
-          const pedidosUsuario = todosPedidos.filter(pedido => 
-            pedido.cliente?.email === user.email
-          );
-          
-          // Ordenar por fecha de creación (más recientes primero)
-          pedidosUsuario.sort((a, b) => {
-            const fechaA = a.fechaCreacion?.seconds || 0;
-            const fechaB = b.fechaCreacion?.seconds || 0;
-            return fechaB - fechaA;
-          });
-          
-          console.log(`✅ ${pedidosUsuario.length} pedidos cargados para ${user.email}`);
-          this.pedidos.set(pedidosUsuario as Pedido[]);
-          this.cargando.set(false);
-        },
-        error: (error: any) => {
-          console.error('Error cargando pedidos:', error);
-          this.error.set('No se pudieron cargar los pedidos. Intenta nuevamente.');
-          this.cargando.set(false);
-        }
+      // Headers para Supabase
+      const headers = new HttpHeaders({
+        'apikey': this.supabaseKey,
+        'Authorization': `Bearer ${this.supabaseKey}`,
+        'Content-Type': 'application/json'
       });
+
+      // Consultar pedidos del usuario desde Supabase
+      const url = `${this.supabaseUrl}/rest/v1/pedidos?clienteId=eq.${user.id}&order=created_at.desc`;
+      
+      const response = await this.http.get<any[]>(url, { headers }).toPromise();
+      
+      if (response) {
+        // Mapear los datos de Supabase al formato esperado
+        const pedidosMapeados = response.map(pedido => ({
+          id: pedido.id,
+          paymentId: pedido.payment_id || '',
+          estado: pedido.estado || 'desconocido',
+          total: pedido.total || 0,
+          moneda: pedido.moneda || 'ARS',
+          metodoPago: pedido.metodo_pago || 'Pendiente',
+          items: pedido.items || [],
+          cliente: {
+            email: user.email || undefined,
+            nombre: user.nombre,
+            apellido: user.apellido,
+            telefono: user.telefono
+          },
+          fechaCreacion: pedido.created_at,
+          fechaAprobacion: pedido.fecha_aprobacion,
+          fechaActualizacion: pedido.updated_at,
+          motivoRechazo: pedido.motivo_rechazo,
+          detallesPago: pedido.detalles_pago
+        }));
+        
+        console.log(`✅ ${pedidosMapeados.length} pedidos cargados para ${user.email}`);
+        this.pedidos.set(pedidosMapeados);
+      } else {
+        this.pedidos.set([]);
+      }
+      
+      this.cargando.set(false);
     } catch (error: any) {
-      console.error('Error configurando query:', error);
-      this.error.set('Error de configuración. Intenta nuevamente.');
+      console.error('❌ Error cargando pedidos:', error);
+      this.error.set('No se pudieron cargar los pedidos. Intenta nuevamente.');
       this.cargando.set(false);
     }
   }

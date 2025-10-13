@@ -1,0 +1,166 @@
+<div class="container-fluid py-4">
+  <!-- Header de Ofertas -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="text-center">
+        <h1 class="display-4 fw-bold text-primary mb-3">
+          <i class="bi bi-tag-fill me-3 text-danger"></i>
+          🔥 Ofertas Especiales
+        </h1>
+        <p class="lead text-muted">
+          Los mejores precios y descuentos exclusivos para vos
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="cargando" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando ofertas...</span>
+    </div>
+    <p class="mt-3 text-muted">Buscando las mejores ofertas...</p>
+  </div>
+
+  <!-- Grid de Ofertas -->
+  <div *ngIf="!cargando" class="row g-4">
+    <div 
+      *ngFor="let producto of productosEnOferta" 
+      class="col-12 col-md-6 col-lg-4 col-xl-3"
+    >
+      <div class="card oferta-card h-100 shadow-sm border-0 position-relative">
+        <!-- Badge de Descuento -->
+        <div class="badge-descuento">
+          <span class="badge bg-danger fs-6 fw-bold">
+            -{{ calcularDescuento(producto.precio) }}%
+          </span>
+        </div>
+
+        <!-- Imagen del Producto -->
+        <div class="oferta-image-container">
+          <img 
+            [src]="producto.imagen || 'assets/images/no-image.png'" 
+            [alt]="producto.nombre"
+            class="card-img-top oferta-image"
+            (error)="$event.target.src='assets/images/no-image.png'"
+          >
+          <div class="oferta-overlay">
+            <button 
+              class="btn btn-light btn-sm"
+              (click)="verProducto(producto)"
+            >
+              <i class="bi bi-eye me-1"></i>
+              Ver Detalles
+            </button>
+          </div>
+        </div>
+
+        <!-- Contenido de la Oferta -->
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title fw-bold text-dark mb-2">
+            {{ producto.nombre }}
+          </h5>
+          
+          <p class="card-text text-muted small flex-grow-1">
+            {{ producto.descripcion || 'Producto en oferta especial' }}
+          </p>
+
+          <!-- Precios -->
+          <div class="precios-container mb-3">
+            <div class="precio-original text-muted text-decoration-line-through small">
+              {{ formatearPrecio(calcularPrecioOriginal(producto.precio)) }}
+            </div>
+            <div class="precio-oferta text-danger fw-bold fs-4">
+              {{ formatearPrecio(producto.precio) }}
+            </div>
+            <div class="ahorro text-success small fw-medium">
+              Ahorrás {{ formatearPrecio(calcularPrecioOriginal(producto.precio) - producto.precio) }}
+            </div>
+          </div>
+
+          <!-- Botón de Acción -->
+          <button 
+            type="button"
+            class="btn btn-danger btn-lg w-100 fw-bold"
+            (click)="verProducto(producto)"
+          >
+            <i class="bi bi-cart-plus me-2"></i>
+            ¡Aprovechar Oferta!
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje si no hay ofertas -->
+  <div *ngIf="!cargando && productosEnOferta.length === 0" class="text-center py-5">
+    <div class="mb-4">
+      <i class="bi bi-tag display-1 text-muted"></i>
+    </div>
+    <h3 class="text-muted">No hay ofertas disponibles</h3>
+    <p class="text-muted mb-4">Las ofertas aparecerán aquí cuando estén activas.</p>
+    <button 
+      type="button"
+      class="btn btn-primary btn-lg"
+      (click)="router.navigate(['/productos'])"
+    >
+      <i class="bi bi-shop me-2"></i>
+      Ver Todos los Productos
+    </button>
+  </div>
+
+  <!-- Sección de Información -->
+  <div *ngIf="!cargando && productosEnOferta.length > 0" class="row mt-5">
+    <div class="col-12">
+      <div class="card bg-gradient-danger text-white border-0">
+        <div class="card-body text-center py-4">
+          <h4 class="fw-bold text-white mb-3">
+            <i class="bi bi-lightning-charge me-2"></i>
+            ¡Ofertas por Tiempo Limitado!
+          </h4>
+          <p class="text-white-50 mb-4">
+            Aprovechá estos precios especiales antes de que se agoten
+          </p>
+          <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <div class="oferta-feature">
+              <i class="bi bi-truck text-white fs-3 mb-2"></i>
+              <div class="text-white-50 small">Envío Gratis</div>
+            </div>
+            <div class="oferta-feature">
+              <i class="bi bi-credit-card text-white fs-3 mb-2"></i>
+              <div class="text-white-50 small">12 Cuotas</div>
+            </div>
+            <div class="oferta-feature">
+              <i class="bi bi-shield-check text-white fs-3 mb-2"></i>
+              <div class="text-white-50 small">Garantía</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegación -->
+  <div class="row mt-4">
+    <div class="col-12 text-center">
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <button 
+          type="button"
+          class="btn btn-outline-primary btn-lg"
+          (click)="router.navigate(['/productos'])"
+        >
+          <i class="bi bi-grid me-2"></i>
+          Ver Todos los Productos
+        </button>
+        <button 
+          type="button"
+          class="btn btn-outline-secondary btn-lg"
+          (click)="router.navigate(['/'])"
+        >
+          <i class="bi bi-house me-2"></i>
+          Volver al Inicio
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
