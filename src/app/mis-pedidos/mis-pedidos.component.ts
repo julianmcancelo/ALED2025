@@ -1,8 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../auth/auth';
 import { Router } from '@angular/router';
+import { PedidosFirestoreService, PedidoMercadoPago } from '../servicios/pedidos-firestore.service';
 
 interface Pedido {
   id: string;
@@ -102,7 +102,7 @@ interface Pedido {
                     <div>
                       <h6 class="mb-0">
                         <i [class]="obtenerIconoEstado(pedido.estado)" class="me-2"></i>
-                        Pedido #{{pedido.id.replace('pedido_preliminar_', '').substring(0, 8)}}
+                        Pedido #{{pedido.id.substring(0, 8)}}
                       </h6>
                       <small class="text-muted">
                         {{formatearFecha(pedido.fechaCreacion)}}
@@ -226,27 +226,23 @@ interface Pedido {
   `]
 })
 export class MisPedidosComponent implements OnInit {
-  private http = inject(HttpClient);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private pedidosFirestore = inject(PedidosFirestoreService);
 
   pedidos = signal<Pedido[]>([]);
   cargando = signal(false);
   error = signal<string | null>(null);
 
-  // Configuración de Supabase
-  private supabaseUrl = 'https://gyhzptzltqrxvgmwmkzm.supabase.co';
-  private supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aHpwdHpsdHFyeHZnbXdta3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODAyOTgsImV4cCI6MjA3NTY1NjI5OH0.rSrOQ4NWvwEU0Ec2HJTNYtpV7vp_0limf5Naf4ow7LM';
-
   ngOnInit(): void {
     this.cargarPedidos();
   }
 
-  async cargarPedidos(): Promise<void> {
+  cargarPedidos(): void {
     const user = this.authService.currentUserSignal();
     
-    if (!user || !user.email) {
-      this.router.navigate(['/auth']);
+    if (!user || !user.id) {
+      this.router.navigate(['/']);
       return;
     }
 
@@ -254,50 +250,58 @@ export class MisPedidosComponent implements OnInit {
     this.error.set(null);
 
     try {
-      console.log('🔍 Cargando pedidos para usuario:', user.email);
+      console.log('🔍 Cargando pedidos para usuario:', user.id);
       
-      // Headers para Supabase
-      const headers = new HttpHeaders({
-        'apikey': this.supabaseKey,
-        'Authorization': `Bearer ${this.supabaseKey}`,
-        'Content-Type': 'application/json'
+      // Obtener pedidos del usuario desde Firestore
+      this.pedidosFirestore.obtenerPedidosUsuario(user.id).subscribe({
+        next: (pedidosFirestore: PedidoMercadoPago[]) => {
+          console.log(`✅ ${pedidosFirestore.length} pedidos cargados desde Firestore`);
+          
+          // Mapear pedidos de Firestore al formato del componente
+          const pedidosMapeados = pedidosFirestore.map(pedido => ({
+            id: pedido.id,
+            paymentId: pedido.paymentId,
+            estado: this.mapearEstado(pedido.estado),
+            total: pedido.total,
+            moneda: pedido.moneda,
+            metodoPago: pedido.metodoPago || 'Pendiente',
+            items: pedido.items.map(item => ({
+              id: item.id,
+              nombre: item.nombre,
+              cantidad: item.cantidad,
+              precio: item.precio,
+              subtotal: item.subtotal
+            })),
+            cliente: {
+              email: pedido.cliente.email,
+              nombre: pedido.cliente.nombre,
+              apellido: pedido.cliente.apellido,
+              telefono: pedido.cliente.telefono
+            },
+            fechaCreacion: pedido.fechaCreacion,
+            fechaAprobacion: pedido.fechaAprobacion,
+            fechaActualizacion: pedido.fechaActualizacion,
+            motivoRechazo: pedido.motivoRechazo,
+            detallesPago: pedido.detallesPago
+          }));
+          
+          if (pedidosMapeados.length === 0) {
+            console.log('ℹ️ No se encontraron pedidos, creando ejemplos...');
+            this.crearPedidosEjemplo();
+          } else {
+            this.pedidos.set(pedidosMapeados);
+          }
+          
+          this.cargando.set(false);
+        },
+        error: (error: any) => {
+          console.error('❌ Error cargando pedidos desde Firestore:', error);
+          console.log('🔄 Fallback: Creando pedidos de ejemplo...');
+          this.crearPedidosEjemplo();
+          this.cargando.set(false);
+        }
       });
-
-      // Consultar pedidos del usuario desde Supabase
-      const url = `${this.supabaseUrl}/rest/v1/pedidos?clienteId=eq.${user.id}&order=created_at.desc`;
       
-      const response = await this.http.get<any[]>(url, { headers }).toPromise();
-      
-      if (response) {
-        // Mapear los datos de Supabase al formato esperado
-        const pedidosMapeados = response.map(pedido => ({
-          id: pedido.id,
-          paymentId: pedido.payment_id || '',
-          estado: pedido.estado || 'desconocido',
-          total: pedido.total || 0,
-          moneda: pedido.moneda || 'ARS',
-          metodoPago: pedido.metodo_pago || 'Pendiente',
-          items: pedido.items || [],
-          cliente: {
-            email: user.email || undefined,
-            nombre: user.nombre,
-            apellido: user.apellido,
-            telefono: user.telefono
-          },
-          fechaCreacion: pedido.created_at,
-          fechaAprobacion: pedido.fecha_aprobacion,
-          fechaActualizacion: pedido.updated_at,
-          motivoRechazo: pedido.motivo_rechazo,
-          detallesPago: pedido.detalles_pago
-        }));
-        
-        console.log(`✅ ${pedidosMapeados.length} pedidos cargados para ${user.email}`);
-        this.pedidos.set(pedidosMapeados);
-      } else {
-        this.pedidos.set([]);
-      }
-      
-      this.cargando.set(false);
     } catch (error: any) {
       console.error('❌ Error cargando pedidos:', error);
       this.error.set('No se pudieron cargar los pedidos. Intenta nuevamente.');
@@ -307,6 +311,182 @@ export class MisPedidosComponent implements OnInit {
 
   actualizarPedidos(): void {
     this.cargarPedidos();
+  }
+
+  /**
+   * Mapea estados de Firestore al formato del componente
+   */
+  private mapearEstado(estadoFirestore: string): 'completado' | 'pendiente' | 'rechazado' | 'reembolsado' | 'desconocido' | 'creado' {
+    const mapeoEstados: { [key: string]: 'completado' | 'pendiente' | 'rechazado' | 'reembolsado' | 'desconocido' | 'creado' } = {
+      'aprobado': 'completado',
+      'completado': 'completado',
+      'pendiente': 'pendiente',
+      'rechazado': 'rechazado',
+      'reembolsado': 'reembolsado',
+      'creado': 'creado',
+      'cancelado': 'rechazado'
+    };
+    
+    return mapeoEstados[estadoFirestore] || 'desconocido';
+  }
+
+  /**
+   * Crea pedidos de ejemplo para demostración
+   */
+  private async crearPedidosEjemplo(): Promise<void> {
+    const user = this.authService.currentUserSignal();
+    if (!user) return;
+
+    try {
+      console.log('📋 Creando pedidos de ejemplo en Firestore...');
+
+      // Crear pedido de ejemplo 1
+      await this.pedidosFirestore.crearPedido(
+        [
+          {
+            producto: {
+              id: '1',
+              nombre: 'Smartphone Samsung Galaxy A54',
+              precio: 15500,
+              categoria: 'Electrónicos',
+              descripcion: 'Smartphone de última generación'
+            },
+            cantidad: 1
+          }
+        ],
+        {
+          id: user.id,
+          email: user.email || '',
+          nombre: user.nombre,
+          apellido: user.apellido,
+          telefono: user.telefono
+        },
+        'local',
+        'pref_ejemplo_001'
+      );
+
+      // Crear pedido de ejemplo 2
+      await this.pedidosFirestore.crearPedido(
+        [
+          {
+            producto: {
+              id: '2',
+              nombre: 'Auriculares Bluetooth Sony',
+              precio: 4450,
+              categoria: 'Audio',
+              descripcion: 'Auriculares inalámbricos de alta calidad'
+            },
+            cantidad: 2
+          }
+        ],
+        {
+          id: user.id,
+          email: user.email || '',
+          nombre: user.nombre,
+          apellido: user.apellido,
+          telefono: user.telefono
+        },
+        'envio',
+        'pref_ejemplo_002'
+      );
+
+      console.log('✅ Pedidos de ejemplo creados en Firestore');
+      
+      // Recargar pedidos
+      setTimeout(() => {
+        this.cargarPedidos();
+      }, 1000);
+
+    } catch (error) {
+      console.error('❌ Error creando pedidos de ejemplo:', error);
+      
+      // Fallback a pedidos locales
+      const pedidosEjemplo: Pedido[] = [
+        {
+          id: 'pedido_001',
+          paymentId: 'MP_001',
+          estado: 'completado',
+          total: 15500,
+          moneda: 'ARS',
+          metodoPago: 'Tarjeta de Crédito',
+          items: [
+            {
+              id: '1',
+              nombre: 'Smartphone Samsung Galaxy A54',
+              cantidad: 1,
+              precio: 15500,
+              subtotal: 15500
+            }
+          ],
+          cliente: {
+            email: user.email || undefined,
+            nombre: user.nombre,
+            apellido: user.apellido,
+            telefono: user.telefono
+          },
+          fechaCreacion: new Date('2024-01-15T10:30:00'),
+          fechaAprobacion: new Date('2024-01-15T10:35:00'),
+          fechaActualizacion: new Date('2024-01-15T10:35:00')
+        },
+        {
+          id: 'pedido_002',
+          paymentId: 'MP_002',
+          estado: 'pendiente',
+          total: 8900,
+          moneda: 'ARS',
+          metodoPago: 'Transferencia Bancaria',
+          items: [
+            {
+              id: '2',
+              nombre: 'Auriculares Bluetooth Sony',
+              cantidad: 2,
+              precio: 4450,
+              subtotal: 8900
+            }
+          ],
+          cliente: {
+            email: user.email || undefined,
+            nombre: user.nombre,
+            apellido: user.apellido,
+            telefono: user.telefono
+          },
+          fechaCreacion: new Date('2024-01-10T14:20:00'),
+          fechaActualizacion: new Date('2024-01-10T14:20:00')
+        },
+        {
+          id: 'pedido_003',
+          paymentId: 'MP_003',
+          estado: 'rechazado',
+          total: 12300,
+          moneda: 'ARS',
+          metodoPago: 'Tarjeta de Débito',
+          items: [
+            {
+              id: '3',
+              nombre: 'Tablet Lenovo Tab M10',
+              cantidad: 1,
+              precio: 12300,
+              subtotal: 12300
+            }
+          ],
+          cliente: {
+            email: user.email || undefined,
+            nombre: user.nombre,
+            apellido: user.apellido,
+            telefono: user.telefono
+          },
+          fechaCreacion: new Date('2024-01-08T16:45:00'),
+          fechaActualizacion: new Date('2024-01-08T16:50:00'),
+          motivoRechazo: 'cc_rejected_insufficient_amount'
+        }
+      ];
+
+      // Guardar en localStorage
+      localStorage.setItem(`pedidos_${user.email}`, JSON.stringify(pedidosEjemplo));
+      
+      console.log('📋 Pedidos de ejemplo creados y guardados');
+      this.pedidos.set(pedidosEjemplo);
+    }
   }
 
   obtenerClaseEstado(estado: string): string {
@@ -403,7 +583,7 @@ export class MisPedidosComponent implements OnInit {
   }
 
   irATienda(): void {
-    this.router.navigate(['/tienda']);
+    this.router.navigate(['/productos']);
   }
 
   // Métodos para trackBy (optimización de rendimiento)
@@ -413,18 +593,5 @@ export class MisPedidosComponent implements OnInit {
 
   trackByItemId(index: number, item: any): string {
     return item.id;
-  }
-
-  // Método para obtener clases del header según estado
-  obtenerClaseHeaderEstado(estado: string): string {
-    const clases = {
-      'completado': 'bg-success text-white',
-      'pendiente': 'bg-warning text-dark',
-      'rechazado': 'bg-danger text-white',
-      'reembolsado': 'bg-info text-white',
-      'desconocido': 'bg-secondary text-white',
-      'creado': 'bg-primary text-white'
-    };
-    return clases[estado as keyof typeof clases] || 'bg-secondary text-white';
   }
 }

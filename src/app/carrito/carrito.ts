@@ -1,21 +1,17 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgbActiveOffcanvas } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { CarritoService } from '../servicios/carrito';
 import { AuthService } from '../auth/auth';
-import { UserService } from '../servicios/user';
-import { InicioDeSesion } from '../auth/inicio-sesion/inicio-sesion';
-import { Registro } from '../auth/registro/registro';
-import { AuthRequeridoComponent } from '../auth/auth-requerido/auth-requerido';
 import { getMercadoPagoCredentials, getMercadoPagoSettings } from '../config/mercadopago.config';
+import { PedidosFirestoreService } from '../servicios/pedidos-firestore.service';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-carrito',
   standalone: true,
-  imports: [CommonModule, MatDialogModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './carrito.html',
 })
 export class Carrito {
@@ -26,6 +22,7 @@ export class Carrito {
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private dialog = inject(MatDialog);
+  private pedidosFirestore = inject(PedidosFirestoreService);
 
   cargandoMP = signal(false);
 
@@ -465,21 +462,20 @@ export class Carrito {
     };
 
     console.log('💳 Preferencia de Mercado Pago:', preference);
-
     // Crear preferencia usando API directa de Mercado Pago
-    this.crearPreferenciaDirecta(preference);
+    await this.crearPreferenciaDirecta(preference, items, usuario, metodoEntrega);
   }
 
   /**
    * Crea la preferencia usando la API directa de Mercado Pago
    */
-  private crearPreferenciaDirecta(preference: any): void {
+  private async crearPreferenciaDirecta(preference: any, items?: any[], usuario?: any, metodoEntrega?: string): Promise<void> {
     const credentials = getMercadoPagoCredentials();
     const settings = getMercadoPagoSettings();
     
     const headers = {
       'Authorization': `Bearer ${credentials.ACCESS_TOKEN}`,
-      'Content-Type': 'application/json'
+{{ ... }}
     };
 
     const apiUrl = settings.USE_SANDBOX 
