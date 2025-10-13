@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Firestore, collection, addDoc, doc, updateDoc, query, where, orderBy, collectionData, getDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 /**
  * ============================================================================
@@ -270,7 +271,9 @@ export class PedidosFirestoreService {
         where('preferenceId', '==', preferenceId)
       );
       
-      const querySnapshot = await collectionData(q, { idField: 'id' });
+      const querySnapshot = await collectionData(q, { idField: 'id' }).pipe(
+        take(1)
+      ).toPromise();
       
       if (querySnapshot && querySnapshot.length > 0) {
         return querySnapshot[0] as PedidoMercadoPago;
@@ -294,20 +297,38 @@ export class PedidosFirestoreService {
    */
   async obtenerEstadisticasPedidos(): Promise<any> {
     try {
-      const todosPedidos = await collectionData(this.pedidosCollection);
+      const todosPedidos = await collectionData(this.pedidosCollection).pipe(
+        take(1)
+      ).toPromise() as any[];
       
+      if (!todosPedidos || !Array.isArray(todosPedidos)) {
+        return {
+          total: 0,
+          completados: 0,
+          pendientes: 0,
+          rechazados: 0,
+          montoTotal: 0
+        };
+      }
+
       const estadisticas = {
         total: todosPedidos.length,
-        completados: todosPedidos.filter(p => p['estado'] === EstadoPedidoMP.COMPLETADO).length,
-        pendientes: todosPedidos.filter(p => p['estado'] === EstadoPedidoMP.PENDIENTE).length,
-        rechazados: todosPedidos.filter(p => p['estado'] === EstadoPedidoMP.RECHAZADO).length,
-        montoTotal: todosPedidos.reduce((sum, p) => sum + (p['total'] || 0), 0)
+        completados: todosPedidos.filter((p: any) => p.estado === EstadoPedidoMP.COMPLETADO).length,
+        pendientes: todosPedidos.filter((p: any) => p.estado === EstadoPedidoMP.PENDIENTE).length,
+        rechazados: todosPedidos.filter((p: any) => p.estado === EstadoPedidoMP.RECHAZADO).length,
+        montoTotal: todosPedidos.reduce((sum: number, p: any) => sum + (p.total || 0), 0)
       };
 
       return estadisticas;
     } catch (error) {
       console.error('❌ Error obteniendo estadísticas:', error);
-      return null;
+      return {
+        total: 0,
+        completados: 0,
+        pendientes: 0,
+        rechazados: 0,
+        montoTotal: 0
+      };
     }
   }
 
