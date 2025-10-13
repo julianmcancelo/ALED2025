@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import {
   Firestore,
   collection,
@@ -40,20 +40,26 @@ export interface UserData {
 })
 export class UserService {
   private firestore: Firestore = inject(Firestore);
-  private usersCollection = collection(this.firestore, 'users');
+  private injector: Injector = inject(Injector);
 
   /**
    * Obtiene todos los usuarios de la base de datos como un stream.
    */
   getUsers(): Observable<AppUser[]> {
-    return collectionData(this.usersCollection, { idField: 'id' }) as Observable<AppUser[]>;
+    return runInInjectionContext(this.injector, () => {
+      const usersCollection = collection(this.firestore, 'users');
+      return collectionData(usersCollection, { idField: 'id' }) as Observable<AppUser[]>;
+    });
   }
 
   /**
    * Añade un nuevo usuario a la colección 'users'.
    */
   addUser(user: Partial<UserData>) {
-    return addDoc(this.usersCollection, user);
+    return runInInjectionContext(this.injector, () => {
+      const usersCollection = collection(this.firestore, 'users');
+      return addDoc(usersCollection, user);
+    });
   }
 
   /**
@@ -63,8 +69,10 @@ export class UserService {
    * @returns Una promesa que se resuelve cuando la actualización se completa.
    */
   updateUser(id: string, data: Partial<UserData>): Promise<void> {
-    const userDocRef = doc(this.firestore, `users/${id}`);
-    return updateDoc(userDocRef, data);
+    return runInInjectionContext(this.injector, () => {
+      const userDocRef = doc(this.firestore, `users/${id}`);
+      return updateDoc(userDocRef, data);
+    });
   }
 
   /**
@@ -73,8 +81,10 @@ export class UserService {
    * @returns Una promesa que se resuelve cuando la eliminación se completa.
    */
   deleteUser(id: string): Promise<void> {
-    const userDocRef = doc(this.firestore, `users/${id}`);
-    return deleteDoc(userDocRef);
+    return runInInjectionContext(this.injector, () => {
+      const userDocRef = doc(this.firestore, `users/${id}`);
+      return deleteDoc(userDocRef);
+    });
   }
 
   /**
@@ -83,12 +93,14 @@ export class UserService {
    * @returns Una promesa que se resuelve con los datos del usuario (incluyendo el ID), o null si no se encuentra.
    */
   async getUserById(id: string): Promise<AppUser | null> {
-    const userDocRef = doc(this.firestore, `users/${id}`);
-    const docSnap = await getDoc(userDocRef);
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() } as AppUser;
-    }
-    return null;
+    return runInInjectionContext(this.injector, async () => {
+      const userDocRef = doc(this.firestore, `users/${id}`);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as AppUser;
+      }
+      return null;
+    });
   }
 
   /**
@@ -105,10 +117,12 @@ export class UserService {
    * @returns Una promesa que se resuelve a 'true' si existen usuarios, 'false' si no.
    */
   async checkIfUsersExist(): Promise<boolean> {
-    const userCollectionRef = collection(this.firestore, 'users');
-    const q = query(userCollectionRef, limit(1));
-    const snapshot = await getDocs(q);
-    return !snapshot.empty;
+    return runInInjectionContext(this.injector, async () => {
+      const userCollectionRef = collection(this.firestore, 'users');
+      const q = query(userCollectionRef, limit(1));
+      const snapshot = await getDocs(q);
+      return !snapshot.empty;
+    });
   }
 
   /**
@@ -117,16 +131,18 @@ export class UserService {
    * @returns Una promesa que se resuelve con los datos del usuario o null si no se encuentra.
    */
   async getUserByEmail(email: string): Promise<AppUser | null> {
-    const userCollectionRef = collection(this.firestore, 'users');
-    const q = query(userCollectionRef, where('email', '==', email));
-    const querySnapshot = await getDocs(q);
+    return runInInjectionContext(this.injector, async () => {
+      const userCollectionRef = collection(this.firestore, 'users');
+      const q = query(userCollectionRef, where('email', '==', email));
+      const querySnapshot = await getDocs(q);
 
-    if (querySnapshot.empty) {
-      return null;
-    }
-    // Devuelve los datos del primer documento encontrado incluyendo el ID.
-    const docSnapshot = querySnapshot.docs[0];
-    return { id: docSnapshot.id, ...docSnapshot.data() } as AppUser;
+      if (querySnapshot.empty) {
+        return null;
+      }
+      // Devuelve los datos del primer documento encontrado incluyendo el ID.
+      const docSnapshot = querySnapshot.docs[0];
+      return { id: docSnapshot.id, ...docSnapshot.data() } as AppUser;
+    });
   }
 
   /**
@@ -136,25 +152,27 @@ export class UserService {
    * @returns Una promesa que se resuelve a 'false' si alguno ya existe, 'true' si son únicos.
    */
   async verificarUsuarioUnico(dni: string, email: string): Promise<boolean> {
-    const userCollectionRef = collection(this.firestore, 'users');
+    return runInInjectionContext(this.injector, async () => {
+      const userCollectionRef = collection(this.firestore, 'users');
 
-    // 1. Consulta para verificar si el DNI ya existe.
-    const qDni = query(userCollectionRef, where('dni', '==', dni));
-    const dniSnapshot = await getDocs(qDni);
-    if (!dniSnapshot.empty) {
-      console.error('Error: El DNI ya está registrado.');
-      return false; // El DNI no es único.
-    }
+      // 1. Consulta para verificar si el DNI ya existe.
+      const qDni = query(userCollectionRef, where('dni', '==', dni));
+      const dniSnapshot = await getDocs(qDni);
+      if (!dniSnapshot.empty) {
+        console.error('Error: El DNI ya está registrado.');
+        return false; // El DNI no es único.
+      }
 
-    // 2. Consulta para verificar si el email ya existe.
-    const qEmail = query(userCollectionRef, where('email', '==', email));
-    const emailSnapshot = await getDocs(qEmail);
-    if (!emailSnapshot.empty) {
-      console.error('Error: El correo electrónico ya está registrado.');
-      return false; // El email no es único.
-    }
+      // 2. Consulta para verificar si el email ya existe.
+      const qEmail = query(userCollectionRef, where('email', '==', email));
+      const emailSnapshot = await getDocs(qEmail);
+      if (!emailSnapshot.empty) {
+        console.error('Error: El correo electrónico ya está registrado.');
+        return false; // El email no es único.
+      }
 
-    // 3. Si ambas consultas no encontraron nada, el usuario es único.
-    return true;
+      // 3. Si ambas consultas no encontraron nada, el usuario es único.
+      return true;
+    });
   }
 }

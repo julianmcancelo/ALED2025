@@ -471,19 +471,27 @@ export class GestionProductosService {
    * @returns Observable que se completa cuando la eliminación termina
    */
   eliminarProducto(id: string): Observable<void> {
+    console.log(`🗑️ [SERVICIO] Iniciando eliminación de producto con ID: ${id}`);
+    
     return from(this.inicializacionCompleta).pipe(
       switchMap(() => {
+        console.log(`🔄 [SERVICIO] Inicialización completa, procediendo con eliminación`);
         return runInInjectionContext(this.injector, () => {
+          console.log(`📄 [SERVICIO] Creando referencia al documento: productos/${id}`);
           const productoRef = doc(this.firestore, 'productos', id);
+          
           return from(deleteDoc(productoRef)).pipe(
             map(() => {
-              console.log(`✅ Producto eliminado: ${id}`);
+              console.log(`✅ [SERVICIO] Producto eliminado exitosamente de Firebase: ${id}`);
             })
           );
         });
       }),
       catchError((error: any) => {
-        console.error('❌ Error al eliminar producto:', error);
+        console.error(`❌ [SERVICIO] Error al eliminar producto ${id}:`, error);
+        console.error(`❌ [SERVICIO] Tipo de error:`, typeof error);
+        console.error(`❌ [SERVICIO] Mensaje de error:`, error.message);
+        console.error(`❌ [SERVICIO] Stack trace:`, error.stack);
         throw error;
       })
     );

@@ -37,12 +37,72 @@
           Ofertas
         </a>
         
-        <a class="text-gray-700 hover:text-[#0077b6] px-3 py-2 rounded-md text-sm font-medium transition-colors" 
-           routerLink="/categorias" 
-           routerLinkActive="text-[#0077b6] bg-blue-50">
-          <i class="bi bi-grid mr-1"></i>
-          Categorías
-        </a>
+        <div class="relative">
+          <button class="text-gray-700 hover:text-[#0077b6] px-3 py-2 rounded-md text-sm font-medium transition-colors" 
+                  (click)="abrirModalCategorias()"
+                  #categoriasBtn>
+            <i class="bi bi-grid mr-1"></i>
+            Categorías
+          </button>
+          
+          <!-- Mini Modal justo debajo del botón -->
+          <div *ngIf="showCategoriasModal" class="absolute top-full left-0 mt-1 z-50">
+            <div class="bg-white rounded-md border border-gray-200 w-56 shadow-lg mini-modal-shadow">
+              <!-- Header ultra compacto -->
+              <div class="flex items-center justify-between px-2 py-1 bg-gray-50 border-b border-gray-100 rounded-t-md">
+                <span class="text-xs font-medium text-gray-600">
+                  <i class="bi bi-grid mr-1 text-[#0077b6]"></i>
+                  Categorías
+                </span>
+                <button 
+                  type="button" 
+                  class="text-gray-400 hover:text-gray-600 p-0.5 rounded"
+                  (click)="cerrarModalCategorias()"
+                >
+                  <i class="bi bi-x text-xs"></i>
+                </button>
+              </div>
+
+              <!-- Lista ultra compacta -->
+              <div class="max-h-48 overflow-y-auto">
+                <!-- Loading -->
+                <div *ngIf="cargandoCategorias" class="text-center py-3">
+                  <div class="inline-block animate-spin rounded-full h-3 w-3 border-b border-[#0077b6]"></div>
+                  <p class="mt-1 text-xs text-gray-400">Cargando...</p>
+                </div>
+
+                <!-- Lista de Categorías -->
+                <div *ngIf="!cargandoCategorias && categorias.length > 0">
+                  <button
+                    *ngFor="let categoria of categorias"
+                    (click)="navegarACategoria(categoria)"
+                    class="w-full flex items-center px-2 py-1.5 text-left text-gray-600 hover:bg-blue-50 hover:text-[#0077b6] transition-colors text-xs group"
+                  >
+                    <i class="bi bi-tag mr-1.5 text-xs text-gray-400 group-hover:text-[#0077b6]"></i>
+                    <span class="flex-1 truncate">{{ categoria.nombre }}</span>
+                    <i class="bi bi-chevron-right text-xs text-gray-300 group-hover:text-[#0077b6]"></i>
+                  </button>
+                </div>
+
+                <!-- Sin categorías -->
+                <div *ngIf="!cargandoCategorias && categorias.length === 0" class="text-center py-3">
+                  <i class="bi bi-inbox text-sm text-gray-300"></i>
+                  <p class="text-xs text-gray-400 mt-0.5">Sin categorías</p>
+                </div>
+              </div>
+
+              <!-- Footer ultra mini -->
+              <div class="border-t border-gray-100 px-2 py-1 bg-gray-50 rounded-b-md">
+                <button
+                  (click)="verTodasLasCategorias()"
+                  class="w-full text-xs text-[#0077b6] hover:text-[#005a8d] font-medium py-0.5 text-center"
+                >
+                  Ver todas →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
         
         <!-- Botones de autenticación y carrito -->
         <div class="flex items-center space-x-4">
@@ -165,12 +225,11 @@
           Ofertas
         </a>
         
-        <a routerLink="/categorias" 
-           routerLinkActive="text-[#0077b6] bg-blue-50"
-           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#0077b6] hover:bg-gray-50 rounded-md">
+        <button (click)="abrirModalCategorias()"
+                class="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-[#0077b6] hover:bg-gray-50 rounded-md">
           <i class="bi bi-grid mr-2"></i>
           Categorías
-        </a>
+        </button>
 
         <!-- Botones de autenticación móvil -->
         @if (currentUser() === null) {
@@ -191,3 +250,6 @@
     </div>
   </div>
 </nav>
+
+<!-- Overlay para cerrar el modal al hacer clic fuera -->
+<div *ngIf="showCategoriasModal" class="fixed inset-0 z-40" (click)="cerrarModalCategorias()"></div>

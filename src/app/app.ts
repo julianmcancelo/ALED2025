@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, effect, inject } from '@angular/core';
+import { Component, OnInit, signal, effect, inject, Injector, runInInjectionContext } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterOutlet } from '@angular/router';
@@ -24,18 +24,17 @@ import { Firestore, collection, getDocs, limit, query } from '@angular/fire/fire
 export class App implements OnInit {
   protected readonly title = signal('Final');
 
-  // Inyección de servicios moderna con inject()
-  private titleService = inject(Title);
+  // Inyectamos los servicios necesarios
+  private firestore = inject(Firestore);
+  private userService = inject(UserService);
   private configuracionService = inject(ConfiguracionService);
+  private titleService = inject(Title);
+  private injector = inject(Injector);
+  private dialog = inject(MatDialog);
 
-  constructor(
-    public dialog: MatDialog,
-    private firestore: Firestore,
-    private userService: UserService,
-  ) {
+  constructor() {
     // Creamos un efecto que reacciona a los cambios en la configuración.
     effect(() => {
-      // Obtenemos el título desde la señal del servicio de configuración.
       const nuevoTitulo = this.configuracionService.configuracionSignal().titulo;
       // Actualizamos el título de la pestaña del navegador.
       this.titleService.setTitle(nuevoTitulo);
@@ -52,61 +51,63 @@ export class App implements OnInit {
   }
 
   /**
-   * Comprueba si existen usuarios en la base de datos.
+   * Comprueba si existen usuarios en la base de datos Firestore.
    * Si no existe ninguno, crea un usuario administrador por defecto.
    */
   async verificarYCrearAdmin(): Promise<void> {
-    const userCollectionRef = collection(this.firestore, 'users');
-    // Creamos una consulta que solo pida 1 documento para ser más eficiente.
-    const q = query(userCollectionRef, limit(1));
+    await runInInjectionContext(this.injector, async () => {
+      const userCollectionRef = collection(this.firestore, 'users');
+      // Creamos una consulta que solo pida 1 documento para ser más eficiente.
+      const q = query(userCollectionRef, limit(1));
 
-    const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(q);
 
-    if (querySnapshot.empty) {
-      // La colección está vacía, no hay usuarios.
-      console.log('No se encontraron usuarios. Creando administrador por defecto...');
+      if (querySnapshot.empty) {
+        // La colección está vacía, no hay usuarios.
+        console.log('No se encontraron usuarios. Creando administrador por defecto...');
 
-      // Hasheamos la contraseña por defecto.
-      const salt = bcrypt.genSaltSync(10);
-      const hashedPassword = bcrypt.hashSync('admin123', salt);
+        // Hasheamos la contraseña por defecto.
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync('admin123', salt);
 
-      const adminUser = {
-        nombre: 'Admin',
-        apellido: 'Principal',
-        dni: '00000000',
-        email: 'admin@admin.com',
-        password: hashedPassword,
-        rol: 'admin' as const, // Asignamos el rol de administrador
-        novedades: false,
-        terminos: true,
-      };
+        const adminUser = {
+          nombre: 'Admin',
+          apellido: 'Principal',
+          dni: '00000000',
+          email: 'admin@admin.com',
+          password: hashedPassword,
+          rol: 'admin' as const, // Asignamos el rol de administrador
+          novedades: false,
+          terminos: true,
+        };
 
-      try {
-        await this.userService.addUser(adminUser);
-        console.log('Usuario administrador creado con éxito.');
-        await Swal.fire({
-          icon: 'info',
-          title: 'Usuario administrador creado',
-          html: `
-            <p>Se ha creado un usuario administrador por defecto:</p>
-            <p><strong>Email:</strong> admin@admin.com</p>
-            <p><strong>Contraseña:</strong> admin123</p>
-          `,
-          confirmButtonText: 'Entendido'
-        });
-      } catch (error) {
-        console.error('Error al crear el usuario administrador:', error);
-        await Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error al crear el usuario administrador',
-          confirmButtonText: 'Entendido'
-        });
+        try {
+          await this.userService.addUser(adminUser);
+          console.log('Usuario administrador creado con éxito.');
+          await Swal.fire({
+            icon: 'info',
+            title: 'Usuario administrador creado',
+            html: `
+              <p>Se ha creado un usuario administrador por defecto:</p>
+              <p><strong>Email:</strong> admin@admin.com</p>
+              <p><strong>Contraseña:</strong> admin123</p>
+            `,
+            confirmButtonText: 'Entendido'
+          });
+        } catch (error) {
+          console.error('Error al crear el usuario administrador:', error);
+          await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al crear el usuario administrador',
+            confirmButtonText: 'Entendido'
+          });
+        }
+      } else {
+        // La colección ya tiene usuarios.
+        console.log('La base de datos ya tiene usuarios. No se requiere ninguna acción.');
       }
-    } else {
-      // La colección ya tiene usuarios.
-      console.log('La base de datos ya tiene usuarios. No se requiere ninguna acción.');
-    }
+    });
   }
 
   /**

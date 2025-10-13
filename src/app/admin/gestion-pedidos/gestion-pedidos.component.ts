@@ -221,9 +221,13 @@ interface PedidoMercadoPago {
                       <i class="fas fa-eye"></i>
                     </button>
                     <button *ngIf="pedido.estado === 'completado'" 
-                            class="btn btn-sm btn-outline-warning"
+                            class="btn btn-sm btn-outline-warning me-1"
                             (click)="procesarReembolso(pedido)">
                       <i class="fas fa-undo"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger"
+                            (click)="eliminarPedido(pedido)">
+                      <i class="fas fa-trash"></i>
                     </button>
                   </td>
                 </tr>
@@ -313,9 +317,14 @@ interface PedidoMercadoPago {
               <button type="button" class="btn btn-secondary" (click)="cerrarDetalles()">Cerrar</button>
               <button *ngIf="pedidoSeleccionado.estado === 'completado'" 
                       type="button" 
-                      class="btn btn-warning"
+                      class="btn btn-warning me-2"
                       (click)="procesarReembolso(pedidoSeleccionado)">
                 <i class="fas fa-undo me-2"></i>Procesar Reembolso
+              </button>
+              <button type="button" 
+                      class="btn btn-danger"
+                      (click)="eliminarPedido(pedidoSeleccionado)">
+                <i class="fas fa-trash me-2"></i>Eliminar Pedido
               </button>
             </div>
           </div>
@@ -508,6 +517,60 @@ export class GestionPedidosComponent implements OnInit {
         title: 'Función en desarrollo',
         text: 'La funcionalidad de reembolso automático estará disponible próximamente. Por favor, procesa el reembolso manualmente desde el panel de Mercado Pago.',
       });
+    }
+  }
+
+  /**
+   * Elimina un pedido de la base de datos
+   */
+  async eliminarPedido(pedido: PedidoMercadoPago): Promise<void> {
+    const { value: confirmacion } = await Swal.fire({
+      title: '¿Eliminar Pedido?',
+      text: `¿Estás seguro de eliminar el pedido ${pedido.id.replace('pedido_', '')}? Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d'
+    });
+
+    if (confirmacion) {
+      try {
+        // Importar las funciones necesarias de Firebase
+        const { doc, deleteDoc } = await import('@angular/fire/firestore');
+        
+        // Eliminar el documento de Firestore
+        const pedidoDoc = doc(this.firestore, 'pedidos', pedido.id);
+        await deleteDoc(pedidoDoc);
+        
+        // Actualizar la lista local
+        const pedidosActuales = this.pedidos();
+        const pedidosActualizados = pedidosActuales.filter(p => p.id !== pedido.id);
+        this.pedidos.set(pedidosActualizados);
+        
+        // Cerrar modal de detalles si está abierto
+        if (this.pedidoSeleccionado?.id === pedido.id) {
+          this.cerrarDetalles();
+        }
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Eliminado!',
+          text: `El pedido ${pedido.id.replace('pedido_', '')} ha sido eliminado correctamente.`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+        
+        console.log(`✅ Pedido eliminado: ${pedido.id}`);
+      } catch (error) {
+        console.error('❌ Error al eliminar pedido:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo eliminar el pedido. Intenta nuevamente.',
+        });
+      }
     }
   }
 

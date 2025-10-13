@@ -45,6 +45,6 @@ echo DESPLIEGUE COMPLETADO EXITOSAMENTE!
 echo ========================================
 echo.
 echo Tu aplicacion esta ahora en produccion con las nuevas credenciales de Mercado Pago.
-echo URL: https://aled3-6b4ee.web.app
+echo URL: https://aled2025-5be25.web.app
 echo.
 pause

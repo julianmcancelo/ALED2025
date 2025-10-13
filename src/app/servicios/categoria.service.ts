@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import {
   Firestore,
   collection,
@@ -29,12 +29,7 @@ export interface Categoria {
 export class CategoriaService {
   // --- INYECCIÓN DE DEPENDENCIAS ---
   private firestore: Firestore = inject(Firestore);
-
-  // --- REFERENCIA A LA COLECCIÓN ---
-  /**
-   * Referencia a la colección 'categorias' en Firestore.
-   */
-  private categoriasCollection = collection(this.firestore, 'categorias');
+  private injector: Injector = inject(Injector);
 
   // --- MÉTODOS CRUD ---
 
@@ -43,10 +38,13 @@ export class CategoriaService {
    * @returns Un Observable que emite un array de categorías cada vez que hay cambios.
    */
   obtenerCategorias(): Observable<Categoria[]> {
-    // collectionData con idField nos devuelve un observable que se actualiza automáticamente.
-    return collectionData(this.categoriasCollection, {
-      idField: 'id',
-    }) as Observable<Categoria[]>;
+    return runInInjectionContext(this.injector, () => {
+      const categoriasCollection = collection(this.firestore, 'categorias');
+      // collectionData con idField nos devuelve un observable que se actualiza automáticamente.
+      return collectionData(categoriasCollection, {
+        idField: 'id',
+      }) as Observable<Categoria[]>;
+    });
   }
 
   /**
@@ -55,7 +53,10 @@ export class CategoriaService {
    * @returns Una promesa que se resuelve con la referencia al nuevo documento.
    */
   crearCategoria(nombre: string): Promise<any> {
-    return addDoc(this.categoriasCollection, { nombre });
+    return runInInjectionContext(this.injector, () => {
+      const categoriasCollection = collection(this.firestore, 'categorias');
+      return addDoc(categoriasCollection, { nombre });
+    });
   }
 
   /**
@@ -65,8 +66,10 @@ export class CategoriaService {
    * @returns Una promesa que se resuelve cuando la actualización se completa.
    */
   actualizarCategoria(id: string, nombre: string): Promise<void> {
-    const categoriaDocRef = doc(this.firestore, `categorias/${id}`);
-    return updateDoc(categoriaDocRef, { nombre });
+    return runInInjectionContext(this.injector, () => {
+      const categoriaDocRef = doc(this.firestore, `categorias/${id}`);
+      return updateDoc(categoriaDocRef, { nombre });
+    });
   }
 
   /**
@@ -75,7 +78,9 @@ export class CategoriaService {
    * @returns Una promesa que se resuelve cuando la eliminación se completa.
    */
   eliminarCategoria(id: string): Promise<void> {
-    const categoriaDocRef = doc(this.firestore, `categorias/${id}`);
-    return deleteDoc(categoriaDocRef);
+    return runInInjectionContext(this.injector, () => {
+      const categoriaDocRef = doc(this.firestore, `categorias/${id}`);
+      return deleteDoc(categoriaDocRef);
+    });
   }
 }

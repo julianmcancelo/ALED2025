@@ -1,16 +1,66 @@
+/* Estilos personalizados para el header */
 .navbar {
-  position: fixed; /* Fija el elemento en la ventana */
-  top: 0; /* Lo pega a la parte superior */
-  left: 0;
-  right: 0;
-  z-index: 1030; /* Un z-index alto para que esté por encima de otros elementos */
+  position: fixed;
+  top: 0;
 }
 
-/*
+/* 
   Asegura que el menú desplegable del usuario se alinee a la derecha,
   evitando que se salga de la pantalla en vistas más pequeñas.
 */
 [ngbDropdownMenu] {
   right: 0;
   left: auto;
+}
+
+/* Mini Dropdown de Categorías (como tooltip) */
+.mini-modal-shadow {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: dropdownSlideIn 0.15s ease-out;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover effect para items de categoría */
+.categoria-item:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Efectos hover para los botones de categoría */
+.categoria-button {
+  transition: all 0.2s ease;
+}
+
+.categoria-button:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 119, 182, 0.15);
+}
+
+/* Spinner personalizado */
+.spinner {
+  border-top-color: #0077b6;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive para el modal */
+@media (max-width: 640px) {
+  .modal-content {
+    margin: 1rem;
+    max-width: calc(100vw - 2rem);
+  }
 }

@@ -29,6 +29,7 @@ import { PagoExitosoComponent } from './pago-exitoso/pago-exitoso.component';
 import { PagoFallidoComponent } from './pago-fallido/pago-fallido.component';
 import { PagoPendienteComponent } from './pago-pendiente/pago-pendiente.component';
 import { MisPedidosComponent } from './mis-pedidos/mis-pedidos.component';
+import { CategoriasComponent } from './categorias/categorias';
 
 // Importaciones de Firebase
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
@@ -36,13 +37,13 @@ import { provideFirestore, getFirestore } from '@angular/fire/firestore';
 import { provideAuth, getAuth } from '@angular/fire/auth';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyAJncpI42BQRSh_c4hjsxZv5q_esZFG4pk',
-  authDomain: 'aled3-6b4ee.firebaseapp.com',
-  projectId: 'aled3-6b4ee',
-  storageBucket: 'aled3-6b4ee.appspot.com',
-  messagingSenderId: '136139298833',
-  appId: '1:136139298833:web:b89757a4e9c69a75a139b0',
-  measurementId: 'G-9KW8V43530',
+  apiKey: 'AIzaSyAYof5X_SayXySktaeT1NZjfcWKBmqbxqM',
+  authDomain: 'aled2025-5be25.firebaseapp.com',
+  projectId: 'aled2025-5be25',
+  storageBucket: 'aled2025-5be25.firebasestorage.app',
+  messagingSenderId: '773634182293',
+  appId: '1:773634182293:web:a91a4778c57065faca1f9c',
+  measurementId: 'G-90LCBTBJLJ',
 };
 
 // Función Factory para el APP_INITIALIZER
@@ -77,6 +78,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter([
       { path: '', component: Home, pathMatch: 'full' },
       { path: 'productos', component: TiendaComponent }, // Nueva ruta de la tienda
+      { path: 'categorias', component: CategoriasComponent }, // Nueva ruta de categorías
       { path: 'productos/:id', component: DetalleProductoComponent }, // Ruta para el detalle del producto
       { path: 'producto/:id', component: DetalleProductoComponent }, // Ruta alternativa para el detalle del producto
       { path: 'primer-usuario', component: PrimerUsuario },
