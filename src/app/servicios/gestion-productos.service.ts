@@ -406,7 +406,9 @@ export class GestionProductosService {
     return from(this.inicializacionCompleta).pipe(
       switchMap(() => {
         return runInInjectionContext(this.injector, () => {
-          return collectionData(this.productosCollection, { idField: 'id' }) as Observable<Producto[]>;
+          // Crear query para evitar error de tipo
+          const productosQuery = query(this.productosCollection);
+          return collectionData(productosQuery, { idField: 'id' }) as Observable<Producto[]>;
         });
       }),
       catchError((error) => {

@@ -29,62 +29,109 @@
 
   <!-- Usamos @if para manejar el estado del observable de productos -->
   @if (productos$ | async; as productos) {
-    <!-- Si hay productos, los mostramos en una cuadrícula -->
+    <!-- Si hay productos, los mostramos en una cuadrícula estilo MercadoLibre -->
     @if (productos.length > 0) {
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div class="productos-grid">
 
         <!-- Iteramos sobre cada producto con @for -->
         @for (producto of productos; track producto.id) {
-          <div class="card cursor-pointer transition-transform hover:scale-105" (click)="verDetalles(producto)">
+          <div class="producto-card" (click)="verDetalles(producto)">
             <!-- Imagen del producto -->
-            <div class="relative aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+            <div class="producto-imagen-container">
               @if (producto.imagen) {
                 <img [src]="producto.imagen" 
-                     class="w-full h-48 object-cover object-center" 
+                     class="producto-imagen" 
                      [alt]="producto.nombre"
                      (error)="onImageError($event)">
               } @else {
                 <!-- Placeholder cuando no hay imagen -->
-                <div class="w-full h-48 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
-                  <i class="bi bi-box-seam text-6xl text-[#0077b6] opacity-30 mb-2"></i>
-                  <span class="text-sm text-gray-500 font-medium">Sin imagen</span>
+                <div class="producto-imagen-placeholder">
+                  <i class="bi bi-box-seam"></i>
+                  <span>Sin imagen</span>
                 </div>
               }
               
               <!-- Badge de categoría -->
-              <div class="absolute top-2 right-2">
-                <span class="badge-primary">{{ producto.categoria }}</span>
+              <div class="categoria-badge">
+                <span>{{ producto.categoria }}</span>
+              </div>
+              
+              <!-- Overlay con botón de favoritos -->
+              <div class="producto-overlay">
+                <button class="favorito-btn" (click)="$event.stopPropagation()">
+                  <i class="bi bi-heart"></i>
+                </button>
               </div>
             </div>
 
-            <!-- Cuerpo de la tarjeta con los detalles -->
-            <div class="p-4">
-              <h5 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[3.5rem]">
+            <!-- Información del producto -->
+            <div class="producto-info">
+              <!-- Título del producto -->
+              <h3 class="producto-titulo">
                 {{ producto.nombre }}
-              </h5>
+              </h3>
               
-              <!-- Precio destacado -->
-              <div class="bg-blue-50 rounded-lg p-3 mb-3">
-                <p class="text-2xl font-bold text-[#0077b6]">
+              <!-- Precio -->
+              <div class="producto-precio-container">
+                <div class="precio-principal">
                   {{ producto.precio | currency:'ARS':'symbol':'1.0-0' }}
-                </p>
+                </div>
+                <div class="precio-cuotas">
+                  en 12x {{ (producto.precio / 12) | currency:'ARS':'symbol':'1.0-0' }}
+                </div>
               </div>
-
-              <!-- Botones de acción -->
-              <div class="flex gap-2">
-                <button class="flex-1 btn-primary flex items-center justify-center text-sm py-2" 
-                        (click)="agregarAlCarrito(producto); $event.stopPropagation()">
-                  <i class="bi bi-cart-plus-fill mr-1"></i>
-                  Añadir
-                </button>
-                <button class="px-3 py-2 border-2 border-[#0077b6] text-[#0077b6] rounded-lg hover:bg-blue-50 transition-colors" 
-                        (click)="verDetalles(producto); $event.stopPropagation()">
-                  <i class="bi bi-eye-fill"></i>
-                </button>
+              
+              <!-- Envío -->
+              <div class="envio-info">
+                @if (producto.precio > 50000) {
+                  <span class="envio-gratis">
+                    <i class="bi bi-truck"></i>
+                    Envío gratis
+                  </span>
+                } @else {
+                  <span class="envio-pago">
+                    <i class="bi bi-truck"></i>
+                    Envío $1.000
+                  </span>
+                }
               </div>
+              
+              <!-- Botón de agregar al carrito -->
+              <button class="agregar-carrito-btn" 
+                      (click)="agregarAlCarrito(producto); $event.stopPropagation()">
+                <i class="bi bi-cart-plus"></i>
+                Agregar al carrito
+              </button>
             </div>
           </div>
         }
+      </div>
+      
+      <!-- Paginación estilo MercadoLibre -->
+      <div class="paginacion-container">
+        <nav class="paginacion">
+          <button class="paginacion-btn paginacion-prev" disabled>
+            <i class="bi bi-chevron-left"></i>
+            Anterior
+          </button>
+          
+          <div class="paginacion-numeros">
+            <button class="paginacion-numero activo">1</button>
+            <button class="paginacion-numero">2</button>
+            <button class="paginacion-numero">3</button>
+            <span class="paginacion-dots">...</span>
+            <button class="paginacion-numero">10</button>
+          </div>
+          
+          <button class="paginacion-btn paginacion-next">
+            Siguiente
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </nav>
+        
+        <div class="resultados-info">
+          Mostrando 1-48 de {{ totalProductos }} resultados
+        </div>
       </div>
     } @else {
       <!-- Mensaje que se muestra si no hay productos -->

@@ -7,6 +7,9 @@ import {
   doc,
   updateDoc,
   deleteDoc,
+  query,
+  orderBy,
+  getDocs
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
@@ -39,22 +42,37 @@ export class CategoriaService {
    */
   obtenerCategorias(): Observable<Categoria[]> {
     return runInInjectionContext(this.injector, () => {
-      console.log('📁 Obteniendo categorías de Firestore...');
+      console.log('📁 [SERVICIO] Obteniendo categorías con getDocs...');
+      
       const categoriasCollection = collection(this.firestore, 'categorias');
-      const categorias$ = collectionData(categoriasCollection, { idField: 'id' }) as Observable<Categoria[]>;
-
-      // Agregar logging para debugging
-      categorias$.subscribe({
-        next: (categorias) => {
-          console.log('✅ Categorías obtenidas:', categorias);
-          console.log('📊 Total de categorías:', categorias.length);
-        },
-        error: (error) => {
-          console.error('❌ Error al obtener categorías:', error);
-        }
+      console.log('📁 [SERVICIO] Colección creada:', categoriasCollection);
+      
+      // Usar getDocs directamente para evitar problemas de collectionData
+      return new Observable<Categoria[]>((observer) => {
+        getDocs(categoriasCollection)
+          .then((querySnapshot) => {
+            console.log('✅ [SERVICIO] Documentos obtenidos:', querySnapshot.size);
+            
+            const categorias: Categoria[] = [];
+            querySnapshot.forEach((doc) => {
+              const data = doc.data();
+              const categoria: Categoria = {
+                id: doc.id,
+                nombre: data['nombre'] || 'Sin nombre'
+              };
+              categorias.push(categoria);
+              console.log('📝 [SERVICIO] Categoría procesada:', categoria);
+            });
+            
+            console.log('✅ [SERVICIO] Total categorías procesadas:', categorias.length);
+            observer.next(categorias);
+            observer.complete();
+          })
+          .catch((error) => {
+            console.error('❌ [SERVICIO] Error en getDocs:', error);
+            observer.error(error);
+          });
       });
-
-      return categorias$;
     });
   }
 
@@ -201,13 +219,47 @@ export class CategoriaService {
     console.log('🔌 Probando conexión con Firestore...');
     
     try {
-      // Intentar crear una categoría de prueba
-      const result = await this.crearCategoria('Prueba-' + Date.now());
-      console.log('✅ Conexión exitosa, categoría de prueba creada:', result.id);
+      // Primero intentar leer las categorías existentes
+      console.log('🔍 Intentando leer categorías existentes...');
       
-      // Eliminar la categoría de prueba
-      await this.eliminarCategoria(result.id);
-      console.log('✅ Categoría de prueba eliminada');
+      return runInInjectionContext(this.injector, () => {
+        const categoriasCollection = collection(this.firestore, 'categorias');
+        console.log('📁 Colección obtenida:', categoriasCollection);
+        
+        // Crear query para evitar el error de tipo
+        const categoriasQuery = query(categoriasCollection);
+        console.log('🔍 Query creada:', categoriasQuery);
+        
+        const categorias$ = collectionData(categoriasQuery, { idField: 'id' });
+        console.log('🔄 Observable creado:', categorias$);
+        
+        categorias$.subscribe({
+          next: (data) => {
+            console.log('✅ ¡DATOS LEÍDOS EXITOSAMENTE!');
+            console.log('📊 Total de documentos:', data.length);
+            console.log('📄 Datos completos:', data);
+            
+            data.forEach((item, index) => {
+              console.log(`📝 Categoría ${index + 1}:`, {
+                id: item['id'],
+                nombre: item['nombre'],
+                datos_completos: item
+              });
+            });
+          },
+          error: (error) => {
+            console.error('❌ Error leyendo categorías:', error);
+            console.error('❌ Detalles:', {
+              message: error.message,
+              code: error.code,
+              stack: error.stack
+            });
+          },
+          complete: () => {
+            console.log('🏁 Lectura de categorías completada');
+          }
+        });
+      });
       
     } catch (error) {
       console.error('❌ Error de conexión con Firestore:', error);
