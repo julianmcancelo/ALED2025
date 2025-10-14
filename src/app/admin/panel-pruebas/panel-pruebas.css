@@ -1,0 +1,279 @@
+/* Estilos para el Panel de Pruebas */
+
+/* --- ANIMACIONES --- */
+@keyframes pulse-success {
+  0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+@keyframes pulse-error {
+  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+@keyframes pulse-warning {
+  0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+/* --- CARDS Y CONTENEDORES --- */
+.card {
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  border-bottom: none;
+  font-weight: 600;
+}
+
+/* --- ESTADOS DE PRUEBAS --- */
+.bi-check-circle-fill {
+  animation: pulse-success 2s infinite;
+}
+
+.bi-x-circle-fill {
+  animation: pulse-error 2s infinite;
+}
+
+.bi-clock {
+  animation: pulse-warning 2s infinite;
+}
+
+/* --- BOTONES --- */
+.btn {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  border: none;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #218838, #1ea080);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+}
+
+/* --- PROGRESS BAR --- */
+.progress {
+  height: 8px;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+  border-radius: 10px;
+  background: linear-gradient(90deg, #007bff, #28a745);
+}
+
+/* --- FORM CHECKS --- */
+.form-check {
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.form-check:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.form-check-input:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+/* --- BADGES --- */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 12px;
+}
+
+/* --- ICONOS --- */
+.bi {
+  transition: all 0.3s ease;
+}
+
+.text-success .bi {
+  filter: drop-shadow(0 0 3px rgba(40, 167, 69, 0.3));
+}
+
+.text-danger .bi {
+  filter: drop-shadow(0 0 3px rgba(220, 53, 69, 0.3));
+}
+
+.text-primary .bi {
+  filter: drop-shadow(0 0 3px rgba(0, 123, 255, 0.3));
+}
+
+/* --- SPINNER --- */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* --- COLLAPSE --- */
+.collapse .card-body {
+  padding: 0.75rem;
+  font-size: 0.85rem;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  .btn-lg {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  .form-check {
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* --- ESTADOS ESPECÍFICOS --- */
+.ejecutando {
+  border-left: 4px solid #ffc107;
+  background-color: rgba(255, 193, 7, 0.05);
+}
+
+.exitoso {
+  border-left: 4px solid #28a745;
+  background-color: rgba(40, 167, 69, 0.05);
+}
+
+.error {
+  border-left: 4px solid #dc3545;
+  background-color: rgba(220, 53, 69, 0.05);
+}
+
+.pendiente {
+  border-left: 4px solid #6c757d;
+  background-color: rgba(108, 117, 125, 0.05);
+}
+
+/* --- EFECTOS HOVER --- */
+.card-body:hover .bi {
+  transform: scale(1.1);
+}
+
+/* --- TEXTO --- */
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.fw-bold {
+  font-weight: 600 !important;
+}
+
+/* --- BACKGROUNDS --- */
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+
+/* --- SHADOWS --- */
+.shadow-sm {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+/* --- BORDERS --- */
+.border-0 {
+  border: 0 !important;
+}
+
+/* --- DISPLAY --- */
+.display-1 {
+  font-size: 6rem;
+  font-weight: 300;
+  line-height: 1.2;
+}
+
+/* --- SPACING --- */
+.py-5 {
+  padding-top: 3rem !important;
+  padding-bottom: 3rem !important;
+}
+
+/* --- ANIMATIONS ESPECÍFICAS --- */
+.card-body {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- LOADING STATES --- */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* --- CUSTOM SCROLLBAR --- */
+.card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

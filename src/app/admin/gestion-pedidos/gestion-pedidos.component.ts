@@ -61,12 +61,6 @@ import Swal from 'sweetalert2'; // Librería para alertas elegantes y modernas
                 <i class="bi bi-arrow-clockwise me-1"></i>
                 {{ cargando() ? 'Cargando...' : 'Actualizar' }}
               </button>
-              <button 
-                class="btn btn-success"
-                (click)="generarPedidosPrueba()">
-                <i class="bi bi-plus-circle me-1"></i>
-                Generar Datos de Prueba
-              </button>
             </div>
           </div>
         </div>
@@ -189,12 +183,6 @@ import Swal from 'sweetalert2'; // Librería para alertas elegantes y modernas
                 <p class="text-muted">
                   No se encontraron pedidos con los filtros aplicados.
                 </p>
-                <button 
-                  class="btn btn-primary"
-                  (click)="generarPedidosPrueba()">
-                  <i class="bi bi-plus-circle me-1"></i>
-                  Generar Pedidos de Prueba
-                </button>
               </div>
 
               <!-- Tabla de pedidos -->
@@ -395,82 +383,14 @@ export class GestionPedidosComponent implements OnInit {
       // En una aplicación real, aquí haríamos la llamada al servicio
       // this.pedidosService.obtenerTodosLosPedidos().subscribe(...)
       
-      // Por ahora, mantenemos los datos existentes o cargamos datos demo
-      if (this.pedidos().length === 0) {
-        this.generarPedidosPrueba();
-      }
+      // Los pedidos se cargarán desde el servicio real cuando esté implementado
+      // Por ahora, la lista permanece vacía hasta que se implementen los pedidos reales
       
       // Desactivamos el estado de carga
       this.cargando.set(false);
     }, 1000);
   }
 
-  /**
-   * Genera pedidos de demostración para mostrar la funcionalidad.
-   * Útil para pruebas y demostraciones del sistema.
-   */
-  generarPedidosPrueba(): void {
-    // --- DATOS DE DEMOSTRACIÓN ---
-    const pedidosDemo: PedidoDemo[] = [
-      {
-        id: 'PED-001',
-        clienteNombre: 'Juan Pérez',
-        clienteEmail: 'juan.perez@email.com',
-        total: 45000,
-        estado: 'completado',
-        fecha: new Date('2025-01-10'),
-        productos: ['Smartphone Samsung', 'Funda protectora']
-      },
-      {
-        id: 'PED-002',
-        clienteNombre: 'María González',
-        clienteEmail: 'maria.gonzalez@email.com',
-        total: 28500,
-        estado: 'pendiente',
-        fecha: new Date('2025-01-12'),
-        productos: ['Auriculares Bluetooth', 'Cable USB-C']
-      },
-      {
-        id: 'PED-003',
-        clienteNombre: 'Carlos López',
-        clienteEmail: 'carlos.lopez@email.com',
-        total: 67200,
-        estado: 'enviado',
-        fecha: new Date('2025-01-11'),
-        productos: ['Notebook Lenovo', 'Mouse inalámbrico']
-      },
-      {
-        id: 'PED-004',
-        clienteNombre: 'Ana Martínez',
-        clienteEmail: 'ana.martinez@email.com',
-        total: 15800,
-        estado: 'cancelado',
-        fecha: new Date('2025-01-09'),
-        productos: ['Remera deportiva', 'Gorra Nike']
-      },
-      {
-        id: 'PED-005',
-        clienteNombre: 'Roberto Silva',
-        clienteEmail: 'roberto.silva@email.com',
-        total: 89000,
-        estado: 'completado',
-        fecha: new Date('2025-01-08'),
-        productos: ['Smart TV LG 55"', 'Soporte de pared']
-      }
-    ];
-
-    // Actualizamos el signal con los datos de demostración
-    this.pedidos.set(pedidosDemo);
-
-    // Mostramos confirmación al usuario
-    Swal.fire({
-      icon: 'success',
-      title: '¡Datos generados!',
-      text: `Se generaron ${pedidosDemo.length} pedidos de demostración`,
-      timer: 2000,
-      showConfirmButton: false
-    });
-  }
 
   // --- MÉTODOS DE FILTRADO ---
 

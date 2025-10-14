@@ -29,6 +29,8 @@ import { PersonalizacionSitio } from './admin/personalizacion-sitio/personalizac
 import { GestionNovedadesComponent } from './admin/gestion-novedades/gestion-novedades';
 import { GestionProductos } from './admin/gestion-productos/gestion-productos'; // Nombre Correcto
 import { GestionPedidosComponent } from './admin/gestion-pedidos/gestion-pedidos.component';
+import { GestionCategoriasComponent } from './admin/gestion-categorias/gestion-categorias';
+import { PanelPruebasComponent } from './admin/panel-pruebas/panel-pruebas-simple';
 import { PerfilUsuarioComponent } from './perfil-usuario/perfil-usuario';
 import { authGuard } from './auth/auth.guard';
 import { PagoExitoso } from './pago-exitoso/pago-exitoso';
@@ -147,7 +149,9 @@ export const appConfig: ApplicationConfig = {
           { path: 'personalizacion', component: PersonalizacionSitio },
           { path: 'novedades', component: GestionNovedadesComponent },
           { path: 'productos', component: GestionProductos }, // Nombre Correcto
+          { path: 'categorias', component: GestionCategoriasComponent }, // Gestión de Categorías
           { path: 'pedidos', component: GestionPedidosComponent }, // Gestión de Pedidos
+          { path: 'pruebas', component: PanelPruebasComponent }, // Panel de Pruebas
         ],
       },
     ]),

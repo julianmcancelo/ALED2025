@@ -2,39 +2,248 @@
   <!-- Encabezado -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="h3">Gestión de Novedades y Ofertas</h2>
-    <button class="btn btn-primary" (click)="iniciarNuevo()" *ngIf="!mostrarFormulario">
-      <i class="bi bi-plus-circle me-2"></i>Crear Novedad
-    </button>
+    @if (!mostrarFormulario) {
+      <button class="btn btn-primary" (click)="iniciarNuevo()">
+        <i class="bi bi-plus-circle me-2"></i>Crear Novedad
+      </button>
+    }
   </div>
 
   <!-- Formulario de Creación/Edición -->
-  <div class="card mb-4" *ngIf="mostrarFormulario">
-    <div class="card-header">
-      <h5>{{ esModoEdicion ? 'Editar' : 'Nueva' }} Novedad</h5>
+  @if (mostrarFormulario) {
+    <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">{{ esModoEdicion ? 'Editar' : 'Nueva' }} Novedad</h5>
+      <div class="d-flex gap-2">
+        <span class="badge bg-primary">
+          <i class="bi bi-robot me-1"></i>
+          IA Habilitada
+        </span>
+      </div>
     </div>
     <div class="card-body">
+      
+      <!-- Sección de IA para Generar Contenido -->
+      <div class="card mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+          <h6 class="mb-0">
+            <i class="bi bi-magic me-2"></i>
+            🤖 Asistente de IA para Novedades
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-8">
+              <label for="ideaUsuario" class="form-label">
+                <i class="bi bi-lightbulb me-1"></i>
+                Describe tu idea para la novedad
+              </label>
+              <textarea 
+                class="form-control" 
+                id="ideaUsuario" 
+                [(ngModel)]="ideaUsuario" 
+                name="ideaUsuario"
+                rows="2"
+                placeholder="Ej: Quiero crear una oferta de descuento del 30% en productos de tecnología para el Black Friday..."
+                [disabled]="generandoConIA() || generandoImagen()"></textarea>
+              <small class="form-text text-muted">
+                Describe qué tipo de novedad quieres crear: ofertas, lanzamientos, promociones, etc.
+              </small>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Acciones de IA</label>
+              <div class="d-grid gap-2">
+                <button 
+                  type="button" 
+                  class="btn btn-primary"
+                  (click)="generarContenidoConIA()"
+                  [disabled]="generandoConIA() || generandoImagen() || !ideaUsuario.trim()">
+                  @if (generandoConIA()) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                  }
+                  @if (!generandoConIA()) {
+                    <i class="bi bi-stars me-1"></i>
+                  }
+                  {{ generandoConIA() ? 'Generando...' : 'Generar Todo' }}
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-outline-primary btn-sm"
+                  (click)="mejorarContenidoConIA()"
+                  [disabled]="generandoConIA() || (!novedadActual.titulo && !novedadActual.descripcion)">
+                  <i class="bi bi-arrow-up-circle me-1"></i>
+                  Mejorar Existente
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario Principal -->
       <form (ngSubmit)="guardarNovedad()">
-        <div class="mb-3">
-          <label for="titulo" class="form-label">Título *</label>
-          <input type="text" class="form-control" id="titulo" [(ngModel)]="novedadActual.titulo" name="titulo" required>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="titulo" class="form-label">
+                Título *
+                @if (novedadActual.titulo) {
+                  <i class="bi bi-magic text-primary ms-1" title="Generado con IA"></i>
+                }
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="titulo" 
+                [(ngModel)]="novedadActual.titulo" 
+                name="titulo" 
+                required
+                maxlength="60"
+                placeholder="Título atractivo para la novedad">
+              <div class="form-text">
+                {{ (novedadActual.titulo?.length || 0) }}/60 caracteres
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="descripcion" class="form-label">
+                Descripción Corta
+                @if (novedadActual.descripcion) {
+                  <i class="bi bi-magic text-primary ms-1" title="Generado con IA"></i>
+                }
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="descripcion" 
+                [(ngModel)]="novedadActual.descripcion" 
+                name="descripcion"
+                maxlength="120"
+                placeholder="Descripción persuasiva y corta">
+              <div class="form-text">
+                {{ (novedadActual.descripcion?.length || 0) }}/120 caracteres
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="descripcion" class="form-label">Descripción Corta</label>
-          <input type="text" class="form-control" id="descripcion" [(ngModel)]="novedadActual.descripcion" name="descripcion">
+
+        <div class="row">
+          <div class="col-md-8">
+            <div class="mb-3">
+              <label for="imagenUrl" class="form-label">
+                URL de la Imagen *
+                @if (novedadActual.imagenUrl && novedadActual.imagenUrl.includes('placeholder')) {
+                  <i class="bi bi-magic text-primary ms-1" title="Generado con IA"></i>
+                }
+              </label>
+              <input 
+                type="url" 
+                class="form-control" 
+                id="imagenUrl" 
+                [(ngModel)]="novedadActual.imagenUrl" 
+                name="imagenUrl" 
+                required
+                placeholder="https://ejemplo.com/imagen.jpg">
+              
+              <!-- Vista previa de imagen -->
+              @if (novedadActual.imagenUrl) {
+                <div class="mt-2">
+                  <img 
+                    [src]="novedadActual.imagenUrl" 
+                    [alt]="novedadActual.titulo || 'Vista previa'" 
+                    class="img-thumbnail"
+                    style="max-width: 200px; max-height: 100px; object-fit: cover;"
+                    (error)="$event.target.src='https://via.placeholder.com/200x100/ccc/999?text=Error+de+Imagen'">
+                </div>
+              }
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Generar Imagen con IA</label>
+            <div class="mb-3">
+              <textarea 
+                class="form-control mb-2" 
+                [(ngModel)]="promptImagen" 
+                name="promptImagen"
+                rows="2"
+                placeholder="Describe la imagen que quieres generar..."
+                [disabled]="generandoImagen()"></textarea>
+              <button 
+                type="button" 
+                class="btn btn-outline-success w-100 mb-2"
+                (click)="generarImagenConIA()"
+                [disabled]="generandoImagen() || (!promptImagen.trim() && !ideaUsuario.trim())">
+                @if (generandoImagen()) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                @if (!generandoImagen()) {
+                  <i class="bi bi-image me-1"></i>
+                }
+                {{ generandoImagen() ? 'Generando...' : 'Generar Imagen' }}
+              </button>
+              
+              <!-- Botón de prueba temporal -->
+              <button 
+                type="button" 
+                class="btn btn-outline-warning w-100 btn-sm"
+                (click)="probarGeneracionImagen()">
+                <i class="bi bi-bug me-1"></i>
+                Prueba Canvas
+              </button>
+            </div>
+          </div>
         </div>
+
         <div class="mb-3">
-          <label for="imagenUrl" class="form-label">URL de la Imagen *</label>
-          <input type="url" class="form-control" id="imagenUrl" [(ngModel)]="novedadActual.imagenUrl" name="imagenUrl" required>
+          <label for="enlaceUrl" class="form-label">
+            URL de Enlace (Opcional)
+            @if (novedadActual.enlaceUrl) {
+              <i class="bi bi-magic text-primary ms-1" title="Generado con IA"></i>
+            }
+          </label>
+          <input 
+            type="url" 
+            class="form-control" 
+            id="enlaceUrl" 
+            [(ngModel)]="novedadActual.enlaceUrl" 
+            name="enlaceUrl" 
+            placeholder="Ej: /productos/categoria-especifica">
         </div>
-        <div class="mb-3">
-          <label for="enlaceUrl" class="form-label">URL de Enlace (Opcional)</label>
-          <input type="url" class="form-control" id="enlaceUrl" [(ngModel)]="novedadActual.enlaceUrl" name="enlaceUrl" placeholder="Ej: /productos/ID_DEL_PRODUCTO">
+
+        <!-- Botones de acción -->
+        <div class="d-flex justify-content-between align-items-center">
+          <button 
+            type="button" 
+            class="btn btn-outline-secondary btn-sm"
+            (click)="limpiarCamposIA()"
+            title="Limpiar campos de IA">
+            <i class="bi bi-arrow-clockwise me-1"></i>
+            Limpiar IA
+          </button>
+          
+          <div class="d-flex gap-2">
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="cancelar()"
+              [disabled]="generandoConIA() || generandoImagen()">
+              <i class="bi bi-x-circle me-1"></i>
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-success"
+              [disabled]="generandoConIA() || generandoImagen()">
+              <i class="bi bi-check-circle me-1"></i>
+              {{ esModoEdicion ? 'Actualizar' : 'Guardar' }}
+            </button>
+          </div>
         </div>
-        <button type="submit" class="btn btn-success me-2">{{ esModoEdicion ? 'Actualizar' : 'Guardar' }}</button>
-        <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
       </form>
     </div>
-  </div>
+    </div>
+  }
 
   <!-- Lista de Novedades -->
   <div class="card">
@@ -53,15 +262,17 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let novedad of (novedades$ | async)">
-              <td><img [src]="novedad.imagenUrl" [alt]="novedad.titulo" width="100"></td>
-              <td>{{ novedad.titulo }}</td>
-              <td>{{ novedad.descripcion }}</td>
-              <td>
-                <button class="btn btn-sm btn-outline-primary me-2" (click)="iniciarEdicion(novedad)"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm btn-outline-danger" (click)="eliminarNovedad(novedad.id!)"><i class="bi bi-trash"></i></button>
-              </td>
-            </tr>
+            @for (novedad of (novedades$ | async); track novedad.id) {
+              <tr>
+                <td><img [src]="novedad.imagenUrl" [alt]="novedad.titulo" width="100"></td>
+                <td>{{ novedad.titulo }}</td>
+                <td>{{ novedad.descripcion }}</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary me-2" (click)="iniciarEdicion(novedad)"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="eliminarNovedad(novedad.id!)"><i class="bi bi-trash"></i></button>
+                </td>
+              </tr>
+            }
           </tbody>
         </table>
       </div>

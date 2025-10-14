@@ -1,1 +1,111 @@
-/* Estilos específicos para la gestión de novedades si fueran necesarios */
+/* Estilos para el componente de gestión de novedades */
+
+/* --- ESTILOS PARA IA --- */
+.card.border-primary {
+  border-width: 2px !important;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.card-header.bg-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3) !important;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.btn-outline-success {
+  transition: all 0.3s ease;
+}
+
+.btn-outline-success:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+/* Animación para campos generados con IA */
+.bi-magic {
+  animation: sparkle 2s infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { 
+    opacity: 0.7; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.1);
+  }
+}
+
+/* Estilos para vista previa de imagen */
+.img-thumbnail {
+  transition: all 0.3s ease;
+  border: 2px solid #dee2e6;
+}
+
+.img-thumbnail:hover {
+  transform: scale(1.05);
+  border-color: #007bff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos para contadores de caracteres */
+.form-text {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+/* Estilos para spinners */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Estilos para badges */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .d-flex.gap-2 {
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+  
+  .col-md-4, .col-md-6, .col-md-8 {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Estilos para estados de carga */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Efectos hover para botones */
+.btn-outline-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+}
+
+.btn-outline-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
+}
