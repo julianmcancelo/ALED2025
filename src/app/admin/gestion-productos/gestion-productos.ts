@@ -1,14 +1,19 @@
 // Importaciones principales de Angular para el componente
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+// Importar pipes y directivas personalizadas
+import { PrecioPipe } from '../../shared/pipes/precio.pipe';
+import { FechaRelativaPipe } from '../../shared/pipes/fecha-relativa.pipe';
+import { HighlightDirective } from '../../shared/directives/highlight.directive';
+import { LoadingButtonDirective } from '../../shared/directives/loading-button.directive';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import Swal from 'sweetalert2'; // Librería para alertas elegantes y modernas
-
-// Servicios de Firebase/Firestore (usando el servicio existente)
-import { GestionProductosService, Producto } from '../../servicios/gestion-productos.service';
 import { CategoriaService, Categoria } from '../../servicios/categoria.service';
 import { GeminiIAService, ResultadoAnalisisGemini } from '../../servicios/gemini-ia.service';
+import { GestionProductosService, Producto } from '../../servicios/gestion-productos.service';
 
 // --- INTERFACES Y TIPOS ---
 // Usamos las interfaces de los servicios reales
@@ -48,7 +53,12 @@ import { GeminiIAService, ResultadoAnalisisGemini } from '../../servicios/gemini
     CommonModule,              // Directivas básicas de Angular (*ngIf, *ngFor, etc.)
     FormsModule,              // Para formularios template-driven
     ReactiveFormsModule,      // Para formularios reactivos
-    HttpClientModule          // Para peticiones HTTP a Gemini AI
+    HttpClientModule,         // Para peticiones HTTP a Gemini AI
+    // Pipes y directivas personalizadas
+    PrecioPipe,
+    FechaRelativaPipe,
+    HighlightDirective,
+    LoadingButtonDirective
   ],
   template: `
     <div class="container-fluid py-4">
@@ -478,12 +488,12 @@ import { GeminiIAService, ResultadoAnalisisGemini } from '../../servicios/gemini
                         <button 
                           type="submit" 
                           class="btn btn-success"
-                          [disabled]="formularioProducto.invalid || guardandoProducto() || analizandoImagen()">
-                          <span *ngIf="guardandoProducto()" class="spinner-border spinner-border-sm me-1"></span>
-                          <span *ngIf="analizandoImagen()" class="spinner-border spinner-border-sm me-1"></span>
-                          <i *ngIf="!guardandoProducto() && !analizandoImagen()" class="bi bi-check-circle me-1"></i>
-                          <i *ngIf="analizandoImagen()" class="bi bi-stars me-1"></i>
-                          {{ analizandoImagen() ? 'Analizando...' : guardandoProducto() ? 'Guardando...' : (productoEditando() ? 'Actualizar' : 'Crear') + ' Producto' }}
+                          appLoadingButton
+                          [isLoading]="guardandoProducto() || analizandoImagen()"
+                          [loadingText]="analizandoImagen() ? 'Analizando...' : 'Guardando...'"
+                          [disabled]="formularioProducto.invalid">
+                          <i class="bi bi-check-circle me-1"></i>
+                          {{ productoEditando() ? 'Actualizar' : 'Crear' }} Producto
                         </button>
                       </div>
                     </div>
@@ -550,14 +560,19 @@ import { GeminiIAService, ResultadoAnalisisGemini } from '../../servicios/gemini
                           <strong>{{ producto.nombre }}</strong>
                           <br>
                           <small class="text-muted">{{ (producto.descripcion || 'Sin descripción') | slice:0:50 }}...</small>
+                          <br>
+                          <small class="text-info">
+                            <i class="bi bi-clock me-1"></i>
+                            {{ (producto.fechaCreacion || obtenerFechaActual()) | fechaRelativa }}
+                          </small>
                         </div>
                       </td>
                       <td>
                         <span class="badge bg-secondary">{{ producto.categoria }}</span>
                       </td>
                       <td>
-                        <strong class="text-success">
-                          {{ producto.precio | currency:'ARS':'symbol':'1.0-0' }}
+                        <strong class="text-success" appHighlight [highlightColor]="'#e8f5e8'">
+                          {{ producto.precio | precio }}
                         </strong>
                       </td>
                       <td>
@@ -740,6 +755,15 @@ export class GestionProductos implements OnInit {
       categorias: categoriasUnicas.size
     };
   });
+
+  // --- MÉTODOS DE UTILIDAD ---
+
+  /**
+   * Obtiene la fecha actual para usar en templates
+   */
+  obtenerFechaActual(): Date {
+    return new Date();
+  }
 
   // --- MÉTODOS DEL CICLO DE VIDA DEL COMPONENTE ---
 
