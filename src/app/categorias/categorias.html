@@ -38,10 +38,14 @@
           >
           <div class="categoria-overlay">
             <div class="categoria-info">
+              <i class="{{ getIconoCategoria(categoria.nombre) }} categoria-icon mb-2"></i>
               <h3 class="categoria-title">{{ categoria.nombre }}</h3>
               <p class="categoria-count">
-                {{ contarProductosCategoria(categoria.nombre) }} productos
+                {{ contarProductosCategoria(categoria.id || '') }} productos disponibles
               </p>
+              <div class="categoria-action">
+                <span class="badge bg-light text-dark">Ver todos</span>
+              </div>
             </div>
           </div>
         </div>
@@ -49,9 +53,15 @@
         <!-- Contenido de la Categoría -->
         <div class="card-body d-flex flex-column">
           <h5 class="card-title fw-bold text-dark">
-            <i class="bi bi-tag me-2 text-primary"></i>
+            <i class="{{ getIconoCategoria(categoria.nombre) }} me-2" [style.color]="getColorCategoria(categoria.nombre)"></i>
             {{ categoria.nombre }}
           </h5>
+          
+          <div class="categoria-stats mb-2">
+            <span class="badge rounded-pill" [style.background-color]="getColorCategoria(categoria.nombre)">
+              {{ contarProductosCategoria(categoria.id || '') }} productos
+            </span>
+          </div>
           
           <p class="card-text text-muted flex-grow-1">
             Descubre los mejores productos en {{ categoria.nombre }}
@@ -62,18 +72,34 @@
             <h6 class="text-muted mb-2">
               <i class="bi bi-star me-1"></i>Productos destacados:
             </h6>
-            <div class="productos-preview">
+            <div class="productos-preview-grid">
               <div 
                 *ngFor="let producto of obtenerProductosDestacados(categoria.id || ''); let i = index" 
-                class="producto-preview-item"
+                class="producto-preview-card"
                 (click)="verProducto(producto)"
               >
-                <img 
-                  [src]="producto.imagen || 'assets/images/no-image.png'" 
-                  [alt]="producto.nombre"
-                  class="producto-preview-img"
-                  [title]="producto.nombre"
-                >
+                <div class="producto-preview-image">
+                  <img 
+                    [src]="producto.imagen || 'assets/images/no-image.png'" 
+                    [alt]="producto.nombre"
+                    class="producto-preview-img"
+                  >
+                  <div class="producto-preview-overlay">
+                    <button 
+                      class="btn btn-sm btn-success"
+                      (click)="agregarAlCarrito(producto, $event)"
+                      [disabled]="estaAgregando(producto)"
+                      [title]="'Agregar ' + producto.nombre + ' al carrito'"
+                    >
+                      <span *ngIf="estaAgregando(producto)" class="spinner-border spinner-border-sm"></span>
+                      <i *ngIf="!estaAgregando(producto)" class="bi bi-cart-plus"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="producto-preview-info">
+                  <div class="producto-preview-nombre">{{ producto.nombre }}</div>
+                  <div class="producto-preview-precio">{{ formatearPrecio(producto.precio) }}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -98,7 +124,33 @@
       <i class="bi bi-inbox display-1 text-muted"></i>
     </div>
     <h3 class="text-muted">No hay categorías disponibles</h3>
-    <p class="text-muted">Las categorías aparecerán aquí cuando estén configuradas.</p>
+    <p class="text-muted mb-4">Las categorías aparecerán aquí cuando estén configuradas.</p>
+    
+    <!-- Botones de Debug -->
+    <div class="alert alert-info">
+      <p class="mb-3">
+        <i class="bi bi-info-circle me-2"></i>
+        Si es la primera vez que usas la aplicación, puedes crear categorías de ejemplo.
+      </p>
+      <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+        <button 
+          type="button" 
+          class="btn btn-outline-secondary"
+          (click)="probarConexionFirestore()"
+        >
+          <i class="bi bi-wifi me-2"></i>
+          Probar Conexión
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-primary"
+          (click)="crearCategoriasDebug()"
+        >
+          <i class="bi bi-plus-circle me-2"></i>
+          Crear Categorías de Ejemplo
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Sección de Navegación Rápida -->

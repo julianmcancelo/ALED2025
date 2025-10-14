@@ -29,10 +29,10 @@
       class="col-12 col-md-6 col-lg-4 col-xl-3"
     >
       <div class="card oferta-card h-100 shadow-sm border-0 position-relative">
-        <!-- Badge de Descuento -->
+        <!-- Badge de Descuento Dinámico -->
         <div class="badge-descuento">
-          <span class="badge bg-danger fs-6 fw-bold">
-            -{{ calcularDescuento(producto.precio) }}%
+          <span class="badge fs-6 fw-bold" [class]="getBadgeClase(producto)">
+            {{ getBadgeTexto(producto) }}
           </span>
         </div>
 
@@ -78,15 +78,28 @@
             </div>
           </div>
 
-          <!-- Botón de Acción -->
-          <button 
-            type="button"
-            class="btn btn-danger btn-lg w-100 fw-bold"
-            (click)="verProducto(producto)"
-          >
-            <i class="bi bi-cart-plus me-2"></i>
-            ¡Aprovechar Oferta!
-          </button>
+          <!-- Botones de Acción -->
+          <div class="d-grid gap-2">
+            <button 
+              type="button"
+              class="btn btn-success btn-lg fw-bold"
+              (click)="agregarAlCarrito(producto)"
+              [disabled]="estaAgregando(producto)"
+            >
+              <span *ngIf="estaAgregando(producto)" class="spinner-border spinner-border-sm me-2"></span>
+              <i *ngIf="!estaAgregando(producto)" class="bi bi-cart-plus me-2"></i>
+              {{ estaAgregando(producto) ? 'Agregando...' : 'Agregar al Carrito' }}
+            </button>
+            
+            <button 
+              type="button"
+              class="btn btn-outline-primary"
+              (click)="verProducto(producto)"
+            >
+              <i class="bi bi-eye me-2"></i>
+              Ver Detalles
+            </button>
+          </div>
         </div>
       </div>
     </div>
