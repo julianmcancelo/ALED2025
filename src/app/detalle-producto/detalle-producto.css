@@ -1,10 +1,613 @@
-.price {
-  font-weight: 300;
-  color: var(--bs-primary);
+/* ===== DETALLE DE PRODUCTO ESTILO MERCADOLIBRE ===== */
+
+/* Contenedor principal */
+.producto-detalle-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  background: #f5f5f5;
+  min-height: calc(100vh - 80px);
 }
 
-.img-fluid {
-  max-height: 500px;
+/* Breadcrumb */
+.breadcrumb-nav {
+  margin-bottom: 16px;
+}
+
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+}
+
+.breadcrumb-link {
+  color: #0077b6;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+  color: #005f8a;
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  margin: 0 8px;
+  color: #999;
+}
+
+.breadcrumb-current {
+  color: #666;
+  font-weight: 400;
+}
+
+/* Layout principal */
+.producto-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  background: white;
+  border-radius: 8px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Sección de imagen */
+.imagen-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.imagen-container {
+  position: relative;
+  background: #f8f8f8;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.producto-imagen-principal {
   width: 100%;
+  height: 100%;
   object-fit: cover;
+  cursor: zoom-in;
+  transition: transform 0.3s ease;
+}
+
+.producto-imagen-principal:hover {
+  transform: scale(1.05);
+}
+
+.imagen-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  font-size: 14px;
+}
+
+.imagen-placeholder i {
+  font-size: 48px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+/* Miniaturas */
+.miniaturas-container {
+  display: flex;
+  gap: 8px;
+}
+
+.miniatura {
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.miniatura.activa {
+  border-color: #3483fa;
+}
+
+.miniatura img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.miniatura i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #f8f8f8;
+  color: #999;
+  font-size: 24px;
+}
+
+/* Sección de información */
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header del producto */
+.producto-header {
+  border-bottom: 1px solid #e6e6e6;
+  padding-bottom: 16px;
+}
+
+.categoria-badge {
+  display: inline-block;
+  background: #e6f3ff;
+  color: #3483fa;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.producto-titulo {
+  font-size: 24px;
+  font-weight: 400;
+  color: #333;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Sección de precio */
+.precio-section {
+  padding: 16px 0;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.precio-principal {
+  font-size: 36px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #0077b6, #005f8a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0, 119, 182, 0.1);
+}
+
+.precio-cuotas {
+  font-size: 16px;
+  color: #00a650;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.envio-gratis {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #00a650;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.envio-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+.envio-gratis i,
+.envio-info i {
+  font-size: 16px;
+}
+
+/* Sección de stock */
+.stock-section {
+  padding: 12px 0;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.stock-disponible {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #00a650;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.stock-agotado {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff6b6b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.stock-disponible i,
+.stock-agotado i {
+  font-size: 16px;
+}
+
+/* Botones de acción - Diseño personalizado ALED2025 */
+.acciones-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.btn-comprar {
+  background: linear-gradient(135deg, #0077b6 0%, #005f8a 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-comprar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-comprar:hover::before {
+  left: 100%;
+}
+
+.btn-comprar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #005f8a 0%, #004a6b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 119, 182, 0.4);
+}
+
+.btn-comprar:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-favorito {
+  background: white;
+  color: #0077b6;
+  border: 2px solid #0077b6;
+  border-radius: 12px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-favorito:hover {
+  background: #0077b6;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.2);
+}
+
+/* Información del vendedor */
+.vendedor-section {
+  padding: 16px 0;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.vendedor-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vendedor-avatar {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #0077b6, #005f8a);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.3);
+}
+
+.vendedor-datos {
+  flex: 1;
+}
+
+.vendedor-nombre {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.vendedor-reputacion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reputacion-badge {
+  background: linear-gradient(135deg, #00a650, #008a43);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 166, 80, 0.3);
+}
+
+.estrellas {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.estrellas i {
+  color: #ffb400;
+  font-size: 12px;
+}
+
+.rating-text {
+  font-size: 12px;
+  color: #666;
+  margin-left: 4px;
+}
+
+.vendedor-detalles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.vendedor-experiencia,
+.vendedor-positivas {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #666;
+}
+
+.vendedor-experiencia i,
+.vendedor-positivas i {
+  color: #00a650;
+  font-size: 12px;
+}
+
+/* Garantías */
+.garantias-section {
+  padding: 16px 0;
+}
+
+.garantias-section h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.garantias-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.garantias-lista li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.garantias-lista i {
+  color: #00a650;
+  font-size: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* Descripción */
+.descripcion-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.descripcion-section h2 {
+  font-size: 20px;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 16px 0;
+  border-bottom: 1px solid #e6e6e6;
+  padding-bottom: 12px;
+}
+
+.descripcion-contenido {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+}
+
+/* Botón volver */
+.volver-section {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.btn-volver {
+  background: white;
+  color: #3483fa;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn-volver:hover {
+  background: #f5f5f5;
+  border-color: #d4d4d4;
+}
+
+/* Estados de error y carga */
+.error-container,
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  background: white;
+  border-radius: 8px;
+  margin: 16px;
+}
+
+.error-content {
+  text-align: center;
+  padding: 48px;
+}
+
+.error-content i {
+  font-size: 64px;
+  color: #ff6b6b;
+  margin-bottom: 16px;
+}
+
+.error-content h2 {
+  font-size: 24px;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.error-content p {
+  font-size: 16px;
+  color: #666;
+  margin: 0 0 24px 0;
+}
+
+.loading-container {
+  flex-direction: column;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3483fa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-container p {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .producto-detalle-container {
+    padding: 8px;
+  }
+  
+  .producto-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 16px;
+  }
+  
+  .precio-principal {
+    font-size: 28px;
+  }
+  
+  .producto-titulo {
+    font-size: 20px;
+  }
+  
+  .vendedor-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .garantias-lista li {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumb-list {
+    font-size: 12px;
+  }
+  
+  .precio-principal {
+    font-size: 24px;
+  }
+  
+  .producto-titulo {
+    font-size: 18px;
+  }
+  
+  .btn-comprar {
+    font-size: 14px;
+    padding: 10px 20px;
+  }
 }

@@ -1,126 +1,221 @@
-<!-- Contenedor principal de la página de detalle -->
+<!-- Contenedor principal estilo MercadoLibre -->
 @if (producto$ | async; as producto) {
   @if (producto) {
-    <div class="container-custom py-8">
-      <!-- Breadcrumb -->
-      <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="flex items-center space-x-2 text-sm text-gray-600">
-          <li><a routerLink="/" class="link-primary hover:underline">Inicio</a></li>
-          <li><i class="bi bi-chevron-right text-xs"></i></li>
-          <li><a routerLink="/productos" class="link-primary hover:underline">Productos</a></li>
-          <li><i class="bi bi-chevron-right text-xs"></i></li>
-          <li class="text-gray-900 font-medium">{{ producto.nombre }}</li>
+    <div class="producto-detalle-container">
+      <!-- Breadcrumb estilo ML -->
+      <nav class="breadcrumb-nav">
+        <ol class="breadcrumb-list">
+          <li><a routerLink="/" class="breadcrumb-link">Inicio</a></li>
+          <li class="breadcrumb-separator">></li>
+          <li><a routerLink="/productos" class="breadcrumb-link">{{ producto.categoria }}</a></li>
+          <li class="breadcrumb-separator">></li>
+          <li class="breadcrumb-current">{{ producto.nombre }}</li>
         </ol>
       </nav>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Columna de la Imagen -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-          @if (producto.imagen) {
-            <img [src]="producto.imagen" 
-                 class="w-full h-auto object-cover" 
-                 [alt]="producto.nombre"
-                 (error)="onImageError($event)">
-          } @else {
-            <!-- Placeholder cuando no hay imagen -->
-            <div class="w-full h-96 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
-              <i class="bi bi-box-seam text-9xl text-[#0077b6] opacity-30 mb-4"></i>
-              <span class="text-lg text-gray-500 font-medium">Sin imagen disponible</span>
+      <div class="producto-layout">
+        <!-- Columna Izquierda: Imagen -->
+        <div class="imagen-section">
+          <div class="imagen-container">
+            @if (producto.imagen) {
+              <img [src]="producto.imagen" 
+                   class="producto-imagen-principal" 
+                   [alt]="producto.nombre"
+                   (error)="onImageError($event)">
+            } @else {
+              <div class="imagen-placeholder">
+                <i class="bi bi-image"></i>
+                <span>Sin imagen</span>
+              </div>
+            }
+          </div>
+          
+          <!-- Miniaturas (futuro) -->
+          <div class="miniaturas-container">
+            <div class="miniatura activa">
+              @if (producto.imagen) {
+                <img [src]="producto.imagen" [alt]="producto.nombre">
+              } @else {
+                <i class="bi bi-image"></i>
+              }
             </div>
-          }
+          </div>
         </div>
 
-        <!-- Columna de la Información -->
-        <div class="flex flex-col space-y-6">
-          <!-- Header con categoría -->
-          <div>
-            <span class="badge-primary mb-3 inline-block">{{ producto.categoria }}</span>
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ producto.nombre }}</h1>
+        <!-- Columna Derecha: Información -->
+        <div class="info-section">
+          <!-- Título y categoría -->
+          <div class="producto-header">
+            <span class="categoria-badge">{{ producto.categoria }}</span>
+            <h1 class="producto-titulo">{{ producto.nombre }}</h1>
           </div>
 
-          <!-- Descripción -->
-          @if (producto.descripcion) {
-            <div class="bg-gray-50 rounded-lg p-4">
-              <h3 class="text-lg font-semibold text-gray-900 mb-2">Descripción</h3>
-              <p class="text-gray-700 leading-relaxed">{{ producto.descripcion }}</p>
+          <!-- Precio principal -->
+          <div class="precio-section">
+            <div class="precio-principal">
+              {{ producto.precio | currency:'ARS':'symbol':'1.0-0' }}
             </div>
-          }
-
-          <!-- Precio y Stock -->
-          <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 border-2 border-[#0077b6]">
-            <div class="flex items-baseline justify-between mb-4">
-              <div>
-                <p class="text-sm text-gray-600 mb-1">Precio</p>
-                <p class="text-5xl font-bold text-[#0077b6]">
-                  {{ producto.precio | currency:'ARS':'symbol':'1.0-0' }}
-                </p>
+            <div class="precio-cuotas">
+              en 12x {{ (producto.precio / 12) | currency:'ARS':'symbol':'1.0-0' }} sin interés
+            </div>
+            @if (producto.precio > 50000) {
+              <div class="envio-gratis">
+                <i class="bi bi-truck"></i>
+                <span>Envío gratis a todo el país</span>
               </div>
-              @if (producto.stock !== undefined) {
-                <div class="text-right">
-                  <p class="text-sm text-gray-600 mb-1">Stock disponible</p>
-                  <p class="text-2xl font-semibold" [class.text-green-600]="producto.stock > 10" [class.text-orange-600]="producto.stock <= 10 && producto.stock > 0" [class.text-red-600]="producto.stock === 0">
-                    {{ producto.stock }} unidades
-                  </p>
+            } @else {
+              <div class="envio-info">
+                <i class="bi bi-truck"></i>
+                <span>Envío $1.000 | Gratis a partir de $50.000</span>
+              </div>
+            }
+          </div>
+
+          <!-- Stock -->
+          @if (producto.stock !== undefined) {
+            <div class="stock-section">
+              @if (producto.stock > 0) {
+                <div class="stock-disponible">
+                  <i class="bi bi-check-circle-fill"></i>
+                  <span>Stock disponible ({{ producto.stock }} unidades)</span>
+                </div>
+              } @else {
+                <div class="stock-agotado">
+                  <i class="bi bi-x-circle-fill"></i>
+                  <span>Sin stock</span>
                 </div>
               }
             </div>
+          }
 
-            <!-- Botón de agregar al carrito -->
-            <button class="w-full btn-primary text-lg py-4 flex items-center justify-center" 
+          <!-- Botones de acción -->
+          <div class="acciones-section">
+            <button class="btn-comprar" 
                     (click)="agregarAlCarrito(producto)"
                     [disabled]="producto.stock === 0">
-              <i class="bi bi-cart-plus-fill mr-2 text-xl"></i>
               @if (producto.stock === 0) {
+                <i class="bi bi-x-circle mr-2"></i>
                 Sin stock
               } @else {
-                Añadir al Carrito
+                <i class="bi bi-cart-plus mr-2"></i>
+                Agregar al carrito
               }
+            </button>
+            
+            <button class="btn-favorito" (click)="toggleFavorito()">
+              <i class="bi bi-heart"></i>
+              Agregar a favoritos
             </button>
           </div>
 
-          <!-- Información adicional -->
-          <div class="bg-white rounded-lg border border-gray-200 p-4">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3">Información adicional</h3>
-            <ul class="space-y-2 text-gray-700">
-              <li class="flex items-center">
-                <i class="bi bi-check-circle-fill text-green-500 mr-2"></i>
-                Envío a todo el país
+          <!-- Información del vendedor con datos reales -->
+          <div class="vendedor-section">
+            <div class="vendedor-info">
+              <div class="vendedor-avatar">
+                <i class="bi bi-shop"></i>
+              </div>
+              <div class="vendedor-datos">
+                <div class="vendedor-nombre">{{ configuracionService.configuracionSignal().titulo }}</div>
+                <div class="vendedor-reputacion">
+                  <span class="reputacion-badge">{{ estadisticasVendedor?.reputacion || 'MercadoLíder' }}</span>
+                  <div class="estrellas">
+                    @if (estadisticasVendedor) {
+                      @for (estrella of [1,2,3,4,5]; track estrella) {
+                        <i class="bi" 
+                           [class.bi-star-fill]="estrella <= Math.floor(estadisticasVendedor.calificacionPromedio)"
+                           [class.bi-star-half]="estrella === Math.ceil(estadisticasVendedor.calificacionPromedio) && estadisticasVendedor.calificacionPromedio % 1 !== 0"
+                           [class.bi-star]="estrella > Math.ceil(estadisticasVendedor.calificacionPromedio)">
+                        </i>
+                      }
+                      <span class="rating-text">{{ estadisticasVendedor.calificacionPromedio | number:'1.1-1' }} ({{ estadisticasVendedor.totalVentas | number }} ventas)</span>
+                    } @else {
+                      <i class="bi bi-star-fill"></i>
+                      <i class="bi bi-star-fill"></i>
+                      <i class="bi bi-star-fill"></i>
+                      <i class="bi bi-star-fill"></i>
+                      <i class="bi bi-star-half"></i>
+                      <span class="rating-text">Cargando...</span>
+                    }
+                  </div>
+                </div>
+                <div class="vendedor-detalles">
+                  <small class="vendedor-experiencia">
+                    <i class="bi bi-calendar"></i>
+                    @if (estadisticasVendedor && estadisticasVendedor.fechaRegistro) {
+                      Vendiendo desde {{ estadisticasVendedor.fechaRegistro | date:'MMMM yyyy':'':'es' }}
+                    } @else {
+                      Vendiendo desde marzo 2020
+                    }
+                  </small>
+                  <small class="vendedor-positivas">
+                    <i class="bi bi-hand-thumbs-up"></i>
+                    {{ estadisticasVendedor?.porcentajePositivas || 98.5 }}% de opiniones positivas
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Garantías y beneficios -->
+          <div class="garantias-section">
+            <h3>Lo que tienes que saber de este producto</h3>
+            <ul class="garantias-lista">
+              <li>
+                <i class="bi bi-shield-check"></i>
+                <span>Compra Protegida, recibe el producto que esperabas o te devolvemos tu dinero.</span>
               </li>
-              <li class="flex items-center">
-                <i class="bi bi-shield-check text-[#0077b6] mr-2"></i>
-                Compra protegida
+              <li>
+                <i class="bi bi-arrow-return-left"></i>
+                <span>Garantía del vendedor: 30 días</span>
               </li>
-              <li class="flex items-center">
-                <i class="bi bi-credit-card text-[#0077b6] mr-2"></i>
-                Múltiples medios de pago
+              <li>
+                <i class="bi bi-credit-card"></i>
+                <span>Medios de pago: Tarjetas de crédito, débito, efectivo y más</span>
               </li>
             </ul>
           </div>
-
-          <!-- Botón volver -->
-          <button class="btn-outline w-full py-3" routerLink="/productos">
-            <i class="bi bi-arrow-left mr-2"></i>
-            Volver a la tienda
-          </button>
         </div>
+      </div>
+
+      <!-- Descripción detallada -->
+      @if (producto.descripcion) {
+        <div class="descripcion-section">
+          <h2>Descripción</h2>
+          <div class="descripcion-contenido">
+            <p>{{ producto.descripcion }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Componente de reseñas -->
+      <app-resenas [productoId]="producto.id || ''"></app-resenas>
+
+      <!-- Botón volver -->
+      <div class="volver-section">
+        <button class="btn-volver" routerLink="/productos">
+          <i class="bi bi-arrow-left mr-2"></i>
+          Volver a resultados
+        </button>
       </div>
     </div>
   } @else {
     <!-- Mensaje si el producto no se encuentra -->
-    <div class="container-custom text-center py-12">
-      <i class="bi bi-search text-9xl text-gray-400 mb-4"></i>
-      <h2 class="text-3xl font-bold text-gray-900 mb-2">Producto no encontrado</h2>
-      <p class="text-gray-600 mb-6">El producto que buscas no existe o ha sido eliminado.</p>
-      <button class="btn-primary" routerLink="/productos">
-        <i class="bi bi-arrow-left mr-2"></i>
-        Volver a la tienda
-      </button>
+    <div class="error-container">
+      <div class="error-content">
+        <i class="bi bi-exclamation-triangle"></i>
+        <h2>¡Ups! No encontramos la publicación</h2>
+        <p>Puede que la publicación haya finalizado o que no esté disponible.</p>
+        <button class="btn-volver" routerLink="/productos">
+          <i class="bi bi-arrow-left mr-2"></i>
+          Ir a la página principal
+        </button>
+      </div>
     </div>
   }
 } @else {
   <!-- Indicador de carga -->
-  <div class="container-custom text-center py-12">
-    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#0077b6]"></div>
-    <p class="mt-4 text-gray-600">Cargando producto...</p>
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Cargando producto...</p>
   </div>
 }

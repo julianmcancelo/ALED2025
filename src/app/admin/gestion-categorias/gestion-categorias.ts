@@ -149,7 +149,7 @@ import Swal from 'sweetalert2';
               
               <!-- Estado de carga -->
               <div *ngIf="cargando()" class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
+                <div class="spin ner-border text-primary" role="status">
                   <span class="visually-hidden">Cargando...</span>
                 </div>
                 <p class="mt-2 text-muted">Cargando categorías...</p>

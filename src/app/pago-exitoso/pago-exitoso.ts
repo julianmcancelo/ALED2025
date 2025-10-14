@@ -63,8 +63,24 @@ export class PagoExitoso {
   private carritoService = inject(CarritoService);
 
   constructor() {
-    // Limpiar el carrito después de un pago exitoso
-    this.carritoService.vaciarCarrito();
+    // Registrar la venta exitosa antes de limpiar el carrito
+    this.registrarVentaYLimpiarCarrito();
+  }
+
+  private async registrarVentaYLimpiarCarrito(): Promise<void> {
+    try {
+      // Registrar la venta en las estadísticas del vendedor
+      await this.carritoService.registrarVentaExitosa();
+      
+      // Limpiar el carrito después de registrar la venta
+      this.carritoService.vaciarCarrito();
+      
+      console.log('✅ Venta procesada y carrito limpiado');
+    } catch (error) {
+      console.error('❌ Error procesando venta:', error);
+      // Limpiar carrito aunque falle el registro
+      this.carritoService.vaciarCarrito();
+    }
   }
 
   volverAInicio(): void {

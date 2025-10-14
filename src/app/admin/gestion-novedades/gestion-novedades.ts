@@ -2,7 +2,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { NovedadesService, Novedad } from '../../servicios/novedades.service';
 import { GeminiIAService, ResultadoGeneracionContenido, ImagenGenerada } from '../../servicios/gemini-ia.service';
 import Swal from 'sweetalert2'; // Librería para mostrar alertas elegantes
@@ -98,7 +98,27 @@ export class GestionNovedadesComponent implements OnInit {
   ngOnInit(): void {
     // Obtenemos el Observable de novedades desde la base de datos
     // Esto nos permite recibir actualizaciones automáticas cuando cambian los datos
-    this.novedades$ = this.novedadesService.getNovedades();
+    console.log('🔄 Inicializando gestión de novedades...');
+    
+    try {
+      this.novedades$ = this.novedadesService.getNovedades();
+      
+      // Suscripción para debug con manejo de errores
+      this.novedades$.subscribe({
+        next: (novedades) => {
+          console.log('✅ Novedades cargadas en gestión:', novedades);
+        },
+        error: (error) => {
+          console.error('❌ Error cargando novedades en gestión:', error);
+          // Fallback a datos vacíos en caso de error
+          this.novedades$ = of([]);
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error crítico inicializando novedades:', error);
+      // Fallback a datos mock en caso de error crítico
+      this.novedades$ = of([]);
+    }
   }
 
   // --- MÉTODOS DE GESTIÓN DEL FORMULARIO ---

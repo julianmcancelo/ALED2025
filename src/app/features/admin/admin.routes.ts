@@ -49,6 +49,10 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('../../admin/gestion-pedidos/gestion-pedidos.component').then(m => m.GestionPedidosComponent)
       },
       {
+        path: 'estadisticas-vendedor',
+        loadComponent: () => import('../../admin/estadisticas-vendedor/estadisticas-vendedor.component').then(m => m.EstadisticasVendedorComponent)
+      },
+      {
         path: 'pruebas',
         loadComponent: () => import('../../admin/panel-pruebas/panel-pruebas-simple').then(m => m.PanelPruebasComponent)
       }

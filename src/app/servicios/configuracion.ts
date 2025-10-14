@@ -1,17 +1,29 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Firestore, doc, setDoc, onSnapshot, DocumentData } from '@angular/fire/firestore';
+import { Firestore, doc, setDoc, onSnapshot, DocumentData, getDoc } from '@angular/fire/firestore';
+import { Observable, from } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 /**
  * @interface ConfiguracionSitio
  * Define la estructura de los datos de configuración.
- * Esto nos ayuda a mantener la consistencia de los datos.
  */
 export interface ConfiguracionSitio {
   titulo: string;
   subtitulo: string;
-  // En el futuro, podríamos añadir más campos como:
-  // logoUrl: string;
-  // colorPrincipal: string;
+  nombreTienda: string;
+  colorPrincipal: string;
+  colorSecundario: string;
+  logoUrl?: string;
+  descripcionTienda: string;
+  emailContacto: string;
+  telefonoContacto: string;
+  direccion: string;
+  redesSociales: {
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+    whatsapp?: string;
+  };
 }
 
 /**
@@ -22,73 +34,122 @@ export interface ConfiguracionSitio {
   providedIn: 'root',
 })
 export class ConfiguracionService {
-  // --- INYECCIÓN DE DEPENDENCIAS ---
   private firestore: Firestore = inject(Firestore);
 
-  // --- SEÑAL DE ESTADO (SIGNAL) ---
-  /**
-   * @signal configuracionSignal
-   * Almacena la configuración actual del sitio.
-   * Se inicializa con un valor por defecto mientras se cargan los datos.
-   */
+  // Señal de estado con configuración por defecto
   configuracionSignal = signal<ConfiguracionSitio>({
-    titulo: 'Cargando...',
-    subtitulo: '...',
+    titulo: 'ALED2025',
+    subtitulo: 'Tu tienda online de confianza',
+    nombreTienda: 'ALED2025 Store',
+    colorPrincipal: '#0077b6',
+    colorSecundario: '#00a650',
+    descripcionTienda: 'Tienda online especializada en productos de calidad con envío a todo el país',
+    emailContacto: 'contacto@aled2025.com',
+    telefonoContacto: '+54 11 1234-5678',
+    direccion: 'Buenos Aires, Argentina',
+    redesSociales: {
+      facebook: '',
+      instagram: '',
+      twitter: '',
+      whatsapp: '+5491123456789'
+    }
   });
 
   constructor() {
-    // --- LÓGICA DE ARRANQUE: CARGAR CONFIGURACIÓN ---
-    // Nos conectamos a Firestore en cuanto el servicio es creado.
-    this.escucharCambiosDeConfiguracion();
+    this.inicializarConfiguracion();
   }
 
   /**
-   * Se suscribe a los cambios del documento de configuración en Firestore.
-   * onSnapshot nos da actualizaciones en tiempo real.
-   * @private
+   * Inicializa la configuración desde Firestore
    */
-  private escucharCambiosDeConfiguracion(): void {
-    const docRef = doc(this.firestore, 'configuracion', 'sitio');
+  private async inicializarConfiguracion(): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'configuracion', 'sitio');
+      const docSnapshot = await getDoc(docRef);
+      
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data() as ConfiguracionSitio;
+        this.configuracionSignal.set(data);
+        console.log('✅ Configuración cargada desde Firestore');
+      } else {
+        // Crear configuración inicial
+        const configInicial = this.configuracionSignal();
+        await this.actualizarConfiguracion(configInicial);
+        console.log('✅ Configuración inicial creada en Firestore');
+      }
+      
+      // Escuchar cambios en tiempo real
+      this.escucharCambios();
+    } catch (error) {
+      console.error('❌ Error inicializando configuración:', error);
+    }
+  }
 
-    onSnapshot(
-      docRef,
-      (snapshot) => {
-        if (snapshot.exists()) {
-          // Si el documento existe, actualizamos la señal con sus datos.
-          this.configuracionSignal.set(snapshot.data() as ConfiguracionSitio);
+  /**
+   * Escucha cambios en tiempo real
+   */
+  private escucharCambios(): void {
+    const docRef = doc(this.firestore, 'configuracion', 'sitio');
+    
+    onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data() as ConfiguracionSitio;
+        this.configuracionSignal.set(data);
+      }
+    }, (error) => {
+      console.error('Error escuchando cambios de configuración:', error);
+    });
+  }
+
+  /**
+   * Actualiza la configuración en Firestore
+   */
+  async actualizarConfiguracion(nuevosDatos: Partial<ConfiguracionSitio>): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'configuracion', 'sitio');
+      await setDoc(docRef, nuevosDatos, { merge: true });
+      console.log('✅ Configuración actualizada en Firestore');
+    } catch (error) {
+      console.error('❌ Error actualizando configuración:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene la configuración actual como Observable
+   */
+  obtenerConfiguracion(): Observable<ConfiguracionSitio> {
+    const docRef = doc(this.firestore, 'configuracion', 'sitio');
+    
+    return from(getDoc(docRef)).pipe(
+      map(docSnapshot => {
+        if (docSnapshot.exists()) {
+          return docSnapshot.data() as ConfiguracionSitio;
         } else {
-          // Si el documento no existe, lo creamos con valores por defecto.
-          console.warn(
-            'No se encontró configuración en Firestore. Creando documento por defecto...',
-          );
-          // Esta llamada a 'actualizarConfiguracion' creará el documento.
-          this.actualizarConfiguracion({
-            titulo: 'Proyecto Final',
-            subtitulo:
-              'Una aplicación de demostración que integra un sistema de autenticación y un carrito de compras funcional.',
-          });
+          return this.configuracionSignal();
         }
-      },
-      (error) => {
-        // Manejo de errores en caso de que falle la conexión.
-        console.error('Error al escuchar la configuración del sitio:', error);
-        this.configuracionSignal.set({
-          titulo: 'Error al cargar',
-          subtitulo: 'Intente de nuevo más tarde.',
-        });
-      },
+      }),
+      catchError(error => {
+        console.error('Error obteniendo configuración:', error);
+        return [this.configuracionSignal()];
+      })
     );
   }
 
   /**
-   * Actualiza el documento de configuración en Firestore.
-   * @param nuevosDatos - Un objeto parcial con los datos a actualizar.
-   * @returns Una promesa que se resuelve cuando la operación de escritura finaliza.
+   * Actualiza solo el nombre de la tienda
    */
-  actualizarConfiguracion(nuevosDatos: Partial<ConfiguracionSitio>): Promise<void> {
-    const docRef = doc(this.firestore, 'configuracion', 'sitio');
-    // Usamos setDoc con { merge: true } para actualizar solo los campos que enviamos,
-    // sin sobrescribir el documento entero. Si el documento no existe, lo crea.
-    return setDoc(docRef, nuevosDatos, { merge: true });
+  async actualizarNombreTienda(nombre: string): Promise<void> {
+    await this.actualizarConfiguracion({ nombreTienda: nombre });
+  }
+
+  /**
+   * Actualiza los colores del tema
+   */
+  async actualizarColores(principal: string, secundario: string): Promise<void> {
+    await this.actualizarConfiguracion({ 
+      colorPrincipal: principal, 
+      colorSecundario: secundario 
+    });
   }
 }

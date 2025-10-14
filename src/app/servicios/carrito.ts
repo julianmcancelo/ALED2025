@@ -18,7 +18,8 @@
  * ============================================================================
  */
 
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { ResenasService } from './resenas.service';
 
 /**
  * Interfaz que define la estructura de un producto.
@@ -65,6 +66,12 @@ export interface ElementoCarrito {
   providedIn: 'root',  // Singleton a nivel de aplicación
 })
 export class CarritoService {
+  
+  // ========================================================================
+  // INYECCIÓN DE DEPENDENCIAS
+  // ========================================================================
+  
+  private resenasService = inject(ResenasService);
   
   // ========================================================================
   // CONSTANTES
@@ -303,6 +310,22 @@ export class CarritoService {
       }
     } catch (error) {
       console.error('❌ Error guardando carrito en localStorage:', error);
+    }
+  }
+
+  /**
+   * Registra una venta exitosa e incrementa las estadísticas del vendedor
+   */
+  async registrarVentaExitosa(): Promise<void> {
+    try {
+      const cantidadItems = this.totalItems();
+      if (cantidadItems > 0) {
+        // Incrementar las ventas en las estadísticas del vendedor
+        await this.resenasService.incrementarVentas(cantidadItems);
+        console.log('✅ Venta registrada exitosamente:', cantidadItems, 'items');
+      }
+    } catch (error) {
+      console.error('❌ Error registrando venta:', error);
     }
   }
 }

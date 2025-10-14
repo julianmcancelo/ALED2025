@@ -262,7 +262,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (novedad of (novedades$ | async); track novedad.id) {
+            @for (novedad of (novedades$ | async) || []; track novedad.id) {
               <tr>
                 <td><img [src]="novedad.imagenUrl" [alt]="novedad.titulo" width="100"></td>
                 <td>{{ novedad.titulo }}</td>

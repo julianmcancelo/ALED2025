@@ -403,16 +403,6 @@ export class GestionProductosService {
    * @returns Observable con array de productos
    */
   obtenerProductos(): Observable<Producto[]> {
-<<<<<<< HEAD
-    return from(this.inicializacionCompleta).pipe(
-      switchMap(() => {
-        return runInInjectionContext(this.injector, () => {
-          // Crear query para evitar error de tipo
-          const productosQuery = query(this.productosCollection);
-          return collectionData(productosQuery, { idField: 'id' }) as Observable<Producto[]>;
-        });
-      }),
-=======
     console.log('🔍 Iniciando obtenerProductos...');
     
     return new Observable<Producto[]>((observer) => {
@@ -457,7 +447,6 @@ export class GestionProductosService {
         }
       });
     }).pipe(
->>>>>>> d4120f211a0e2fe30358a961fe1c365e8dcf3f45
       catchError((error) => {
         console.error('❌ Error en observable de productos:', error);
         return of([]);
