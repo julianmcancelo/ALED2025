@@ -647,4 +647,28 @@ export class MisPedidosComponent implements OnInit {
 
     return textos[estado as keyof typeof textos] || 'Desconocido';
   }
+
+  /**
+   * Obtiene una fecha válida para ordenar pedidos.
+   * Convierte diferentes tipos de fecha a un objeto Date válido.
+   * 
+   * @param fecha - La fecha a convertir (puede ser Date, string, timestamp, etc.)
+   * @returns Un objeto Date válido para ordenamiento
+   */
+  obtenerFechaParaOrdenar(fecha: any): Date {
+    if (fecha instanceof Date) {
+      return fecha;
+    }
+    
+    if (typeof fecha === 'string') {
+      return new Date(fecha);
+    }
+    
+    if (typeof fecha === 'number') {
+      return new Date(fecha);
+    }
+    
+    // Si no se puede convertir, retorna una fecha muy antigua para que vaya al final
+    return new Date(0);
+  }
 }
