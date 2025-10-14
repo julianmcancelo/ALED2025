@@ -10,6 +10,12 @@ import { UserService } from './servicios/user';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
+// Importaciones de Firebase/Firestore
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideFirestore, getFirestore, connectFirestoreEmulator } from '@angular/fire/firestore';
+import { getApp } from 'firebase/app';
+import { firebaseConfig } from './config/firebase.config';
+
 // Importamos los componentes y el nuevo guardia
 import { Home } from './inicio/home';
 import { TiendaComponent } from './tienda/tienda';
@@ -32,7 +38,7 @@ import { MisPedidosComponent } from './mis-pedidos/mis-pedidos.component';
 import { CategoriasComponent } from './categorias/categorias';
 import { OfertasComponent } from './ofertas/ofertas';
 
-// Configuración migrada a Supabase - Firebase eliminado
+// Configuración de la aplicación
 
 // Función Factory para el APP_INITIALIZER
 const initializeAppFactory = () => {
@@ -40,22 +46,77 @@ const initializeAppFactory = () => {
   const router = inject(Router);
 
   return async () => {
-    try {
-      const usersExist = await userService.checkIfUsersExist();
-      if (!usersExist) {
-        await router.navigate(['/primer-usuario']);
+    console.log('🚀 Inicializando aplicación ALED2025...');
+    
+    // Usar Promise.race para evitar que el APP_INITIALIZER bloquee indefinidamente
+    const timeoutPromise = new Promise((resolve) => {
+      setTimeout(() => {
+        console.log('⏱️ Timeout de inicialización - continuando...');
+        resolve(true);
+      }, 5000); // 5 segundos máximo
+    });
+    
+    const initPromise = (async () => {
+      try {
+        // Primero probar la conexión con Firestore
+        await userService.probarConexionFirestore();
+        
+        // Luego verificar si existen usuarios
+        const usersExist = await userService.checkIfUsersExist();
+        
+        if (!usersExist) {
+          console.log('🔐 Primera ejecución detectada - redirigiendo a configuración inicial');
+          // Usar setTimeout para asegurar que el router esté listo
+          setTimeout(() => {
+            router.navigate(['/primer-usuario']);
+          }, 500);
+        } else {
+          console.log('✅ Usuarios encontrados - aplicación lista');
+        }
+        return true;
+      } catch (error) {
+        console.error('❌ Error durante la inicialización:', error);
+        console.log('⚠️ Continuando sin verificación de usuarios...');
+        return true;
       }
-    } catch (error) {
-      console.error('Error durante la inicialización de la app:', error);
-    }
+    })();
+    
+    // Esperar el que termine primero (inicialización o timeout)
+    await Promise.race([initPromise, timeoutPromise]);
+    console.log('✅ APP_INITIALIZER completado');
   };
 };
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideAnimations(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideHttpClient(),
+    provideAnimations(),
+
+    // Configuración de Firebase/Firestore - DEBE IR ANTES DEL APP_INITIALIZER
+    provideFirebaseApp(() => {
+      try {
+        const app = initializeApp(firebaseConfig);
+        console.log('🔥 Firebase App inicializada:', {
+          name: app.name,
+          projectId: firebaseConfig.projectId
+        });
+        return app;
+      } catch (error) {
+        console.error('❌ Error inicializando Firebase App:', error);
+        throw error;
+      }
+    }),
+    provideFirestore(() => {
+      try {
+        const firestore = getFirestore();
+        console.log('📁 Firestore inicializado correctamente');
+        return firestore;
+      } catch (error) {
+        console.error('❌ Error inicializando Firestore:', error);
+        throw error;
+      }
+    }),
 
     {
       provide: APP_INITIALIZER,

@@ -94,28 +94,34 @@ export class AuthService {
   }
 
   private cargarSesionDesdeStorage(): void {
+    console.log('🔐 Cargando sesión desde localStorage...');
+    
     try {
       const userDataString = localStorage.getItem(this.USER_STORAGE_KEY);
+      console.log('📦 Datos en localStorage:', userDataString);
 
       if (userDataString) {
         const appUser: AppUser = JSON.parse(userDataString);
+        console.log('👤 Usuario parseado:', appUser);
 
         // --- VALIDACIÓN DE SESIÓN ---
         // Verificamos que el objeto de usuario tenga un ID. Si no lo tiene, la sesión es inválida.
         if (appUser && appUser.id) {
+          console.log('✅ Sesión válida encontrada, restaurando usuario:', appUser.email);
           this.currentUserSignal.set(appUser);
           this.listenToCurrentUser(appUser.id);
         } else {
           // Si los datos son inválidos, limpiamos todo.
-          console.error('Sesión inválida encontrada en localStorage. Limpiando...');
+          console.error('❌ Sesión inválida encontrada en localStorage. Limpiando...');
           localStorage.removeItem(this.USER_STORAGE_KEY);
           this.currentUserSignal.set(null);
         }
       } else {
+        console.log('📭 No hay datos de sesión en localStorage');
         this.currentUserSignal.set(null);
       }
     } catch (error) {
-      console.error('Error al cargar la sesión desde localStorage:', error);
+      console.error('❌ Error al cargar la sesión desde localStorage:', error);
       this.currentUserSignal.set(null);
     }
   }
@@ -125,20 +131,44 @@ export class AuthService {
    * @param userId - El ID del usuario a escuchar.
    */
   private listenToCurrentUser(userId: string): void {
+    console.log('🔍 Iniciando suscripción a usuario:', userId);
+    
     if (this.userSubscription) {
+      console.log('🚫 Cancelando suscripción anterior');
       this.userSubscription();
     }
 
     const userDocRef = doc(this.firestore, 'users', userId);
-    this.userSubscription = onSnapshot(userDocRef, (snapshot: DocumentSnapshot) => {
-      if (snapshot.exists()) {
-        const updatedUser = { id: snapshot.id, ...snapshot.data() } as AppUser; // Usar 'id'
-        this.currentUserSignal.set(updatedUser);
-        localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(updatedUser));
-      } else {
-        this.logout();
+    console.log('📄 Referencia del documento:', `users/${userId}`);
+    
+    this.userSubscription = onSnapshot(userDocRef, 
+      (snapshot: DocumentSnapshot) => {
+        console.log('🔄 Snapshot recibido:', {
+          exists: snapshot.exists(),
+          id: snapshot.id,
+          data: snapshot.exists() ? snapshot.data() : null
+        });
+        
+        if (snapshot.exists()) {
+          const updatedUser = { id: snapshot.id, ...snapshot.data() } as AppUser;
+          console.log('✅ Usuario actualizado desde Firestore:', updatedUser.email);
+          this.currentUserSignal.set(updatedUser);
+          localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(updatedUser));
+        } else {
+          console.log('❌ Usuario no encontrado en Firestore, cerrando sesión');
+          this.logout();
+        }
+      },
+      (error) => {
+        console.error('❌ Error en suscripción de Firestore:', error);
+        console.error('❌ Detalles del error:', {
+          code: error.code,
+          message: error.message,
+          userId: userId
+        });
+        // No cerrar sesión por errores de red, solo por usuario no encontrado
       }
-    });
+    );
   }
 
   async login(email: string, password: string): Promise<void> {
@@ -166,14 +196,21 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
+    console.log('🚀 Cerrando sesión de usuario');
+    console.trace('🔍 Stack trace del logout:'); // Para ver quién llama al logout
+    
     // Al cerrar sesión, cancelamos la suscripción a los cambios.
     if (this.userSubscription) {
+      console.log('🚫 Cancelando suscripción de Firestore');
       this.userSubscription();
       this.userSubscription = null;
     }
 
+    console.log('🗑️ Limpiando localStorage');
     localStorage.removeItem(this.USER_STORAGE_KEY);
     this.currentUserSignal.set(null);
+    
+    console.log('📤 Redirigiendo a página principal');
     this.router.navigate(['/']);
   }
 }

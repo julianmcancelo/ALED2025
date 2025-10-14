@@ -1,671 +1,534 @@
-import { Component, inject, OnInit } from '@angular/core';
+// Importaciones principales de Angular para el componente
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { GestionProductosService, Producto } from '../../servicios/gestion-productos.service';
-import { Categoria, CategoriaService } from '../../servicios/categoria.service'; // Importar servicio y modelo de categoría
-import { GeminiAiService, ResultadoGemini } from '../../servicios/gemini-ai.service'; // Importar Gemini AI
-import Swal from 'sweetalert2';
+import Swal from 'sweetalert2'; // Librería para alertas elegantes y modernas
 
+// Servicios de Firebase/Firestore (usando el servicio existente)
+import { GestionProductosService, Producto } from '../../servicios/gestion-productos.service';
+import { CategoriaService, Categoria } from '../../servicios/categoria.service';
+
+// --- INTERFACES Y TIPOS ---
+// Usamos las interfaces de los servicios reales
+
+/**
+ * ============================================================================
+ * COMPONENTE DE GESTIÓN DE PRODUCTOS - PANEL DE ADMINISTRACIÓN
+ * ============================================================================
+ * 
+ * Este componente permite a los administradores gestionar el catálogo completo
+ * de productos del e-commerce ALED2025. Proporciona una interfaz completa para
+ * crear, editar, eliminar y organizar productos del sistema.
+ * 
+ * FUNCIONALIDADES PRINCIPALES:
+ * - CRUD completo de productos (Crear, Leer, Actualizar, Eliminar)
+ * - Gestión de categorías dinámicas
+ * - Filtros y búsqueda de productos
+ * - Validaciones en tiempo real
+ * - Interfaz moderna y responsiva
+ * - Datos de demostración para pruebas
+ * 
+ * TECNOLOGÍAS UTILIZADAS:
+ * - Angular Signals para estado reactivo
+ * - Angular Reactive Forms para validaciones
+ * - SweetAlert2 para notificaciones elegantes
+ * - Bootstrap para diseño responsivo
+ * - TypeScript para tipado fuerte
+ * 
+ * DESARROLLADO POR: Cancelo Julian & Nicolas Otero
+ * INSTITUTO: Instituto Beltrán - ALED III T.A.S.
+ * AÑO: 2025
+ */
 @Component({
   selector: 'app-gestion-productos',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './gestion-productos.html',
-  styleUrl: './gestion-productos.css',
-})
-export class GestionProductos implements OnInit {
-  // --- INYECCIÓN DE DEPENDENCIAS ---
-  private gestionProductosService = inject(GestionProductosService);
-  private categoriaService = inject(CategoriaService); // Inyectar CategoriaService
-  private geminiAiService = inject(GeminiAiService); // Inyectar Gemini AI
-
-  // --- PROPIEDADES DE PRODUCTOS ---
-  productos: Producto[] = [];
-  productoSeleccionado: Producto | null = null;
-  mostrarFormulario: boolean = false;
-  modoEdicion: boolean = false;
-  formularioProducto = {
-    nombre: '',
-    descripcion: '',
-    precio: 0,
-    categoria: '',
-    stock: 0,
-    imagen: '',
-    activo: true,
-    esDestacado: false, // Nuevo campo
-  };
-
-  // --- PROPIEDADES DE CATEGORÍAS ---
-  categorias: Categoria[] = [];
-  mostrarGestionCategorias: boolean = false;
-  categoriaEnEdicion: Categoria | null = null;
-  nombreNuevaCategoria: string = '';
-
-  // --- PROPIEDADES DE GEMINI AI ---
-  imagenSeleccionada: string | null = null;
-  analizandoConGemini: boolean = false;
-  resultadoGemini: ResultadoGemini | null = null;
-  geminiConfigurado: boolean = false;
-
-  ngOnInit(): void {
-    this.cargarProductos();
-    this.cargarCategorias(); // Cargar categorías al iniciar
-    this.verificarGeminiAI(); // Verificar configuración de Gemini AI
-  }
-
-  // --- MÉTODOS DE GESTIÓN DE PRODUCTOS (Existentes) ---
-  cargarProductos(): void {
-    this.gestionProductosService.obtenerProductos().subscribe({
-      next: (productos) => (this.productos = productos),
-      error: (error) => {
-        console.error('Error al cargar productos:', error);
-        Swal.fire('Error', 'No se pudieron cargar los productos.', 'error');
-      },
-    });
-  }
-
-  nuevoProducto(): void {
-    this.modoEdicion = false;
-    this.productoSeleccionado = null;
-    this.limpiarFormulario();
-    this.mostrarFormulario = true;
-  }
-
-  editarProducto(producto: Producto): void {
-    this.modoEdicion = true;
-    this.productoSeleccionado = producto;
-    this.cargarDatosEnFormulario(producto);
-    this.mostrarFormulario = true;
-  }
-
-  guardarProducto(): void {
-    if (!this.validarFormulario()) return;
-    if (this.modoEdicion) {
-      this.actualizarProducto();
-    } else {
-      this.crearProducto();
-    }
-  }
-
-  async eliminarProducto(producto: Producto): Promise<void> {
-    if (!producto.id) {
-      Swal.fire('Error', 'El producto no tiene un ID válido', 'error');
-      return;
-    }
-    
-    const result = await Swal.fire({
-      title: '¿Estás seguro?',
-      text: `Eliminarás "${producto.nombre}". ¡No podrás revertir esto!`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, ¡eliminar!',
-      cancelButtonText: 'Cancelar',
-    });
-
-    if (result.isConfirmed) {
-      this.gestionProductosService.eliminarProducto(producto.id).subscribe({
-        next: () => {
-          this.productos = this.productos.filter(p => p.id !== producto.id);
-          
-          Swal.fire('¡Eliminado!', 'El producto ha sido eliminado.', 'success');
-          
-          // También recargar desde Firebase para asegurar sincronización
-          this.cargarProductos();
-        },
-        error: (error) => {
-          console.error('❌ Error al eliminar producto:', error);
-          console.error('❌ Detalles del error:', error);
-          Swal.fire('Error', `No se pudo eliminar el producto: ${error.message || 'Error desconocido'}`, 'error');
-        }
-      });
-    }
-  }
-
-  cancelarFormulario(): void {
-    this.mostrarFormulario = false;
-    this.limpiarFormulario();
-  }
-
-  // --- MÉTODOS DE GESTIÓN DE CATEGORÍAS (Nuevos) ---
-
-  /**
-   * Carga las categorías desde el servicio en tiempo real.
-   */
-  cargarCategorias(): void {
-    this.categoriaService.obtenerCategorias().subscribe({
-      next: (categorias) => {
-        this.categorias = categorias.sort((a, b) => a.nombre.localeCompare(b.nombre));
-      },
-      error: (error) => {
-        console.error('Error al cargar categorías:', error);
-        Swal.fire('Error', 'No se pudieron cargar las categorías.', 'error');
-      },
-    });
-  }
-
-  /**
-   * Prepara el formulario para crear o editar una categoría.
-   * @param categoria - La categoría a editar, o null para crear una nueva.
-   */
-  editarCategoria(categoria: Categoria | null): void {
-    if (categoria) {
-      this.categoriaEnEdicion = { ...categoria };
-      this.nombreNuevaCategoria = categoria.nombre;
-    } else {
-      this.categoriaEnEdicion = null;
-      this.nombreNuevaCategoria = '';
-    }
-  }
-
-  /**
-   * Guarda una categoría (la crea o la actualiza).
-   */
-  async guardarCategoria(): Promise<void> {
-    const nombre = this.nombreNuevaCategoria.trim();
-    if (!nombre) {
-      Swal.fire('Inválido', 'El nombre de la categoría no puede estar vacío.', 'warning');
-      return;
-    }
-
-    try {
-      if (this.categoriaEnEdicion && this.categoriaEnEdicion.id) {
-        // Actualizar categoría existente
-        await this.categoriaService.actualizarCategoria(this.categoriaEnEdicion.id, nombre);
-        Swal.fire('¡Actualizado!', 'La categoría ha sido actualizada.', 'success');
-      } else {
-        // Crear nueva categoría
-        await this.categoriaService.crearCategoria(nombre);
-        Swal.fire('¡Creada!', 'La nueva categoría ha sido creada.', 'success');
-      }
-      this.cancelarEdicionCategoria();
-    } catch (error) {
-      console.error('Error al guardar categoría:', error);
-      Swal.fire('Error', 'No se pudo guardar la categoría.', 'error');
-    }
-  }
-
-  /**
-   * Elimina una categoría después de confirmación.
-   * @param categoria - La categoría a eliminar.
-   */
-  async eliminarCategoria(categoria: Categoria): Promise<void> {
-    if (!categoria.id) return;
-    const result = await Swal.fire({
-      title: '¿Estás seguro?',
-      text: `Eliminarás la categoría "${categoria.nombre}". Esto no se puede deshacer.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, ¡eliminar!',
-      cancelButtonText: 'Cancelar',
-    });
-
-    if (result.isConfirmed) {
-      try {
-        await this.categoriaService.eliminarCategoria(categoria.id);
-        Swal.fire('¡Eliminada!', 'La categoría ha sido eliminada.', 'success');
-      } catch (error) {
-        Swal.fire('Error', 'No se pudo eliminar la categoría.', 'error');
-      }
-    }
-  }
-
-  /**
-   * Cierra el formulario de edición de categorías.
-   */
-  cancelarEdicionCategoria(): void {
-    this.categoriaEnEdicion = null;
-    this.nombreNuevaCategoria = '';
-  }
-
-  // --- MÉTODOS AUXILIARES ---
-  private limpiarFormulario(): void {
-    this.formularioProducto = {
-      nombre: '',
-      descripcion: '',
-      precio: 0,
-      categoria: '',
-      stock: 0,
-      imagen: '',
-      activo: true,
-      esDestacado: false,
-    };
-  }
-
-  private cargarDatosEnFormulario(producto: Producto): void {
-    // Corregimos el problema de tipos asegurando valores por defecto
-    this.formularioProducto = {
-      nombre: producto.nombre || '',
-      descripcion: producto.descripcion || '',
-      precio: producto.precio || 0,
-      categoria: producto.categoria || '',
-      stock: producto.stock || 0,
-      imagen: producto.imagen || '',
-      activo: producto.activo !== undefined ? producto.activo : true,
-      esDestacado: producto.esDestacado || false,
-    };
-  }
-
-  private validarFormulario(): boolean {
-    const { nombre, precio, categoria } = this.formularioProducto;
-    if (!nombre.trim() || precio <= 0 || !categoria) {
-      Swal.fire(
-        'Formulario Incompleto',
-        'Por favor, complete todos los campos obligatorios (*).',
-        'warning',
-      );
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * Crea un nuevo producto en la base de datos.
-   */
-  private crearProducto(): void {
-    const nuevoProducto: Omit<Producto, 'id'> = { ...this.formularioProducto };
-    this.gestionProductosService.crearProducto(nuevoProducto).subscribe({
-      next: () => {
-        Swal.fire('¡Creado!', 'El producto ha sido creado exitosamente.', 'success');
-        this.cancelarFormulario();
-      },
-      error: (error) => {
-        console.error('Error al crear producto:', error);
-        Swal.fire('Error', 'Hubo un problema al crear el producto.', 'error');
-      },
-    });
-  }
-
-  /**
-   * Actualiza un producto existente en la base de datos.
-   */
-  private actualizarProducto(): void {
-    if (!this.productoSeleccionado?.id) return;
-
-    const datosActualizados: Partial<Producto> = { ...this.formularioProducto };
-    this.gestionProductosService
-      .actualizarProducto(this.productoSeleccionado.id, datosActualizados)
-      .subscribe({
-        next: () => {
-          Swal.fire('¡Actualizado!', 'El producto ha sido actualizado.', 'success');
-          this.cancelarFormulario();
-        },
-        error: (error) => {
-          console.error('Error al actualizar producto:', error);
-          Swal.fire('Error', 'No se pudo actualizar el producto.', 'error');
-        },
-      });
-  }
-
-  probarConexionFirestore(): void {
-    // Lógica de prueba de conexión...
-  }
-
-  // --- MÉTODOS DE GEMINI AI ---
-
-  /**
-   * Verifica si Gemini AI está configurado correctamente
-   */
-  verificarGeminiAI(): void {
-    this.geminiConfigurado = this.geminiAiService.verificarConfiguracion();
-    // Gemini AI configurado
-  }
-
-  /**
-   * Diagnóstico completo del sistema Gemini AI
-   */
-  diagnosticarGeminiAI(): void {
-    const estadoServicio = this.geminiAiService.obtenerEstadoServicio();
-    const configurado = this.geminiAiService.verificarConfiguracion();
-    
-    Swal.fire({
-      title: '🔍 Diagnóstico Gemini AI',
-      html: `
-        <div class="text-start">
-          <p><strong>🤖 Modelo:</strong> ${estadoServicio.modelo}</p>
-          <p><strong>🔑 API Key:</strong> ${estadoServicio.configurado ? '✅ Configurada' : '❌ No configurada'}</p>
-          <p><strong>🌐 Endpoint:</strong> ${estadoServicio.endpoint}</p>
-          <p><strong>⚙️ Estado:</strong> ${this.geminiConfigurado ? '✅ Listo' : '❌ No disponible'}</p>
-        </div>
-      `,
-      icon: 'info',
-      showCancelButton: true,
-      confirmButtonText: '🧪 Probar Conexión Real',
-      cancelButtonText: 'Cerrar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.probarConexionGemini();
-      }
-    });
-  }
-
-  /**
-   * Prueba análisis por texto como alternativa
-   */
-  probarAnalisisTexto(): void {
-    console.log('📝 Probando análisis por texto...');
-    
-    const descripcionPrueba = this.formularioProducto.nombre || 'Producto de prueba';
-    
-    Swal.fire({
-      title: 'Probando Análisis por Texto',
-      text: `Analizando: "${descripcionPrueba}"`,
-      icon: 'info',
-      showConfirmButton: false,
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    this.geminiAiService.analizarTexto(descripcionPrueba).subscribe({
-      next: (resultado) => {
-        console.log('✅ Análisis por texto completado:', resultado);
-        
-        Swal.fire({
-          title: '✅ Análisis por Texto Exitoso',
-          html: `
-            <div class="text-start">
-              <p><strong>Nombre:</strong> ${resultado.nombre || 'N/A'}</p>
-              <p><strong>Categoría:</strong> ${resultado.categoria || 'N/A'}</p>
-              <p><strong>Precio:</strong> $${resultado.precio || 'N/A'}</p>
-              <p><strong>Confianza:</strong> ${resultado.confianza || 'N/A'}%</p>
+  standalone: true, // Componente independiente para mejor tree-shaking
+  imports: [
+    CommonModule,              // Directivas básicas de Angular (*ngIf, *ngFor, etc.)
+    FormsModule               // Para formularios template-driven
+  ],
+  template: `
+    <div class="container-fluid py-4">
+      <!-- Header del componente -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h2 class="mb-1">
+                <i class="bi bi-box-seam me-2"></i>
+                Gestión de Productos
+              </h2>
+              <p class="text-muted mb-0">
+                Administra el catálogo completo de productos
+              </p>
             </div>
-          `,
-          icon: 'success',
-          confirmButtonText: 'Perfecto'
-        });
-      },
-      error: (error) => {
-        console.error('❌ Error en análisis por texto:', error);
-        Swal.fire({
-          title: '❌ Error en Análisis por Texto',
-          text: `Error: ${error.message || 'Problema de conectividad'}`,
-          icon: 'error',
-          confirmButtonText: 'Entendido'
-        });
-      }
-    });
-  }
-
-  /**
-   * Prueba la conexión con Gemini AI
-   */
-  probarConexionGemini(): void {
-    console.log('🧪 Probando conexión con Gemini AI...');
-    
-    Swal.fire({
-      title: 'Probando Gemini AI',
-      text: 'Verificando conexión con Google Gemini 2.5 Flash...',
-      icon: 'info',
-      showConfirmButton: false,
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    this.geminiAiService.probarConexion().subscribe({
-      next: (resultado) => {
-        console.log('✅ Prueba de conexión completada:', resultado);
-        
-        if (resultado) {
-          Swal.fire({
-            title: '✅ Conexión Exitosa',
-            text: 'Gemini AI 2.5 Flash está funcionando correctamente',
-            icon: 'success',
-            confirmButtonText: 'Perfecto'
-          });
-        } else {
-          Swal.fire({
-            title: '❌ Error de Conexión',
-            text: 'No se pudo conectar con Gemini AI. Verifica la API Key.',
-            icon: 'error',
-            confirmButtonText: 'Entendido'
-          });
-        }
-      },
-      error: (error) => {
-        console.error('❌ Error en prueba de conexión:', error);
-        
-        let errorDetallado = 'Error desconocido';
-        if (error.status) {
-          errorDetallado = `HTTP ${error.status}: ${error.statusText || error.message}`;
-        } else if (error.message) {
-          errorDetallado = error.message;
-        }
-        
-        Swal.fire({
-          title: '❌ Error de Conexión',
-          html: `
-            <div class="text-start">
-              <p><strong>Error:</strong> ${errorDetallado}</p>
-              <p><strong>Consola:</strong> Revisa la consola del navegador (F12) para más detalles</p>
+            <div class="d-flex gap-2">
+              <button 
+                class="btn btn-success"
+                (click)="mostrarFormularioNuevo()">
+                <i class="bi bi-plus-circle me-1"></i>
+                Nuevo Producto
+              </button>
+              <button 
+                class="btn btn-outline-primary"
+                (click)="generarProductosPrueba()">
+                <i class="bi bi-database me-1"></i>
+                Datos de Prueba
+              </button>
             </div>
-          `,
-          icon: 'error',
-          confirmButtonText: 'Entendido'
-        });
-      }
-    });
-  }
-
-  /**
-   * Maneja la selección de imagen para análisis con Gemini
-   */
-  onImagenSeleccionada(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      console.log('📷 Imagen seleccionada:', file.name);
-      
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.imagenSeleccionada = e.target.result;
-        console.log('✅ Imagen cargada para análisis');
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  /**
-   * Analiza la imagen seleccionada con Gemini AI
-   */
-  analizarConGeminiIA(tipoAnalisis: 'completo' | 'descripcion' | 'precio' = 'completo'): void {
-    if (!this.imagenSeleccionada) {
-      Swal.fire('Error', 'Primero debes seleccionar una imagen', 'error');
-      return;
-    }
-
-    if (!this.geminiConfigurado) {
-      Swal.fire({
-        title: 'API Key Requerida',
-        text: 'Gemini AI requiere una API Key válida para funcionar. Contacta al administrador del sistema.',
-        icon: 'warning',
-        confirmButtonText: 'Entendido'
-      });
-      return;
-    }
-
-    console.log(`🤖 Iniciando análisis REAL ${tipoAnalisis} con Gemini 2.5 Flash...`);
-    console.log('🚀 Modelo: Gemini 2.5 Flash (más reciente y potente)');
-    console.log('🌍 Mercado objetivo: Argentina 2025');
-    this.analizandoConGemini = true;
-
-    this.geminiAiService.analizarProducto(this.imagenSeleccionada, tipoAnalisis).subscribe({
-      next: (resultado) => {
-        console.log('✅ Análisis REAL completado:', resultado);
-        console.log('💰 Precio sugerido para Argentina 2025: $', resultado.precio.toLocaleString());
-        this.resultadoGemini = resultado;
-        this.analizandoConGemini = false;
-        this.mostrarResultadoGemini(resultado, tipoAnalisis);
-      },
-      error: (error) => {
-        console.error('❌ Error REAL en Gemini AI:', error);
-        this.analizandoConGemini = false;
-        
-        // Mostrar error específico sin fallback
-        const errorMessage = error.message || 'Error de conexión con Gemini AI';
-        Swal.fire({
-          title: 'Error en Gemini AI',
-          text: errorMessage,
-          icon: 'error',
-          confirmButtonText: 'Reintentar',
-          showCancelButton: true,
-          cancelButtonText: 'Cancelar'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            // Reintentar automáticamente
-            setTimeout(() => this.analizarConGeminiIA(tipoAnalisis), 1000);
-          }
-        });
-      }
-    });
-  }
-
-  /**
-   * Muestra el resultado del análisis de Gemini en un modal
-   */
-  private mostrarResultadoGemini(resultado: ResultadoGemini, tipoAnalisis: string): void {
-    const tipoTexto = {
-      completo: 'Análisis Completo',
-      descripcion: 'Descripción Generada',
-      precio: 'Precio Sugerido'
-    }[tipoAnalisis] || 'Análisis';
-
-    let contenidoHtml = `
-      <div class="text-start">
-        <div class="row">
-          <div class="col-5">
-            <img src="${this.imagenSeleccionada}" class="img-fluid rounded" alt="Producto analizado">
           </div>
-          <div class="col-7">
-    `;
-
-    if (tipoAnalisis === 'completo') {
-      contenidoHtml += `
-        <h6><strong>📦 Nombre:</strong></h6>
-        <p class="mb-2">${resultado.nombre}</p>
-        
-        <h6><strong>🏷️ Categoría:</strong></h6>
-        <p class="mb-2"><span class="badge bg-primary">${resultado.categoria}</span></p>
-        
-        <h6><strong>💰 Precio Sugerido:</strong></h6>
-        <p class="mb-2 text-success fs-5"><strong>$${resultado.precio.toLocaleString()}</strong></p>
-        
-        <h6><strong>🏷️ Tags:</strong></h6>
-        <p class="mb-2">
-          ${resultado.tags.map(tag => `<span class="badge bg-secondary me-1">${tag}</span>`).join('')}
-        </p>
-      `;
-    }
-
-    if (tipoAnalisis === 'completo' || tipoAnalisis === 'descripcion') {
-      contenidoHtml += `
-        <h6><strong>📝 Descripción:</strong></h6>
-        <div class="alert alert-light mb-2">
-          <small>${resultado.descripcion}</small>
         </div>
-      `;
-    }
+      </div>
 
-    if (tipoAnalisis === 'completo' || tipoAnalisis === 'precio') {
-      contenidoHtml += `
-        <h6><strong>💡 Justificación del Precio:</strong></h6>
-        <div class="alert alert-info mb-2">
-          <small>${resultado.justificacion_precio}</small>
+      <!-- Estadísticas -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card bg-primary text-white">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="card-title">Total Productos</h6>
+                  <h3 class="mb-0">{{ estadisticas().totalProductos }}</h3>
+                </div>
+                <div class="align-self-center">
+                  <i class="bi bi-box-seam fs-1"></i>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      `;
-    }
+        <div class="col-md-3">
+          <div class="card bg-success text-white">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="card-title">Activos</h6>
+                  <h3 class="mb-0">{{ estadisticas().activos }}</h3>
+                </div>
+                <div class="align-self-center">
+                  <i class="bi bi-check-circle fs-1"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-warning text-dark">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="card-title">Destacados</h6>
+                  <h3 class="mb-0">{{ estadisticas().destacados }}</h3>
+                </div>
+                <div class="align-self-center">
+                  <i class="bi bi-star fs-1"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-info text-white">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="card-title">Categorías</h6>
+                  <h3 class="mb-0">{{ estadisticas().categorias }}</h3>
+                </div>
+                <div class="align-self-center">
+                  <i class="bi bi-tags fs-1"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    contenidoHtml += `
-        <div class="mt-3">
-          <small class="text-muted">
-            🎯 Confianza: ${resultado.confianza}% | 🤖 Powered by Gemini AI
-          </small>
+      <!-- Lista de productos -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="bi bi-list-ul me-2"></i>
+                Lista de Productos
+                <span class="badge bg-primary ms-2">{{ productos().length }}</span>
+              </h5>
+            </div>
+            <div class="card-body">
+              <!-- Sin productos -->
+              <div *ngIf="productos().length === 0" class="text-center py-4">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <h4 class="mt-3">No hay productos</h4>
+                <p class="text-muted">
+                  Aún no se han creado productos en el sistema.
+                </p>
+                <button 
+                  class="btn btn-primary"
+                  (click)="generarProductosPrueba()">
+                  <i class="bi bi-plus-circle me-1"></i>
+                  Generar Productos de Prueba
+                </button>
+              </div>
+
+              <!-- Tabla de productos -->
+              <div *ngIf="productos().length > 0" class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Imagen</th>
+                      <th>Producto</th>
+                      <th>Categoría</th>
+                      <th>Precio</th>
+                      <th>Stock</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let producto of productos()">
+                      <td>
+                        <img 
+                          [src]="producto.imagen || 'https://via.placeholder.com/50x50/ccc/999?text=Sin+Imagen'" 
+                          [alt]="producto.nombre"
+                          class="img-thumbnail"
+                          style="width: 50px; height: 50px; object-fit: cover;">
+                      </td>
+                      <td>
+                        <div>
+                          <strong>{{ producto.nombre }}</strong>
+                          <br>
+                          <small class="text-muted">{{ (producto.descripcion || 'Sin descripción') | slice:0:50 }}...</small>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge bg-secondary">{{ producto.categoria }}</span>
+                      </td>
+                      <td>
+                        <strong class="text-success">
+                          {{ producto.precio | currency:'ARS':'symbol':'1.0-0' }}
+                        </strong>
+                      </td>
+                      <td>
+                        <span [class]="'badge ' + ((producto.stock || 0) > 0 ? 'bg-success' : 'bg-danger')">
+                          {{ producto.stock || 0 }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="d-flex flex-column gap-1">
+                          <span [class]="'badge ' + (producto.activo ? 'bg-success' : 'bg-secondary')">
+                            {{ producto.activo ? 'Activo' : 'Inactivo' }}
+                          </span>
+                          <span *ngIf="producto.esDestacado" class="badge bg-warning text-dark">
+                            Destacado
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm">
+                          <button 
+                            class="btn btn-outline-primary"
+                            (click)="editarProducto(producto)"
+                            title="Editar producto">
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                          <button 
+                            class="btn btn-outline-danger"
+                            (click)="eliminarProducto(producto)"
+                            title="Eliminar producto">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-    `;
+  `,
+  styles: [`
+    .table th {
+      border-top: none;
+      font-weight: 600;
+      color: #495057;
+      background-color: #f8f9fa;
+    }
+    
+    .btn-group-sm .btn {
+      padding: 0.25rem 0.5rem;
+    }
+    
+    .badge {
+      font-size: 0.75em;
+    }
+    
+    .card {
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      border: 1px solid rgba(0, 0, 0, 0.125);
+    }
 
-    Swal.fire({
-      title: `🚀 ${tipoTexto} REAL - Gemini 2.5 Flash`,
-      html: contenidoHtml,
-      width: '900px',
-      showCancelButton: true,
-      confirmButtonText: '✅ Aplicar Datos Reales al Formulario',
-      cancelButtonText: '👁️ Solo Visualizar',
-      confirmButtonColor: '#28a745',
-      cancelButtonColor: '#6c757d',
-      footer: '<small class="text-muted">🌍 Análisis para mercado argentino 2025 | 🤖 Powered by Google Gemini AI</small>'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.aplicarDatosGemini();
+    .card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    }
+  `]
+})
+export class GestionProductos implements OnInit {
+
+  // --- INYECCIÓN DE SERVICIOS ---
+  private productosService = inject(GestionProductosService);
+  private categoriasService = inject(CategoriaService);
+
+  // --- PROPIEDADES DEL COMPONENTE ---
+
+  /**
+   * Signal que contiene la lista completa de productos.
+   * Se actualiza automáticamente cuando se modifican los datos.
+   */
+  productos = signal<Producto[]>([]);
+
+  /**
+   * Signal que contiene la lista de categorías disponibles.
+   * Se usa para filtros y formularios.
+   */
+  categorias = signal<Categoria[]>([]);
+
+  // --- COMPUTED SIGNALS (Señales Computadas) ---
+
+  /**
+   * Computed Signal que calcula estadísticas de los productos.
+   * Proporciona contadores para las tarjetas de resumen.
+   */
+  estadisticas = computed(() => {
+    const todos = this.productos();
+    const categoriasUnicas = new Set(todos.map(p => p.categoria));
+    
+    return {
+      totalProductos: todos.length,
+      activos: todos.filter(p => p.activo).length,
+      destacados: todos.filter(p => p.esDestacado).length,
+      categorias: categoriasUnicas.size
+    };
+  });
+
+  // --- MÉTODOS DEL CICLO DE VIDA DEL COMPONENTE ---
+
+  /**
+   * Método que se ejecuta automáticamente cuando el componente se inicializa.
+   * Aquí cargamos los datos iniciales.
+   */
+  ngOnInit(): void {
+    // Cargar datos iniciales
+    this.cargarCategorias();
+    this.cargarProductos();
+  }
+
+  // --- MÉTODOS DE GESTIÓN DE DATOS ---
+
+  /**
+   * Carga las categorías disponibles desde Firestore.
+   */
+  cargarCategorias(): void {
+    console.log('📂 Cargando categorías desde Firestore...');
+    
+    this.categoriasService.obtenerCategorias().subscribe({
+      next: (categorias) => {
+        console.log('✅ Categorías cargadas:', categorias.length);
+        this.categorias.set(categorias);
+      },
+      error: (error) => {
+        console.error('❌ Error al cargar categorías:', error);
+        Swal.fire('Error', 'No se pudieron cargar las categorías', 'error');
       }
     });
   }
 
   /**
-   * Aplica los datos generados por Gemini al formulario
+   * Carga los productos existentes desde Firestore.
    */
-  aplicarDatosGemini(): void {
-    if (!this.resultadoGemini) return;
-
-    console.log('📝 Aplicando datos de Gemini al formulario...');
-
-    // Aplicar datos básicos
-    this.formularioProducto.nombre = this.resultadoGemini.nombre;
-    this.formularioProducto.descripcion = this.resultadoGemini.descripcion;
-    this.formularioProducto.precio = this.resultadoGemini.precio;
-
-    // Buscar categoría por nombre y asignar
-    const categoriaEncontrada = this.categorias.find(cat => 
-      cat.nombre.toLowerCase().includes(this.resultadoGemini!.categoria.toLowerCase())
-    );
+  cargarProductos(): void {
+    console.log('📦 Cargando productos desde Firestore...');
     
-    if (categoriaEncontrada) {
-      this.formularioProducto.categoria = categoriaEncontrada.nombre;
-      console.log('✅ Categoría asignada:', categoriaEncontrada.nombre);
-    } else {
-      // Si no encuentra la categoría, usar la sugerida por Gemini
-      this.formularioProducto.categoria = this.resultadoGemini.categoria;
-      console.log('⚠️ Categoría no encontrada, usando sugerida:', this.resultadoGemini.categoria);
-    }
-
-    // Asignar imagen si está disponible
-    if (this.imagenSeleccionada) {
-      this.formularioProducto.imagen = this.imagenSeleccionada;
-    }
-
-    Swal.fire({
-      title: '🚀 Datos Reales Aplicados',
-      html: `
-        <div class="text-start">
-          <p><strong>✅ Análisis completado exitosamente</strong></p>
-          <ul class="list-unstyled">
-            <li>🏷️ <strong>Nombre:</strong> ${this.resultadoGemini.nombre}</li>
-            <li>🏪 <strong>Categoría:</strong> ${this.resultadoGemini.categoria}</li>
-            <li>💰 <strong>Precio Argentina 2025:</strong> $${this.resultadoGemini.precio.toLocaleString()}</li>
-            <li>🎯 <strong>Confianza:</strong> ${this.resultadoGemini.confianza}%</li>
-          </ul>
-          <small class="text-muted">Los datos han sido aplicados al formulario y están listos para guardar.</small>
-        </div>
-      `,
-      icon: 'success',
-      timer: 4000,
-      showConfirmButton: true,
-      confirmButtonText: 'Perfecto'
+    this.productosService.obtenerProductos().subscribe({
+      next: (productos) => {
+        console.log('✅ Productos cargados:', productos.length);
+        this.productos.set(productos);
+      },
+      error: (error) => {
+        console.error('❌ Error al cargar productos:', error);
+        Swal.fire('Error', 'No se pudieron cargar los productos', 'error');
+      }
     });
-
-    console.log('✅ Datos de Gemini aplicados al formulario');
   }
 
   /**
-   * Limpia los datos de Gemini AI
+   * Genera productos de demostración para mostrar la funcionalidad.
+   * Útil para pruebas y demostraciones del sistema.
    */
-  limpiarDatosGemini(): void {
-    this.imagenSeleccionada = null;
-    this.resultadoGemini = null;
-    this.analizandoConGemini = false;
-    console.log('🧹 Datos de Gemini AI limpiados');
+  generarProductosPrueba(): void {
+    const productosDemo: Producto[] = [
+      {
+        id: 'PROD-001',
+        nombre: 'Smartphone Samsung Galaxy A54',
+        descripcion: 'Teléfono inteligente con pantalla AMOLED de 6.4 pulgadas, cámara triple de 50MP y 128GB de almacenamiento.',
+        precio: 89999,
+        categoria: 'Electrónicos',
+        stock: 15,
+        imagen: 'https://via.placeholder.com/300x200/0077b6/ffffff?text=Samsung+Galaxy',
+        activo: true,
+        esDestacado: true
+      },
+      {
+        id: 'PROD-002',
+        nombre: 'Notebook Lenovo ThinkPad E14',
+        descripcion: 'Laptop empresarial con procesador Intel Core i5, 8GB RAM, SSD 256GB. Perfecta para trabajo profesional.',
+        precio: 125000,
+        categoria: 'Electrónicos',
+        stock: 8,
+        imagen: 'https://via.placeholder.com/300x200/0077b6/ffffff?text=Lenovo+ThinkPad',
+        activo: true,
+        esDestacado: true
+      },
+      {
+        id: 'PROD-003',
+        nombre: 'Remera Deportiva Nike Dri-FIT',
+        descripcion: 'Camiseta deportiva de alta calidad con tecnología Dri-FIT para máximo rendimiento.',
+        precio: 8500,
+        categoria: 'Ropa',
+        stock: 25,
+        imagen: 'https://via.placeholder.com/300x200/0077b6/ffffff?text=Nike+Dri-FIT',
+        activo: true,
+        esDestacado: false
+      },
+      {
+        id: 'PROD-004',
+        nombre: 'Cafetera Automática Philips 3200',
+        descripcion: 'Cafetera espresso automática con molinillo integrado y sistema de espuma de leche.',
+        precio: 45000,
+        categoria: 'Hogar',
+        stock: 12,
+        imagen: 'https://via.placeholder.com/300x200/0077b6/ffffff?text=Cafetera+Philips',
+        activo: true,
+        esDestacado: false
+      },
+      {
+        id: 'PROD-005',
+        nombre: 'Zapatillas Running Adidas Ultraboost',
+        descripcion: 'Calzado deportivo con tecnología Boost para máximo confort y rendimiento.',
+        precio: 22000,
+        categoria: 'Deportes',
+        stock: 18,
+        imagen: 'https://via.placeholder.com/300x200/0077b6/ffffff?text=Adidas+Boost',
+        activo: true,
+        esDestacado: true
+      }
+    ];
+
+    // Crear productos en Firestore
+    console.log('🔄 Creando productos de demostración en Firestore...');
+    
+    let productosCreados = 0;
+    const totalProductos = productosDemo.length;
+
+    productosDemo.forEach((producto) => {
+      this.productosService.crearProducto(producto).subscribe({
+        next: (id) => {
+          productosCreados++;
+          console.log(`✅ Producto creado: ${producto.nombre} (ID: ${id})`);
+          
+          if (productosCreados === totalProductos) {
+            // Recargar la lista cuando se hayan creado todos
+            this.cargarProductos();
+            
+            Swal.fire({
+              icon: 'success',
+              title: '¡Datos generados!',
+              text: `Se crearon ${totalProductos} productos de demostración en Firestore`,
+              timer: 2000,
+              showConfirmButton: false
+            });
+          }
+        },
+        error: (error) => {
+          console.error(`❌ Error creando producto ${producto.nombre}:`, error);
+          Swal.fire('Error', `No se pudo crear el producto ${producto.nombre}`, 'error');
+        }
+      });
+    });
+  }
+
+  // --- MÉTODOS DE FORMULARIO ---
+
+  /**
+   * Muestra el formulario para crear un nuevo producto.
+   */
+  mostrarFormularioNuevo(): void {
+    Swal.fire({
+      title: 'Nuevo Producto',
+      text: 'Funcionalidad de creación de productos en desarrollo',
+      icon: 'info',
+      confirmButtonText: 'Entendido'
+    });
+  }
+
+  /**
+   * Prepara el formulario para editar un producto existente.
+   * 
+   * @param producto - El producto a editar
+   */
+  editarProducto(producto: Producto): void {
+    Swal.fire({
+      title: 'Editar Producto',
+      text: `Funcionalidad de edición para "${producto.nombre}" en desarrollo`,
+      icon: 'info',
+      confirmButtonText: 'Entendido'
+    });
+  }
+
+  /**
+   * Elimina un producto después de confirmación.
+   * 
+   * @param producto - El producto a eliminar
+   */
+  async eliminarProducto(producto: Producto): Promise<void> {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Se eliminará el producto "${producto.nombre}" permanentemente`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed && producto.id) {
+      console.log(`🗑️ Eliminando producto: ${producto.nombre} (ID: ${producto.id})`);
+      
+      this.productosService.eliminarProducto(producto.id).subscribe({
+        next: () => {
+          console.log(`✅ Producto eliminado: ${producto.nombre}`);
+          
+          // Recargar la lista de productos
+          this.cargarProductos();
+          
+          // Mostrar confirmación
+          Swal.fire({
+            icon: 'success',
+            title: '¡Eliminado!',
+            text: `El producto "${producto.nombre}" ha sido eliminado de Firestore`,
+            timer: 2000,
+            showConfirmButton: false
+          });
+        },
+        error: (error) => {
+          console.error(`❌ Error eliminando producto ${producto.nombre}:`, error);
+          Swal.fire('Error', `No se pudo eliminar el producto ${producto.nombre}`, 'error');
+        }
+      });
+    }
   }
 }

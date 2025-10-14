@@ -2,9 +2,7 @@ import { Component, OnInit, signal, effect, inject, Injector, runInInjectionCont
 import { CommonModule } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterOutlet } from '@angular/router';
-import * as bcrypt from 'bcryptjs';
 import { Title } from '@angular/platform-browser';
-import Swal from 'sweetalert2';
 
 // Importamos los componentes y servicios necesarios
 import { Header } from './encabezado/header';
@@ -12,7 +10,6 @@ import { Footer } from './pie-pagina/footer';
 import { Registro } from './auth/registro/registro';
 import { UserService } from './servicios/user';
 import { ConfiguracionService } from './servicios/configuracion';
-import { Firestore, collection, getDocs, limit, query } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +22,6 @@ export class App implements OnInit {
   protected readonly title = signal('Final');
 
   // Inyectamos los servicios necesarios
-  private firestore = inject(Firestore);
   private userService = inject(UserService);
   private configuracionService = inject(ConfiguracionService);
   private titleService = inject(Title);
@@ -44,68 +40,30 @@ export class App implements OnInit {
   /**
    * ngOnInit es un "hook" del ciclo de vida de Angular.
    * Se ejecuta una sola vez, cuando el componente se ha inicializado.
-   * Es el lugar perfecto para nuestra lógica de arranque.
+   * La lógica del primer usuario se maneja en APP_INITIALIZER.
    */
   ngOnInit(): void {
-    this.verificarYCrearAdmin();
+    // La verificación del primer usuario se maneja en app.config.ts
+    // Inicialización silenciosa
   }
 
   /**
-   * Comprueba si existen usuarios en la base de datos Firestore.
-   * Si no existe ninguno, crea un usuario administrador por defecto.
+   * Método de debugging para verificar el estado de usuarios (solo para desarrollo).
+   * Ya no crea usuarios automáticamente - eso se maneja en /primer-usuario
    */
-  async verificarYCrearAdmin(): Promise<void> {
+  async verificarEstadoUsuarios(): Promise<void> {
+    // Método disponible solo para debugging manual
+    // No se ejecuta automáticamente
     await runInInjectionContext(this.injector, async () => {
-      const userCollectionRef = collection(this.firestore, 'users');
-      // Creamos una consulta que solo pida 1 documento para ser más eficiente.
-      const q = query(userCollectionRef, limit(1));
-
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        // La colección está vacía, no hay usuarios.
-        console.log('No se encontraron usuarios. Creando administrador por defecto...');
-
-        // Hasheamos la contraseña por defecto.
-        const salt = bcrypt.genSaltSync(10);
-        const hashedPassword = bcrypt.hashSync('admin123', salt);
-
-        const adminUser = {
-          nombre: 'Admin',
-          apellido: 'Principal',
-          dni: '00000000',
-          email: 'admin@admin.com',
-          password: hashedPassword,
-          rol: 'admin' as const, // Asignamos el rol de administrador
-          novedades: false,
-          terminos: true,
-        };
-
-        try {
-          await this.userService.addUser(adminUser);
-          console.log('Usuario administrador creado con éxito.');
-          await Swal.fire({
-            icon: 'info',
-            title: 'Usuario administrador creado',
-            html: `
-              <p>Se ha creado un usuario administrador por defecto:</p>
-              <p><strong>Email:</strong> admin@admin.com</p>
-              <p><strong>Contraseña:</strong> admin123</p>
-            `,
-            confirmButtonText: 'Entendido'
-          });
-        } catch (error) {
-          console.error('Error al crear el usuario administrador:', error);
-          await Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Error al crear el usuario administrador',
-            confirmButtonText: 'Entendido'
-          });
-        }
-      } else {
-        // La colección ya tiene usuarios.
-        console.log('La base de datos ya tiene usuarios. No se requiere ninguna acción.');
+      try {
+        const usersExist = await this.userService.checkIfUsersExist();
+        console.log('🔍 [DEBUG] Estado de usuarios en Firebase:', {
+          existenUsuarios: usersExist,
+          coleccion: 'usuarios',
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('❌ [DEBUG] Error al verificar usuarios:', error);
       }
     });
   }

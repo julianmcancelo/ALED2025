@@ -94,7 +94,6 @@ export class CarritoService {
   // ========================================================================
   
   constructor() {
-    console.log('🛒 Inicializando CarritoService...');
     this.cargarCarritoDesdeStorage();
   }
   
@@ -102,8 +101,6 @@ export class CarritoService {
    * Método de prueba para agregar productos de ejemplo al carrito
    */
   agregarProductosDePrueba(): void {
-    console.log('🧪 Agregando productos de prueba al carrito...');
-    
     const productosPrueba: Producto[] = [
       {
         id: 'test-1',
@@ -128,8 +125,6 @@ export class CarritoService {
     productosPrueba.forEach(producto => {
       this.agregarProducto(producto);
     });
-    
-    console.log('✅ Productos de prueba agregados. Total:', this.totalItems());
   }
 
   // ========================================================================
@@ -201,18 +196,13 @@ export class CarritoService {
    * @param producto - El producto que se va a agregar
    */
   agregarProducto(producto: Producto): void {
-    console.log('🛒 Agregando producto al carrito:', producto.nombre);
-    
     // Buscamos si el producto ya está en el carrito
     // find() devuelve el elemento si lo encuentra, o undefined si no
-    const itemExistente = this.items().find(
-      (item) => item.producto.id === producto.id
-    );
-
+    const itemExistente = this.items().find(item => item.producto.id === producto.id);
+    
     if (itemExistente) {
       // CASO 1: El producto YA está en el carrito
       // Incrementamos su cantidad usando update()
-      console.log('📦 Producto existente, incrementando cantidad');
       
       this.items.update((items) =>
         items.map((item) =>
@@ -224,7 +214,6 @@ export class CarritoService {
     } else {
       // CASO 2: El producto NO está en el carrito
       // Lo agregamos como nuevo elemento con cantidad 1
-      console.log('🆕 Producto nuevo, agregando al carrito');
       
       this.items.update((items) => [
         ...items,                          // Items existentes
@@ -234,8 +223,6 @@ export class CarritoService {
     
     // Guardar en localStorage después de cada cambio
     this.guardarCarritoEnStorage();
-    
-    console.log('✅ Carrito actualizado. Total items:', this.totalItems());
   }
 
   /**
@@ -252,19 +239,12 @@ export class CarritoService {
    * @param idProducto - El ID del producto a eliminar
    */
   eliminarProducto(idProducto: string): void {
-    console.log('🗑️ Eliminando producto del carrito:', idProducto);
-    
     // Usamos filter() para crear un nuevo array que:
     // - Incluye todos los items EXCEPTO el que queremos eliminar
-    // - filter() devuelve true para los items que queremos MANTENER
-    this.items.update((items) => 
-      items.filter((item) => item.producto.id !== idProducto)
-    );
+    this.items.update(items => items.filter(item => item.producto.id !== idProducto));
     
     // Guardar en localStorage después del cambio
     this.guardarCarritoEnStorage();
-    
-    console.log('✅ Producto eliminado. Total items:', this.totalItems());
   }
 
   /**
@@ -282,16 +262,12 @@ export class CarritoService {
    * ```
    */
   vaciarCarrito(): void {
-    console.log('🧹 Vaciando carrito completo');
-    
     // Usamos set() para reemplazar todo el contenido con un array vacío
     // set() es más directo que update() cuando queremos reemplazar todo
     this.items.set([]);
     
     // Limpiar localStorage
     this.guardarCarritoEnStorage();
-    
-    console.log('✅ Carrito vaciado completamente');
   }
   
   // ========================================================================
@@ -308,9 +284,6 @@ export class CarritoService {
         if (carritoGuardado) {
           const items = JSON.parse(carritoGuardado) as ElementoCarrito[];
           this.items.set(items);
-          console.log('✅ Carrito cargado desde localStorage:', items.length, 'items');
-        } else {
-          console.log('ℹ️ No hay carrito guardado en localStorage');
         }
       }
     } catch (error) {
@@ -327,7 +300,6 @@ export class CarritoService {
       if (typeof window !== 'undefined' && window.localStorage) {
         const items = this.items();
         localStorage.setItem(this.CARRITO_STORAGE_KEY, JSON.stringify(items));
-        console.log('💾 Carrito guardado en localStorage:', items.length, 'items');
       }
     } catch (error) {
       console.error('❌ Error guardando carrito en localStorage:', error);

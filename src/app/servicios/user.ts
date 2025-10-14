@@ -12,6 +12,8 @@ import {
   updateDoc,
   deleteDoc,
   getDoc,
+  enableNetwork,
+  disableNetwork,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { AppUser } from '../auth/auth';
@@ -39,8 +41,8 @@ export interface UserData {
   providedIn: 'root',
 })
 export class UserService {
-  private firestore: Firestore = inject(Firestore);
-  private injector: Injector = inject(Injector);
+  private firestore = inject(Firestore);
+  private injector = inject(Injector);
 
   /**
    * Obtiene todos los usuarios de la base de datos como un stream.
@@ -118,10 +120,37 @@ export class UserService {
    */
   async checkIfUsersExist(): Promise<boolean> {
     return runInInjectionContext(this.injector, async () => {
-      const userCollectionRef = collection(this.firestore, 'users');
-      const q = query(userCollectionRef, limit(1));
-      const snapshot = await getDocs(q);
-      return !snapshot.empty;
+      try {
+        console.log('🔍 Verificando existencia de usuarios en colección "users"...');
+        
+        const userCollectionRef = collection(this.firestore, 'users');
+        console.log('📁 Referencia a colección "users" creada');
+        
+        const q = query(userCollectionRef, limit(1));
+        console.log('🔍 Ejecutando consulta con límite 1...');
+        
+        const snapshot = await getDocs(q);
+        const hasUsers = !snapshot.empty;
+        
+        console.log('📊 Resultado de la consulta:', {
+          vacia: snapshot.empty,
+          tamaño: snapshot.size,
+          hayUsuarios: hasUsers,
+          documentos: snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }))
+        });
+        
+        return hasUsers;
+      } catch (error) {
+        console.error('❌ Error al verificar usuarios en Firestore:', error);
+        console.error('❌ Detalles del error:', {
+          mensaje: error instanceof Error ? error.message : 'Error desconocido',
+          codigo: (error as any)?.code,
+          stack: error instanceof Error ? error.stack : 'No stack disponible'
+        });
+        
+        // En caso de error, asumir que no hay usuarios para permitir configuración inicial
+        return false;
+      }
     });
   }
 
@@ -173,6 +202,78 @@ export class UserService {
 
       // 3. Si ambas consultas no encontraron nada, el usuario es único.
       return true;
+    });
+  }
+
+  /**
+   * Método de prueba para verificar la conexión con Firestore
+   * Intenta listar todas las colecciones disponibles
+   */
+  async probarConexionFirestore(): Promise<void> {
+    return runInInjectionContext(this.injector, async () => {
+      try {
+        console.log('🔥 Probando conexión con Firestore...');
+        console.log('🔥 Configuración Firebase:', {
+          projectId: this.firestore.app.options.projectId,
+          authDomain: this.firestore.app.options.authDomain,
+          firestoreInstance: this.firestore.constructor.name
+        });
+        
+        // Reiniciar conexión de red por si hay problemas
+        try {
+          await disableNetwork(this.firestore);
+          await enableNetwork(this.firestore);
+          console.log('🔄 Red de Firestore reiniciada');
+        } catch (networkError) {
+          console.warn('⚠️ No se pudo reiniciar la red:', networkError);
+        }
+        
+        // Intentar obtener todas las colecciones
+        const userCollectionRef = collection(this.firestore, 'users');
+        console.log('📁 Intentando acceder a colección "users"...');
+        
+        // Consulta simple para verificar acceso
+        const snapshot = await getDocs(query(userCollectionRef, limit(5)));
+        
+        console.log('✅ Conexión exitosa con Firestore!');
+        console.log('📊 Información de la colección "users":', {
+          existe: true,
+          documentos: snapshot.size,
+          vacia: snapshot.empty,
+          datos: snapshot.docs.map(doc => ({
+            id: doc.id,
+            email: doc.data()['email'] || 'Sin email',
+            nombre: doc.data()['nombre'] || 'Sin nombre',
+            rol: doc.data()['rol'] || 'Sin rol'
+          }))
+        });
+        
+      } catch (error) {
+        console.error('❌ Error de conexión con Firestore:', error);
+        console.error('❌ Tipo de error:', error instanceof Error ? error.constructor.name : typeof error);
+        
+        if (error instanceof Error) {
+          console.error('❌ Mensaje:', error.message);
+          console.error('❌ Stack:', error.stack);
+        }
+        
+        // Verificar si es un error de permisos
+        if ((error as any)?.code === 'permission-denied') {
+          console.error('🚫 Error de permisos: Verifica las reglas de Firestore');
+          console.log('🛠️ Reglas sugeridas para desarrollo:');
+          console.log(`
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}`);
+        }
+        
+        throw error;
+      }
     });
   }
 }

@@ -6,7 +6,6 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth';
 import { CarritoService } from '../servicios/carrito';
 import { getMercadoPagoCredentials, getMercadoPagoSettings } from '../config/mercadopago.config';
-import { PedidosFirestoreService } from '../servicios/pedidos-firestore.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -21,7 +20,6 @@ export class Carrito {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private pedidosFirestore = inject(PedidosFirestoreService);
 
   cargandoMP = signal(false);
 
@@ -83,17 +81,7 @@ export class Carrito {
         cantidad: item.cantidad
       }));
 
-      // Crear pedido en Firestore primero
-      const pedidoId = await this.pedidosFirestore.crearPedido(
-        itemsFirestore,
-        usuario,
-        'local', // método de entrega por defecto
-        'pref_' + Date.now()
-      );
-
-      console.log('✅ Pedido creado en Firestore:', pedidoId);
-
-      // Proceder con Mercado Pago
+      // Proceder directamente con Mercado Pago
       await this.crearPreferenciaMercadoPago(items, usuario);
 
     } catch (error) {

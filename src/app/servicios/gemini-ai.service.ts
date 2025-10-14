@@ -50,7 +50,7 @@ export class GeminiAiService {
   };
 
   constructor(private http: HttpClient) {
-    console.log('🤖 GeminiAiService inicializado - Modelo: Gemini 2.0 Flash');
+    // Servicio inicializado
   }
 
   /**
@@ -70,7 +70,6 @@ export class GeminiAiService {
    * @returns Observable con los datos generados por Gemini Pro
    */
   analizarProducto(imagenBase64: string, tipoAnalisis: 'completo' | 'descripcion' | 'precio' = 'completo'): Observable<ResultadoGemini> {
-    console.log('🔍 Análisis Gemini AI - Tipo:', tipoAnalisis);
 
     const prompt = this.generarPrompt(tipoAnalisis);
     const payload = this.crearPayload(imagenBase64, prompt);
@@ -222,26 +221,10 @@ Responde SOLO JSON:
       'Content-Type': 'application/json'
     });
 
-    console.log('🚀 Enviando solicitud a Gemini 2.0 Flash API...');
-    console.log('🌐 Endpoint:', url.split('?')[0]);
-    console.log('📦 Payload enviado:', JSON.stringify(payload, null, 2));
-    console.log('📋 Headers:', headers);
+    // Enviando solicitud a Gemini AI
     
     return this.http.post(url, payload, { headers }).pipe(
-      map(response => {
-        console.log('✅ Respuesta HTTP recibida de Gemini 2.0 Flash:');
-        console.log('📊 Status y headers:', {
-          status: 'OK',
-          contentType: 'application/json'
-        });
-        console.log('📋 Respuesta completa:', JSON.stringify(response, null, 2));
-        console.log('🔍 Tipo de respuesta:', typeof response);
-        console.log('🎯 Tiene candidates?', response && 'candidates' in response);
-        if (response && (response as any).candidates) {
-          console.log('📊 Número de candidates:', (response as any).candidates.length);
-        }
-        return response;
-      }),
+      map(response => response),
       catchError(error => {
         console.error('❌ Error HTTP en solicitud a Gemini 2.0 Flash:', error);
         console.error('❌ Status del error:', error.status);
@@ -257,8 +240,6 @@ Responde SOLO JSON:
    */
   private procesarRespuestaGemini(response: any): ResultadoGemini {
     try {
-      console.log('🔄 Procesando respuesta de Gemini 2.5 Flash...');
-      console.log('📋 Estructura completa de respuesta:', JSON.stringify(response, null, 2));
       
       // Verificar estructura de respuesta
       if (!response) {
@@ -295,7 +276,7 @@ Responde SOLO JSON:
         throw new Error('El primer candidato en la respuesta es undefined');
       }
 
-      console.log('🎯 Primer candidato:', candidate);
+      // Procesando primer candidato
 
       // Verificar si el candidato fue bloqueado por seguridad
       if (candidate.finishReason && candidate.finishReason !== 'STOP') {
@@ -321,7 +302,6 @@ Responde SOLO JSON:
       }
 
       const contenido = part.text.trim();
-      console.log('📝 Contenido recibido:', contenido);
 
       // Intentar extraer JSON del contenido con múltiples patrones
       let jsonMatch = contenido.match(/\{[\s\S]*\}/);
@@ -344,8 +324,7 @@ Responde SOLO JSON:
       }
 
       if (!jsonMatch) {
-        console.error('❌ No se encontró JSON en el contenido:', contenido);
-        console.log('🔍 Intentando extraer información manualmente...');
+        console.error('❌ No se encontró JSON en el contenido');
         
         // Como fallback, crear un resultado básico si no hay JSON
         return {
@@ -359,14 +338,13 @@ Responde SOLO JSON:
         };
       }
 
-      console.log('🔍 JSON extraído:', jsonMatch[0]);
+      // JSON extraído correctamente
       
       let resultado: ResultadoGemini;
       try {
         resultado = JSON.parse(jsonMatch[0]);
       } catch (parseError) {
         console.error('❌ Error parseando JSON:', parseError);
-        console.log('📝 JSON problemático:', jsonMatch[0]);
         
         // Intentar limpiar el JSON y parsearlo de nuevo
         const jsonLimpio = jsonMatch[0]
@@ -393,7 +371,6 @@ Responde SOLO JSON:
         resultado.confianza = resultado.confianza || 50;
       }
       
-      console.log('✅ Análisis completado exitosamente:', resultado);
       return resultado;
 
     } catch (error) {
@@ -445,7 +422,6 @@ Responde SOLO JSON:
    */
   verificarConfiguracion(): boolean {
     const configurada = !!this.configuracion.apiKey && this.configuracion.apiKey.length > 10;
-    console.log('🔍 Configuración de Gemini:', configurada ? '✅ Válida' : '❌ Incompleta');
     return configurada;
   }
 
@@ -464,7 +440,6 @@ Responde SOLO JSON:
    * Método de prueba simple para verificar la conectividad con Gemini AI
    */
   probarConexion(): Observable<boolean> {
-    console.log('🧪 Probando conexión con Gemini AI...');
     
     if (!this.verificarConfiguracion()) {
       console.error('❌ Configuración inválida');
@@ -495,14 +470,10 @@ Responde SOLO JSON:
       'Content-Type': 'application/json'
     });
 
-    console.log('🌐 URL de prueba:', url.split('?')[0]);
-    console.log('📦 Payload mínimo:', JSON.stringify(payloadMinimo, null, 2));
+    // Probando conexión con Gemini AI
     
     return this.http.post(url, payloadMinimo, { headers }).pipe(
-      map(response => {
-        console.log('✅ Prueba de conexión exitosa:', response);
-        return true;
-      }),
+      map(response => true),
       catchError(error => {
         console.error('❌ Error en prueba de conexión:', error);
         console.error('❌ Detalles del error:', {
@@ -520,7 +491,6 @@ Responde SOLO JSON:
    * Método alternativo usando solo texto (sin imágenes)
    */
   analizarTexto(descripcionProducto: string): Observable<any> {
-    console.log('📝 Analizando producto por texto...');
     
     const url = `${this.configuracion.endpoint}/${this.configuracion.modelo}:generateContent?key=${this.configuracion.apiKey}`;
     
@@ -554,10 +524,7 @@ Responde SOLO JSON:
     });
 
     return this.http.post(url, payload, { headers }).pipe(
-      map(response => {
-        console.log('✅ Análisis de texto exitoso:', response);
-        return this.procesarRespuestaGemini(response);
-      }),
+      map(response => this.procesarRespuestaGemini(response)),
       catchError(error => {
         console.error('❌ Error en análisis de texto:', error);
         return this.manejarErrorGemini(error);

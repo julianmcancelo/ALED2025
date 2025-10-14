@@ -22,7 +22,7 @@ import {
  * =====================================================
  * 
  * Este servicio implementa un sistema de búsqueda completo y funcional
- * para productos en el e-commerce ALED2025.
+ * para productos en el e-commerce 
  * 
  * CARACTERÍSTICAS PRINCIPALES:
  * - Búsqueda por nombre, descripción y categoría
@@ -65,19 +65,35 @@ export interface Producto {
 })
 export class GestionProductosService {
   // --- INYECCIÓN DE DEPENDENCIAS ---
-  private firestore: Firestore = inject(Firestore);
-  private injector: Injector = inject(Injector);
-  private productosCollection = collection(this.firestore, 'productos');
+  private firestore = inject(Firestore);
+  private injector = inject(Injector);
+  private productosCollection;
   private inicializacionCompleta: Promise<void>;
 
   constructor() {
-    console.log('🚀 Inicializando GestionProductosService para ALED2025...');
-    // Verificar y crear la colección automáticamente al inicializar el servicio
-    this.inicializacionCompleta = this.verificarYCrearColeccion().catch((error) => {
-      console.error('❌ Error durante la inicialización del servicio:', error);
-      // Incluso si hay error, permitimos continuar
-      return Promise.resolve();
-    });
+    console.log('🔧 Inicializando GestionProductosService...');
+    console.log('🔧 Firestore instance:', this.firestore);
+    
+    try {
+      // Inicializar la colección después de que Firestore esté disponible
+      this.productosCollection = collection(this.firestore, 'productos');
+      console.log('✅ Colección de productos inicializada correctamente');
+      
+      // Inicializando servicio de productos
+      this.inicializacionCompleta = this.verificarYCrearColeccion().catch((error) => {
+        console.error('❌ Error durante la inicialización del servicio:', error);
+        // Incluso si hay error, permitimos continuar
+        return Promise.resolve();
+      });
+      
+      // PRUEBA INMEDIATA: Verificar conexión
+      setTimeout(() => {
+        this.probarConexionFirestore();
+      }, 1000);
+    } catch (error) {
+      console.error('❌ Error crítico al inicializar el servicio:', error);
+      throw error;
+    }
   }
 
   /**
@@ -98,57 +114,31 @@ export class GestionProductosService {
    * @returns Observable con array de productos que coinciden con la búsqueda
    */
   buscarProductos(termino: string): Observable<Producto[]> {
-    console.log(`🔍 [BÚSQUEDA INICIADA] Término: "${termino}"`);
-    
     // Si no hay término de búsqueda, retornamos todos los productos activos
     if (!termino || termino.trim() === '') {
-      console.log('📋 Término vacío, retornando todos los productos activos');
       return this.obtenerProductosActivos();
     }
 
     // Convertimos el término a minúsculas para búsqueda insensible a mayúsculas
     const terminoBusqueda = termino.toLowerCase().trim();
-    console.log(`🎯 [PROCESANDO] Término normalizado: "${terminoBusqueda}"`);
     
     return from(this.inicializacionCompleta).pipe(
       switchMap(() => {
         return runInInjectionContext(this.injector, () => {
-          console.log('📊 Obteniendo productos desde Firestore...');
           
           // Obtenemos todos los productos activos
-          const productosRef = collection(this.firestore, 'productos');
-          const q = query(productosRef, where('activo', '==', true));
+          const q = query(this.productosCollection, where('activo', '==', true));
           
           return collectionData(q, { idField: 'id' }).pipe(
             map((productos: any[]) => {
-              console.log(`📦 [FILTRADO] Analizando ${productos.length} productos activos`);
-              
               // Filtramos los productos que coincidan en nombre, descripción o categoría
               const productosEncontrados = productos.filter((producto: Producto) => {
                 const nombreCoincide = producto.nombre.toLowerCase().includes(terminoBusqueda);
                 const descripcionCoincide = producto.descripcion?.toLowerCase().includes(terminoBusqueda) || false;
                 const categoriaCoincide = producto.categoria.toLowerCase().includes(terminoBusqueda);
                 
-                const coincide = nombreCoincide || descripcionCoincide || categoriaCoincide;
-                
-                if (coincide) {
-                  console.log(`✅ [COINCIDENCIA] ${producto.nombre} - $${producto.precio}`);
-                }
-                
-                return coincide;
+                return nombreCoincide || descripcionCoincide || categoriaCoincide;
               });
-              
-              console.log(`🎉 [RESULTADO] ${productosEncontrados.length} productos encontrados para "${terminoBusqueda}"`);
-              
-              // Mostramos resumen de resultados
-              if (productosEncontrados.length > 0) {
-                console.log('📋 [RESUMEN DE RESULTADOS]:');
-                productosEncontrados.forEach((producto, index) => {
-                  console.log(`   ${index + 1}. ${producto.nombre} - $${producto.precio} (${producto.categoria})`);
-                });
-              } else {
-                console.log('❌ [SIN RESULTADOS] No se encontraron productos que coincidan');
-              }
               
               return productosEncontrados as Producto[];
             })
@@ -163,29 +153,105 @@ export class GestionProductosService {
   }
 
   /**
+   * MÉTODO DE PRUEBA - Verifica conexión básica con Firestore
+   */
+  async probarConexionFirestore(): Promise<void> {
+    try {
+      console.log('🧪 PRUEBA: Verificando conexión con Firestore...');
+      console.log('🧪 PRUEBA: Firestore instance:', this.firestore);
+      console.log('🧪 PRUEBA: productosCollection:', this.productosCollection);
+      
+      // Usar runInInjectionContext para las operaciones de Firebase
+      await runInInjectionContext(this.injector, async () => {
+        // Intentar obtener todos los documentos sin filtros
+        const snapshot = await getDocs(this.productosCollection);
+        console.log('🧪 PRUEBA: Snapshot obtenido:', snapshot);
+        console.log('🧪 PRUEBA: Número de documentos:', snapshot.size);
+        console.log('🧪 PRUEBA: Está vacío:', snapshot.empty);
+        
+        if (!snapshot.empty) {
+          snapshot.forEach((doc) => {
+            console.log('🧪 PRUEBA: Documento encontrado:', doc.id, doc.data());
+          });
+        } else {
+          console.log('🧪 PRUEBA: La colección está vacía, creando datos de ejemplo...');
+          await this.inicializarColeccionConDatosEjemplo();
+        }
+      });
+      
+    } catch (error: any) {
+      console.error('🧪 PRUEBA: Error al conectar con Firestore:', error);
+      console.error('🧪 PRUEBA: Detalles del error:', {
+        message: error?.message || 'Sin mensaje',
+        code: error?.code || 'Sin código',
+        stack: error?.stack || 'Sin stack trace'
+      });
+    }
+  }
+
+  /**
    * Obtiene únicamente los productos que están marcados como activos
    * @returns Observable con array de productos activos
    */
   obtenerProductosActivos(): Observable<Producto[]> {
-    console.log('📦 Obteniendo productos activos...');
+    console.log('🔍 Iniciando obtenerProductosActivos...');
     
-    return from(this.inicializacionCompleta).pipe(
-      switchMap(() => {
-        return runInInjectionContext(this.injector, () => {
-          const productosRef = collection(this.firestore, 'productos');
-          const q = query(productosRef, where('activo', '==', true));
-          return collectionData(q, { idField: 'id' }) as Observable<Producto[]>;
-        });
-      }),
-      map((productos) => {
-        console.log(`✅ ${productos.length} productos activos obtenidos`);
-        return productos;
-      }),
-      catchError((error) => {
-        console.error('❌ Error al obtener productos activos:', error);
-        return of([]);
-      }),
-    );
+    // VERSIÓN SIMPLIFICADA PARA DEBUGGING CON CONTEXTO DE INYECCIÓN
+    return new Observable<Producto[]>((observer) => {
+      this.inicializacionCompleta.then(async () => {
+        try {
+          console.log('✅ Inicialización completa, procediendo con consulta simplificada...');
+          
+          // Usar runInInjectionContext para las operaciones de Firebase
+          await runInInjectionContext(this.injector, async () => {
+            // Primero intentamos obtener TODOS los documentos
+            const snapshot = await getDocs(this.productosCollection);
+            console.log(`📊 Total documentos en colección: ${snapshot.size}`);
+          
+            if (snapshot.empty) {
+              console.log('⚠️ Colección vacía, creando datos de ejemplo...');
+              await this.inicializarColeccionConDatosEjemplo();
+              
+              // Intentar de nuevo después de crear datos
+              const newSnapshot = await getDocs(this.productosCollection);
+              console.log(`📊 Documentos después de crear datos: ${newSnapshot.size}`);
+              
+              const productos: Producto[] = [];
+              newSnapshot.forEach((doc) => {
+                const data = doc.data();
+                productos.push({ id: doc.id, ...data } as Producto);
+              });
+              
+              observer.next(productos);
+              observer.complete();
+            } else {
+              // Convertir documentos a productos
+              const productos: Producto[] = [];
+              snapshot.forEach((doc) => {
+                const data = doc.data();
+                console.log(`📄 Documento: ${doc.id}`, data);
+                
+                // Filtrar solo productos activos
+                if (data['activo'] === true) {
+                  productos.push({ id: doc.id, ...data } as Producto);
+                }
+              });
+              
+              console.log(`✅ Productos activos encontrados: ${productos.length}`);
+              observer.next(productos);
+              observer.complete();
+            }
+          });
+          
+        } catch (error: any) {
+          console.error('❌ Error en obtenerProductosActivos:', error);
+          observer.error(error);
+        }
+      }).catch((error) => {
+        console.error('❌ Error en inicialización:', error);
+        observer.error(error);
+      });
+    });
   }
 
   /**
@@ -195,24 +261,20 @@ export class GestionProductosService {
    */
   private async verificarYCrearColeccion(): Promise<void> {
     try {
-      console.log('🔍 Verificando colección de productos en Firestore...');
+      // Usar runInInjectionContext para las operaciones de Firebase
+      await runInInjectionContext(this.injector, async () => {
+        // Verificando colección de productos
+        const snapshot = await getDocs(this.productosCollection);
 
-      // Intentamos obtener los documentos de la colección
-      const snapshot = await getDocs(this.productosCollection);
-
-      if (snapshot.empty) {
-        console.log('📦 Colección vacía. Inicializando con productos de ejemplo...');
-        await this.inicializarColeccionConDatosEjemplo();
-        console.log('✅ Colección inicializada correctamente.');
-      } else {
-        console.log(`✅ Colección encontrada con ${snapshot.size} productos existentes.`);
-      }
+        if (snapshot.empty) {
+          await this.inicializarColeccionConDatosEjemplo();
+        }
+      });
     } catch (error) {
       console.error('❌ Error al verificar la colección:', error);
       // Intentamos crear la colección como fallback
       try {
         await this.inicializarColeccionConDatosEjemplo();
-        console.log('✅ Colección creada como fallback.');
       } catch (fallbackError) {
         console.error('❌ Error crítico:', fallbackError);
         throw fallbackError;
@@ -324,13 +386,13 @@ export class GestionProductosService {
     ];
 
     try {
-      console.log('📦 Creando productos de ejemplo...');
-      // Creamos cada producto de ejemplo
-      for (const producto of productosEjemplo) {
-        await addDoc(this.productosCollection, producto);
-        console.log(`✅ Producto creado: ${producto.nombre}`);
-      }
-      console.log('🎉 Colección inicializada con productos de ejemplo.');
+      // Usar runInInjectionContext para las operaciones de Firebase
+      await runInInjectionContext(this.injector, async () => {
+        // Creando productos de ejemplo
+        for (const producto of productosEjemplo) {
+          await addDoc(this.productosCollection, producto);
+        }
+      });
     } catch (error) {
       console.error('❌ Error al inicializar productos:', error);
     }
@@ -344,8 +406,7 @@ export class GestionProductosService {
     return from(this.inicializacionCompleta).pipe(
       switchMap(() => {
         return runInInjectionContext(this.injector, () => {
-          const productosRef = collection(this.firestore, 'productos');
-          return collectionData(productosRef, { idField: 'id' }) as Observable<Producto[]>;
+          return collectionData(this.productosCollection, { idField: 'id' }) as Observable<Producto[]>;
         });
       }),
       catchError((error) => {
@@ -421,14 +482,11 @@ export class GestionProductosService {
           };
           
           return from(addDoc(this.productosCollection, nuevoProducto)).pipe(
-            map((docRef) => {
-              console.log(`✅ Producto creado con ID: ${docRef.id}`);
-              return docRef.id;
-            })
+            map((docRef) => docRef.id)
           );
         });
       }),
-      catchError((error: any) => {
+      catchError((error) => {
         console.error('❌ Error al crear producto:', error);
         throw error;
       })
@@ -452,9 +510,7 @@ export class GestionProductosService {
           };
           
           return from(updateDoc(productoRef, datosConFecha)).pipe(
-            map(() => {
-              console.log(`✅ Producto actualizado: ${id}`);
-            })
+            map(() => {})
           );
         });
       }),
@@ -471,19 +527,13 @@ export class GestionProductosService {
    * @returns Observable que se completa cuando la eliminación termina
    */
   eliminarProducto(id: string): Observable<void> {
-    console.log(`🗑️ [SERVICIO] Iniciando eliminación de producto con ID: ${id}`);
-    
     return from(this.inicializacionCompleta).pipe(
       switchMap(() => {
-        console.log(`🔄 [SERVICIO] Inicialización completa, procediendo con eliminación`);
         return runInInjectionContext(this.injector, () => {
-          console.log(`📄 [SERVICIO] Creando referencia al documento: productos/${id}`);
           const productoRef = doc(this.firestore, 'productos', id);
           
           return from(deleteDoc(productoRef)).pipe(
-            map(() => {
-              console.log(`✅ [SERVICIO] Producto eliminado exitosamente de Firebase: ${id}`);
-            })
+            map(() => {})
           );
         });
       }),

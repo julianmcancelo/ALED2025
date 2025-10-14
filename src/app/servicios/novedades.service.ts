@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import { Firestore, collection, collectionData, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
@@ -19,41 +19,55 @@ export interface Novedad {
   providedIn: 'root'
 })
 export class NovedadesService {
-  private firestore: Firestore = inject(Firestore);
-  private novedadesCollection = collection(this.firestore, 'novedades');
+  private firestore = inject(Firestore);
+  private injector = inject(Injector);
+  private novedadesCollection;
+
+  constructor() {
+    // Inicializar la colección en el constructor
+    this.novedadesCollection = collection(this.firestore, 'novedades');
+  }
 
   /**
    * Obtiene todas las novedades ordenadas por fecha de creación.
    */
   getNovedades(): Observable<Novedad[]> {
-    const q = query(this.novedadesCollection, orderBy('fechaCreacion', 'desc'));
-    return collectionData(q, { idField: 'id' }) as Observable<Novedad[]>;
+    return runInInjectionContext(this.injector, () => {
+      const q = query(this.novedadesCollection, orderBy('fechaCreacion', 'desc'));
+      return collectionData(q, { idField: 'id' }) as Observable<Novedad[]>;
+    });
   }
 
   /**
    * Crea una nueva novedad.
    */
   crearNovedad(novedad: Omit<Novedad, 'id' | 'fechaCreacion'>): Promise<any> {
-    const nuevaNovedad = {
-      ...novedad,
-      fechaCreacion: new Date()
-    };
-    return addDoc(this.novedadesCollection, nuevaNovedad);
+    return runInInjectionContext(this.injector, () => {
+      const nuevaNovedad = {
+        ...novedad,
+        fechaCreacion: new Date()
+      };
+      return addDoc(this.novedadesCollection, nuevaNovedad);
+    });
   }
 
   /**
    * Actualiza una novedad existente.
    */
   actualizarNovedad(id: string, novedad: Partial<Novedad>): Promise<void> {
-    const novedadDocRef = doc(this.firestore, `novedades/${id}`);
-    return updateDoc(novedadDocRef, novedad);
+    return runInInjectionContext(this.injector, () => {
+      const novedadDocRef = doc(this.firestore, `novedades/${id}`);
+      return updateDoc(novedadDocRef, novedad);
+    });
   }
 
   /**
    * Elimina una novedad.
    */
   eliminarNovedad(id: string): Promise<void> {
-    const novedadDocRef = doc(this.firestore, `novedades/${id}`);
-    return deleteDoc(novedadDocRef);
+    return runInInjectionContext(this.injector, () => {
+      const novedadDocRef = doc(this.firestore, `novedades/${id}`);
+      return deleteDoc(novedadDocRef);
+    });
   }
 }

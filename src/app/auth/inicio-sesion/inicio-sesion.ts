@@ -12,7 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 
-// Importamos nuestro servicio personalizado de autenticación con Supabase
+// Importamos nuestro servicio personalizado de autenticación
 import { AuthService } from '../auth';
 
 /**
@@ -26,7 +26,7 @@ import { AuthService } from '../auth';
  * 
  * FUNCIONALIDADES PRINCIPALES:
  * - Formulario reactivo con validaciones en tiempo real
- * - Autenticación segura con Supabase y bcrypt
+ * - Autenticación segura con bcrypt
  * - Feedback visual durante el proceso de login
  * - Manejo de errores con mensajes user-friendly
  * - Integración con el sistema de roles (admin/usuario)
@@ -35,7 +35,7 @@ import { AuthService } from '../auth';
  * - Angular Reactive Forms para validación
  * - Angular Material para la interfaz
  * - SweetAlert2 para notificaciones
- * - Supabase para autenticación backend
+ * - Backend personalizado para autenticación
  * 
  * DESARROLLADO POR: Cancelo Julian & Nicolas Otero
  * INSTITUTO: Instituto Beltrán - ALED III T.A.S.
@@ -89,7 +89,7 @@ export class InicioDeSesion implements OnInit {
   
   /**
    * AuthService: Nuestro servicio personalizado que maneja la autenticación
-   * con Supabase, incluyendo login, logout y gestión de sesiones
+   * incluyendo login, logout y gestión de sesiones
    */
   private authService = inject(AuthService);
   
@@ -148,7 +148,7 @@ export class InicioDeSesion implements OnInit {
     try {
       // --- PROCESO DE AUTENTICACIÓN ---
       // Llamamos al servicio de autenticación que maneja:
-      // 1. Verificación de credenciales en Supabase
+      // 1. Verificación de credenciales en backend
       // 2. Comparación de contraseña con bcrypt
       // 3. Establecimiento de sesión en localStorage
       // 4. Actualización del estado global de usuario
@@ -204,7 +204,7 @@ export class InicioDeSesion implements OnInit {
    *    - Muestra errores en tiempo real en la UI
    * 
    * 2. AUTENTICACIÓN BACKEND:
-   *    - AuthService.login() busca el usuario por email en Supabase
+   *    - AuthService.login() busca el usuario por email en backend
    *    - Compara la contraseña ingresada con el hash bcrypt almacenado
    *    - Si coincide, crea la sesión y actualiza el estado global
    * 

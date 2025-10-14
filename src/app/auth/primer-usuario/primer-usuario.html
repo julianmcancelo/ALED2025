@@ -1,59 +1,108 @@
-<div class="container">
-  <mat-card>
-    <mat-card-title>Crear Primer Usuario Administrador</mat-card-title>
-    <mat-card-content>
-      <p>
-        Parece que es la primera vez que se inicia la aplicación. Por favor, crea el usuario
-        administrador inicial.
-      </p>
+<div class="primer-usuario-container">
+  <div class="primer-usuario-card">
+    <div class="card-header">
+      <i class="bi bi-person-gear"></i>
+      <h2>Configuración Inicial</h2>
+      <p>Crear Primer Usuario Administrador</p>
+    </div>
+    
+    <div class="card-body">
+      <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i>
+        <div>
+          <strong>¡Bienvenido a ALED2025!</strong>
+          <p>Es la primera vez que se inicia la aplicación. Crea tu usuario administrador para comenzar.</p>
+        </div>
+      </div>
+      
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-        <!-- Campo Nombre -->
-        <mat-form-field appearance="fill">
-          <mat-label>Nombre Completo</mat-label>
-          <input matInput formControlName="nombre" placeholder="Ej. Juan Pérez" required />
-          <mat-error *ngIf="registerForm.get('nombre')?.hasError('required')">
-            El nombre es obligatorio.
-          </mat-error>
-        </mat-form-field>
+        <!-- Nombre y Apellido en fila -->
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nombre *</label>
+            <input 
+              type="text" 
+              class="form-control form-control-lg"
+              formControlName="nombre" 
+              placeholder="Ej. Juan"
+              [class.is-invalid]="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched"
+            />
+            <div class="invalid-feedback" *ngIf="registerForm.get('nombre')?.hasError('required') && registerForm.get('nombre')?.touched">
+              El nombre es obligatorio.
+            </div>
+            <div class="invalid-feedback" *ngIf="registerForm.get('nombre')?.hasError('minlength') && registerForm.get('nombre')?.touched">
+              El nombre debe tener al menos 2 caracteres.
+            </div>
+          </div>
+          
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Apellido *</label>
+            <input 
+              type="text" 
+              class="form-control form-control-lg"
+              formControlName="apellido" 
+              placeholder="Ej. Pérez"
+              [class.is-invalid]="registerForm.get('apellido')?.invalid && registerForm.get('apellido')?.touched"
+            />
+            <div class="invalid-feedback" *ngIf="registerForm.get('apellido')?.hasError('required') && registerForm.get('apellido')?.touched">
+              El apellido es obligatorio.
+            </div>
+            <div class="invalid-feedback" *ngIf="registerForm.get('apellido')?.hasError('minlength') && registerForm.get('apellido')?.touched">
+              El apellido debe tener al menos 2 caracteres.
+            </div>
+          </div>
+        </div>
 
-        <!-- Campo Email -->
-        <mat-form-field appearance="fill">
-          <mat-label>Correo Electrónico</mat-label>
-          <input matInput formControlName="email" placeholder="ejemplo@correo.com" required />
-          <mat-error
-            *ngIf="registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched"
-          >
+        <!-- Email -->
+        <div class="mb-3">
+          <label class="form-label">Correo Electrónico *</label>
+          <input 
+            type="email" 
+            class="form-control form-control-lg"
+            formControlName="email" 
+            placeholder="admin@aled2025.com"
+            [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+          />
+          <div class="invalid-feedback" *ngIf="registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched">
             El correo es obligatorio.
-          </mat-error>
-          <mat-error
-            *ngIf="registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched"
-          >
+          </div>
+          <div class="invalid-feedback" *ngIf="registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched">
             El formato del correo no es válido.
-          </mat-error>
-        </mat-form-field>
+          </div>
+        </div>
 
-        <!-- Campo Contraseña -->
-        <mat-form-field appearance="fill">
-          <mat-label>Contraseña</mat-label>
-          <input matInput type="password" formControlName="password" required />
-          <mat-error
-            *ngIf="registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched"
-          >
+        <!-- Contraseña -->
+        <div class="mb-4">
+          <label class="form-label">Contraseña *</label>
+          <input 
+            type="password" 
+            class="form-control form-control-lg"
+            formControlName="password" 
+            placeholder="Mínimo 6 caracteres"
+            [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+          />
+          <div class="form-text">La contraseña debe tener al menos 6 caracteres.</div>
+          <div class="invalid-feedback" *ngIf="registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched">
             La contraseña es obligatoria.
-          </mat-error>
-          <mat-error
-            *ngIf="registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched"
-          >
+          </div>
+          <div class="invalid-feedback" *ngIf="registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched">
             La contraseña debe tener al menos 6 caracteres.
-          </mat-error>
-        </mat-form-field>
+          </div>
+        </div>
 
-        <mat-card-actions>
-          <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid">
-            Crear Administrador
+        <!-- Botón -->
+        <div class="d-grid">
+          <button 
+            type="submit" 
+            class="btn btn-primary btn-lg"
+            [disabled]="registerForm.invalid || isLoading"
+          >
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isLoading" class="bi bi-person-plus me-2"></i>
+            {{ isLoading ? 'Creando...' : 'Crear Administrador' }}
           </button>
-        </mat-card-actions>
+        </div>
       </form>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </div>
 </div>

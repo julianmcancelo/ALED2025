@@ -35,7 +35,7 @@ import Swal from 'sweetalert2'; // Librería para mostrar alertas elegantes
 export class GestionNovedadesComponent implements OnInit {
   
   // --- INYECCIÓN DE DEPENDENCIAS ---
-  // Inyectamos el servicio de novedades para interactuar con Supabase
+  // Inyectamos el servicio de novedades para interactuar con la base de datos
   private novedadesService = inject(NovedadesService);
 
   // --- PROPIEDADES DEL COMPONENTE ---
@@ -71,7 +71,7 @@ export class GestionNovedadesComponent implements OnInit {
    * Aquí configuramos la suscripción a las novedades para obtener datos en tiempo real.
    */
   ngOnInit(): void {
-    // Obtenemos el Observable de novedades desde Supabase
+    // Obtenemos el Observable de novedades desde la base de datos
     // Esto nos permite recibir actualizaciones automáticas cuando cambian los datos
     this.novedades$ = this.novedadesService.getNovedades();
   }
@@ -206,7 +206,7 @@ export class GestionNovedadesComponent implements OnInit {
     if (result.isConfirmed) {
       try {
         // --- ELIMINACIÓN EN BASE DE DATOS ---
-        // Llamamos al servicio para eliminar la novedad de Supabase
+        // Llamamos al servicio para eliminar la novedad de la base de datos
         await this.novedadesService.eliminarNovedad(id);
         
         // --- CONFIRMACIÓN DE ÉXITO ---
