@@ -403,6 +403,7 @@ export class GestionProductosService {
    * @returns Observable con array de productos
    */
   obtenerProductos(): Observable<Producto[]> {
+<<<<<<< HEAD
     return from(this.inicializacionCompleta).pipe(
       switchMap(() => {
         return runInInjectionContext(this.injector, () => {
@@ -411,10 +412,56 @@ export class GestionProductosService {
           return collectionData(productosQuery, { idField: 'id' }) as Observable<Producto[]>;
         });
       }),
+=======
+    console.log('🔍 Iniciando obtenerProductos...');
+    
+    return new Observable<Producto[]>((observer) => {
+      runInInjectionContext(this.injector, async () => {
+        try {
+          console.log('📡 Conectando a Firestore para obtener productos...');
+          
+          // Obtener datos directamente sin esperar inicialización
+          const snapshot = await getDocs(this.productosCollection);
+          
+          console.log('📊 Snapshot obtenido:', {
+            empty: snapshot.empty,
+            size: snapshot.size,
+            docs: snapshot.docs.length
+          });
+          
+          if (snapshot.empty) {
+            console.log('⚠️ No se encontraron productos en Firestore');
+            observer.next([]);
+            observer.complete();
+            return;
+          }
+          
+          const productos: Producto[] = [];
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            const producto: Producto = {
+              id: doc.id,
+              ...data
+            } as Producto;
+            productos.push(producto);
+            console.log('📦 Producto encontrado:', producto.nombre);
+          });
+          
+          console.log(`✅ Total productos cargados: ${productos.length}`);
+          observer.next(productos);
+          observer.complete();
+          
+        } catch (error: any) {
+          console.error('❌ Error al obtener productos:', error);
+          observer.error(error);
+        }
+      });
+    }).pipe(
+>>>>>>> d4120f211a0e2fe30358a961fe1c365e8dcf3f45
       catchError((error) => {
-        console.error('❌ Error al obtener productos:', error);
+        console.error('❌ Error en observable de productos:', error);
         return of([]);
-      }),
+      })
     );
   }
 

@@ -29,6 +29,8 @@ import { PersonalizacionSitio } from './admin/personalizacion-sitio/personalizac
 import { GestionNovedadesComponent } from './admin/gestion-novedades/gestion-novedades';
 import { GestionProductos } from './admin/gestion-productos/gestion-productos'; // Nombre Correcto
 import { GestionPedidosComponent } from './admin/gestion-pedidos/gestion-pedidos.component';
+import { GestionCategoriasComponent } from './admin/gestion-categorias/gestion-categorias';
+import { PanelPruebasComponent } from './admin/panel-pruebas/panel-pruebas-simple';
 import { PerfilUsuarioComponent } from './perfil-usuario/perfil-usuario';
 import { authGuard } from './auth/auth.guard';
 import { PagoExitoso } from './pago-exitoso/pago-exitoso';
@@ -37,6 +39,7 @@ import { PagoPendiente } from './pago-pendiente/pago-pendiente';
 import { MisPedidosComponent } from './mis-pedidos/mis-pedidos.component';
 import { CategoriasComponent } from './categorias/categorias';
 import { OfertasComponent } from './ofertas/ofertas';
+import { Carrito } from './carrito/carrito';
 
 // Configuración de la aplicación
 
@@ -123,33 +126,45 @@ export const appConfig: ApplicationConfig = {
       useFactory: initializeAppFactory,
       multi: true,
     },
-
+    
     provideRouter([
+      // --- RUTAS PRINCIPALES ---
       { path: '', component: Home, pathMatch: 'full' },
-      { path: 'productos', component: TiendaComponent }, // Nueva ruta de la tienda
-      { path: 'categorias', component: CategoriasComponent }, // Nueva ruta de categorías
-      { path: 'ofertas', component: OfertasComponent }, // Nueva ruta de ofertas
-      { path: 'productos/:id', component: DetalleProductoComponent }, // Ruta para el detalle del producto
-      { path: 'producto/:id', component: DetalleProductoComponent }, // Ruta alternativa para el detalle del producto
+      
+      // --- LAZY LOADING: MÓDULO DE TIENDA ---
+      {
+        path: 'tienda',
+        loadChildren: () => import('./features/tienda/tienda.routes').then(m => m.TIENDA_ROUTES)
+      },
+      
+      // --- LAZY LOADING: MÓDULO DE ADMINISTRACIÓN ---
+      {
+        path: 'administracion',
+        loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES)
+      },
+      
+      // --- LAZY LOADING: MÓDULO DE AUTENTICACIÓN ---
+      {
+        path: 'auth',
+        loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES)
+      },
+      
+      // --- RUTAS LEGACY (mantenidas por compatibilidad) ---
+      { path: 'productos', component: TiendaComponent },
+      { path: 'categorias', component: CategoriasComponent },
+      { path: 'ofertas', component: OfertasComponent },
+      { path: 'productos/:id', component: DetalleProductoComponent },
+      { path: 'producto/:id', component: DetalleProductoComponent },
+      { path: 'carrito', component: Carrito },
       { path: 'primer-usuario', component: PrimerUsuario },
-      { path: 'perfil', component: PerfilUsuarioComponent, canActivate: [authGuard] }, // Nueva ruta de perfil
-      { path: 'mis-pedidos', component: MisPedidosComponent, canActivate: [authGuard] }, // Nueva ruta de mis pedidos
+      { path: 'perfil', component: PerfilUsuarioComponent, canActivate: [authGuard] },
       { path: 'pago-exitoso', component: PagoExitoso },
       { path: 'pago-fallido', component: PagoFallido },
       { path: 'pago-pendiente', component: PagoPendiente },
-      {
-        path: 'administracion',
-        component: Admin,
-        canActivate: [adminGuard],
-        children: [
-          { path: '', component: BienvenidaAdmin },
-          { path: 'usuarios', component: GestionUsuarios },
-          { path: 'personalizacion', component: PersonalizacionSitio },
-          { path: 'novedades', component: GestionNovedadesComponent },
-          { path: 'productos', component: GestionProductos }, // Nombre Correcto
-          { path: 'pedidos', component: GestionPedidosComponent }, // Gestión de Pedidos
-        ],
-      },
-    ]),
-  ],
+      { path: 'mis-pedidos', component: MisPedidosComponent, canActivate: [authGuard] },
+      
+      // --- RUTA WILDCARD ---
+      { path: '**', redirectTo: '' }
+    ])
+  ]
 };

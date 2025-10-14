@@ -29,22 +29,15 @@
   margin-right: auto;
 }
 
-/* --- ESTILOS PREMIUM PARA EL SLIDER --- */
-
-/* Clase común para ancho consistente */
-.section-container {
+/* --- ESTILOS OPTIMIZADOS PARA EL SLIDER --- */
+.section-container, .credits-section-container, .action-buttons-container {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
   padding: 0 15px;
 }
 
-/* Header del slider */
-.slider-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
+.slider-header { text-align: center; margin-bottom: 2rem; }
 .slider-title {
   font-size: 2.5rem;
   font-weight: 800;
@@ -52,11 +45,7 @@
   margin-bottom: 0.5rem;
   text-shadow: 0 2px 4px rgba(0, 119, 182, 0.2);
 }
-
-.slider-subtitle {
-  font-size: 1.1rem;
-  font-weight: 400;
-}
+.slider-subtitle { font-size: 1.1rem; font-weight: 400; }
 
 /* Contenedor principal del slider */
 .premium-slider-container {
@@ -72,48 +61,16 @@
   animation: fadeInSlider 0.8s ease-out forwards;
 }
 
-@keyframes fadeInSlider {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+@keyframes fadeInSlider { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
 
-.premium-carousel,
-.premium-carousel-inner {
-  border-radius: 16px;
-}
-
-/* Asegurar que el carousel funcione correctamente */
-.carousel.premium-carousel {
-  position: relative;
-}
-
-.carousel-inner.premium-carousel-inner {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-
-/* Override Bootstrap carousel item defaults */
+.premium-carousel, .premium-carousel-inner { border-radius: 16px; }
+.carousel.premium-carousel { position: relative; }
+.carousel-inner.premium-carousel-inner { position: relative; width: 100%; overflow: hidden; }
 .carousel-item {
-  position: relative;
-  display: none;
-  float: left;
-  width: 100%;
-  margin-right: -100%;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  transition: transform 0.6s ease-in-out;
+  position: relative; display: none; float: left; width: 100%; margin-right: -100%;
+  -webkit-backface-visibility: hidden; backface-visibility: hidden; transition: transform 0.6s ease-in-out;
 }
-
-.carousel-item.active {
-  display: block;
-}
+.carousel-item.active { display: block; }
 
 /* Slides individuales */
 .premium-slide {
@@ -212,35 +169,11 @@
   animation: shimmer 2s infinite;
 }
 
-@keyframes shimmer {
-  0% { box-shadow: 0 3px 12px rgba(0, 119, 182, 0.4); }
-  50% { box-shadow: 0 5px 20px rgba(0, 119, 182, 0.6); }
-  100% { box-shadow: 0 3px 12px rgba(0, 119, 182, 0.4); }
-}
+@keyframes shimmer { 0%, 100% { box-shadow: 0 3px 12px rgba(0, 119, 182, 0.4); } 50% { box-shadow: 0 5px 20px rgba(0, 119, 182, 0.6); } }
 
-/* Títulos y descripción */
-.slide-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  line-height: 1.2;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.slide-description {
-  font-size: 1rem;
-  margin-bottom: 1rem;
-  line-height: 1.4;
-  opacity: 0.9;
-  max-width: 400px;
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .slide-description {
-    display: block;
-  }
-}
+.slide-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.2; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); }
+.slide-description { font-size: 1rem; margin-bottom: 1rem; line-height: 1.4; opacity: 0.9; max-width: 400px; display: none; }
+@media (min-width: 768px) { .slide-description { display: block; } }
 
 /* Botones de acción */
 .slide-actions {
@@ -431,56 +364,11 @@
   animation: pulse 2s infinite;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
-  100% { transform: scale(1); opacity: 1; }
-}
+@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } }
 
-/* Footer del slider */
-.slider-footer {
-  background: linear-gradient(135deg, #fafafa, #f0f0f0);
-  padding: 1.5rem;
-  border-radius: 0 0 16px 16px;
-  border-top: 1px solid rgba(0, 119, 182, 0.1);
-}
-
-.feature-icon {
-  font-size: 1.5rem;
-  color: #28a745;
-  margin-bottom: 0.5rem;
-  display: block;
-}
-
-.feature-text {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
-}
-
-/* Animaciones de entrada */
-@keyframes slideInFromLeft {
-  0% {
-    opacity: 0;
-    transform: translateX(-100px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+.slider-footer { background: linear-gradient(135deg, #fafafa, #f0f0f0); padding: 1.5rem; border-radius: 0 0 16px 16px; border-top: 1px solid rgba(0, 119, 182, 0.1); }
+.feature-icon { font-size: 1.5rem; color: #28a745; margin-bottom: 0.5rem; display: block; }
+.feature-text { font-size: 1rem; font-weight: 600; color: #333; margin: 0; }
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -637,19 +525,6 @@
 }
 
 /* --- Estilos para las Tarjetas de Créditos --- */
-.credits-section-container {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 15px;
-}
-
-.action-buttons-container {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 15px;
-}
 .credit-card {
   background-color: rgba(255, 255, 255, 0.7); /* Fondo semitransparente */
   border-radius: 15px;

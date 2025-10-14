@@ -1,9 +1,10 @@
 // Importaciones necesarias de Angular y librerías externas
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { NovedadesService, Novedad } from '../../servicios/novedades.service';
+import { GeminiIAService, ResultadoGeneracionContenido, ImagenGenerada } from '../../servicios/gemini-ia.service';
 import Swal from 'sweetalert2'; // Librería para mostrar alertas elegantes
 
 /**
@@ -37,6 +38,8 @@ export class GestionNovedadesComponent implements OnInit {
   // --- INYECCIÓN DE DEPENDENCIAS ---
   // Inyectamos el servicio de novedades para interactuar con la base de datos
   private novedadesService = inject(NovedadesService);
+  // Inyectamos el servicio de Gemini IA para funcionalidades inteligentes
+  private geminiService = inject(GeminiIAService);
 
   // --- PROPIEDADES DEL COMPONENTE ---
   
@@ -63,6 +66,28 @@ export class GestionNovedadesComponent implements OnInit {
    * Esto determina qué operación se ejecutará al guardar.
    */
   esModoEdicion = false;
+
+  // --- PROPIEDADES PARA IA ---
+  
+  /**
+   * Controla si se está generando contenido con IA
+   */
+  generandoConIA = signal(false);
+  
+  /**
+   * Controla si se está generando imagen con IA
+   */
+  generandoImagen = signal(false);
+  
+  /**
+   * Idea o concepto del usuario para generar contenido
+   */
+  ideaUsuario = '';
+  
+  /**
+   * Prompt para generar imagen
+   */
+  promptImagen = '';
 
   // --- MÉTODOS DEL CICLO DE VIDA DEL COMPONENTE ---
   
@@ -224,6 +249,184 @@ export class GestionNovedadesComponent implements OnInit {
       }
     }
     // Si el usuario canceló (result.isConfirmed = false), no hacemos nada
+  }
+
+  // --- MÉTODOS DE IA PARA NOVEDADES ---
+
+  /**
+   * Genera contenido completo para la novedad usando IA basado en la idea del usuario
+   */
+  async generarContenidoConIA(): Promise<void> {
+    if (!this.ideaUsuario.trim()) {
+      Swal.fire('Error', 'Por favor, describe tu idea para la novedad.', 'error');
+      return;
+    }
+
+    this.generandoConIA.set(true);
+
+    try {
+      console.log('🤖 Generando contenido con IA para:', this.ideaUsuario);
+      
+      // Usar el servicio real de Gemini
+      const response = await this.geminiService.generarContenidoNovedad(this.ideaUsuario);
+      
+      if (response) {
+        // Aplicar el contenido generado al formulario
+        this.novedadActual.titulo = response.titulo;
+        this.novedadActual.descripcion = response.descripcion;
+        this.novedadActual.enlaceUrl = response.enlaceUrl;
+        this.promptImagen = response.promptImagen;
+
+        Swal.fire({
+          icon: 'success',
+          title: '¡Contenido generado!',
+          text: 'El contenido ha sido generado con IA. Puedes editarlo antes de guardar.',
+          timer: 3000
+        });
+      } else {
+        throw new Error('No se recibió respuesta del servicio de IA');
+      }
+
+    } catch (error) {
+      console.error('Error generando contenido:', error);
+      Swal.fire('Error', 'No se pudo generar el contenido con IA.', 'error');
+    } finally {
+      this.generandoConIA.set(false);
+    }
+  }
+
+  /**
+   * Genera una imagen usando IA basada en el prompt
+   */
+  async generarImagenConIA(): Promise<void> {
+    const prompt = this.promptImagen || this.ideaUsuario;
+    
+    if (!prompt.trim()) {
+      Swal.fire('Error', 'Por favor, describe qué tipo de imagen quieres generar.', 'error');
+      return;
+    }
+
+    this.generandoImagen.set(true);
+
+    try {
+      console.log('🎨 Generando imagen con IA para:', prompt);
+      
+      // Usar el servicio real de generación de imágenes
+      const imagenGenerada = await this.geminiService.generarImagenPromocion(prompt);
+      
+      if (imagenGenerada) {
+        this.novedadActual.imagenUrl = imagenGenerada.url;
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Imagen generada!',
+          html: `
+            <p>La imagen ha sido generada con IA.</p>
+            <img src="${imagenGenerada.url}" alt="Imagen generada" style="max-width: 300px; border-radius: 8px;">
+            <p><small>Tamaño: ${(imagenGenerada.tamaño / 1024).toFixed(1)} KB</small></p>
+          `,
+          timer: 5000
+        });
+        
+        console.log('✅ Imagen generada exitosamente:', imagenGenerada);
+      } else {
+        throw new Error('No se pudo generar la imagen');
+      }
+
+    } catch (error) {
+      console.error('Error generando imagen:', error);
+      Swal.fire('Error', 'No se pudo generar la imagen con IA.', 'error');
+    } finally {
+      this.generandoImagen.set(false);
+    }
+  }
+
+  /**
+   * Mejora el contenido existente usando IA
+   */
+  async mejorarContenidoConIA(): Promise<void> {
+    if (!this.novedadActual.titulo && !this.novedadActual.descripcion) {
+      Swal.fire('Error', 'Necesitas tener al menos un título o descripción para mejorar.', 'error');
+      return;
+    }
+
+    this.generandoConIA.set(true);
+
+    try {
+      console.log('🔧 Mejorando contenido existente con IA');
+      
+      // Crear un prompt para mejorar el contenido existente
+      const ideaMejora = `Mejorar este contenido: Título: "${this.novedadActual.titulo || 'Sin título'}" - Descripción: "${this.novedadActual.descripcion || 'Sin descripción'}"`;
+      
+      const response = await this.geminiService.generarContenidoNovedad(ideaMejora);
+      
+      if (response) {
+        this.novedadActual.titulo = response.titulo;
+        this.novedadActual.descripcion = response.descripcion;
+        
+        // Mantener el enlace existente si no hay uno nuevo relevante
+        if (!this.novedadActual.enlaceUrl) {
+          this.novedadActual.enlaceUrl = response.enlaceUrl;
+        }
+
+        Swal.fire({
+          icon: 'success',
+          title: '¡Contenido mejorado!',
+          text: 'El contenido ha sido optimizado con IA.',
+          timer: 3000
+        });
+      } else {
+        throw new Error('No se pudo mejorar el contenido');
+      }
+
+    } catch (error) {
+      console.error('Error mejorando contenido:', error);
+      Swal.fire('Error', 'No se pudo mejorar el contenido con IA.', 'error');
+    } finally {
+      this.generandoConIA.set(false);
+    }
+  }
+
+
+  /**
+   * Limpia los campos de IA
+   */
+  limpiarCamposIA(): void {
+    this.ideaUsuario = '';
+    this.promptImagen = '';
+  }
+
+  /**
+   * Método de prueba para verificar generación de imágenes
+   */
+  async probarGeneracionImagen(): Promise<void> {
+    console.log('🧪 Iniciando prueba de generación de imagen...');
+    
+    try {
+      const urlPrueba = await this.geminiService.generarImagenPrueba();
+      
+      if (urlPrueba) {
+        this.novedadActual.imagenUrl = urlPrueba;
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Prueba exitosa!',
+          html: `
+            <p>Imagen de prueba generada correctamente.</p>
+            <img src="${urlPrueba}" alt="Prueba" style="max-width: 300px; border-radius: 8px;">
+          `,
+          timer: 5000
+        });
+        
+        console.log('✅ Prueba de imagen exitosa:', urlPrueba);
+      } else {
+        throw new Error('No se pudo generar imagen de prueba');
+      }
+      
+    } catch (error) {
+      console.error('❌ Error en prueba de imagen:', error);
+      Swal.fire('Error', 'Falló la prueba de generación de imagen.', 'error');
+    }
   }
 
   // --- NOTAS ARQUITECTÓNICAS ---
