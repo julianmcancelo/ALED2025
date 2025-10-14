@@ -88,15 +88,10 @@ export class GestionProductos implements OnInit {
   }
 
   async eliminarProducto(producto: Producto): Promise<void> {
-    console.log(`🔴 [COMPONENTE] Botón eliminar presionado para producto:`, producto);
-    
     if (!producto.id) {
-      console.error('❌ [COMPONENTE] El producto no tiene ID, no se puede eliminar');
-      Swal.fire('Error', 'El producto no tiene un ID válido para eliminar.', 'error');
+      Swal.fire('Error', 'El producto no tiene un ID válido', 'error');
       return;
     }
-    
-    console.log(`🔴 [COMPONENTE] Mostrando confirmación para eliminar: ${producto.nombre} (ID: ${producto.id})`);
     
     const result = await Swal.fire({
       title: '¿Estás seguro?',
@@ -108,15 +103,9 @@ export class GestionProductos implements OnInit {
     });
 
     if (result.isConfirmed) {
-      console.log(`🗑️ Intentando eliminar producto: ${producto.nombre} (ID: ${producto.id})`);
-      
       this.gestionProductosService.eliminarProducto(producto.id).subscribe({
         next: () => {
-          console.log('✅ Producto eliminado exitosamente de Firebase');
-          
-          // Actualizar la lista local inmediatamente
           this.productos = this.productos.filter(p => p.id !== producto.id);
-          console.log(`📋 Lista local actualizada. Productos restantes: ${this.productos.length}`);
           
           Swal.fire('¡Eliminado!', 'El producto ha sido eliminado.', 'success');
           
@@ -146,7 +135,6 @@ export class GestionProductos implements OnInit {
     this.categoriaService.obtenerCategorias().subscribe({
       next: (categorias) => {
         this.categorias = categorias.sort((a, b) => a.nombre.localeCompare(b.nombre));
-        console.log('Categorías cargadas:', this.categorias);
       },
       error: (error) => {
         console.error('Error al cargar categorías:', error);
@@ -319,22 +307,15 @@ export class GestionProductos implements OnInit {
    */
   verificarGeminiAI(): void {
     this.geminiConfigurado = this.geminiAiService.verificarConfiguracion();
-    console.log('🤖 Gemini AI configurado:', this.geminiConfigurado ? '✅' : '❌');
+    // Gemini AI configurado
   }
 
   /**
    * Diagnóstico completo del sistema Gemini AI
    */
   diagnosticarGeminiAI(): void {
-    console.log('🔍 Iniciando diagnóstico completo de Gemini AI...');
-    
-    // Información del servicio
     const estadoServicio = this.geminiAiService.obtenerEstadoServicio();
-    console.log('📊 Estado del servicio:', estadoServicio);
-    
-    // Verificar configuración
     const configurado = this.geminiAiService.verificarConfiguracion();
-    console.log('⚙️ Configuración válida:', configurado);
     
     Swal.fire({
       title: '🔍 Diagnóstico Gemini AI',

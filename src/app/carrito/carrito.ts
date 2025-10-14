@@ -4,60 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth';
+import { CarritoService } from '../servicios/carrito';
 import { getMercadoPagoCredentials, getMercadoPagoSettings } from '../config/mercadopago.config';
 import { PedidosFirestoreService } from '../servicios/pedidos-firestore.service';
 import Swal from 'sweetalert2';
-
-// Interfaces para el carrito
-interface ProductoCarrito {
-  id: string;
-  nombre: string;
-  precio: number;
-  imagen?: string;
-}
-
-interface ItemCarrito {
-  producto: ProductoCarrito;
-  cantidad: number;
-}
-
-// Servicio de carrito simplificado
-class CarritoService {
-  private _items = signal<ItemCarrito[]>([]);
-  
-  items = this._items.asReadonly();
-  
-  totalPrecio = computed(() => {
-    return this._items().reduce((total, item) => total + (item.producto.precio * item.cantidad), 0);
-  });
-
-  eliminarProducto(idProducto: string): void {
-    this._items.update(items => items.filter(item => item.producto.id !== idProducto));
-  }
-
-  vaciarCarrito(): void {
-    this._items.set([]);
-  }
-
-  agregarProducto(producto: ProductoCarrito, cantidad: number = 1): void {
-    this._items.update(items => {
-      const existente = items.find(item => item.producto.id === producto.id);
-      if (existente) {
-        existente.cantidad += cantidad;
-        return [...items];
-      } else {
-        return [...items, { producto, cantidad }];
-      }
-    });
-  }
-}
 
 @Component({
   selector: 'app-carrito',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './carrito.html',
-  providers: [CarritoService]
+  templateUrl: './carrito.html'
 })
 export class Carrito {
   // --- INYECCIÓN DE DEPENDENCIAS ---
@@ -116,9 +72,20 @@ export class Carrito {
     this.cargandoMP.set(true);
 
     try {
+      // Convertir items del carrito al formato esperado por Firestore
+      const itemsFirestore = items.map(item => ({
+        producto: {
+          id: item.producto.id || '',
+          nombre: item.producto.nombre,
+          precio: item.producto.precio,
+          imagen: item.producto.imagen
+        },
+        cantidad: item.cantidad
+      }));
+
       // Crear pedido en Firestore primero
       const pedidoId = await this.pedidosFirestore.crearPedido(
-        items,
+        itemsFirestore,
         usuario,
         'local', // método de entrega por defecto
         'pref_' + Date.now()
@@ -139,7 +106,7 @@ export class Carrito {
   /**
    * Crea una preferencia de Mercado Pago
    */
-  private async crearPreferenciaMercadoPago(items: ItemCarrito[], usuario: any): Promise<void> {
+  private async crearPreferenciaMercadoPago(items: any[], usuario: any): Promise<void> {
     const credentials = getMercadoPagoCredentials();
     const settings = getMercadoPagoSettings();
     
@@ -162,20 +129,48 @@ export class Carrito {
     }
 
     // Preparar items para Mercado Pago
-    const mpItems = items.map(item => ({
-      title: item.producto.nombre.substring(0, 256),
-      quantity: item.cantidad,
-      unit_price: item.producto.precio
-    }));
+    const mpItems = items.map(item => {
+      const precio = parseFloat(item.producto.precio.toString()) || 1; // Mínimo $1
+      const cantidad = parseInt(item.cantidad.toString()) || 1;
+      
+      return {
+        title: (item.producto.nombre || 'Producto').substring(0, 256),
+        quantity: cantidad,
+        unit_price: precio >= 1 ? precio : 1, // Asegurar precio mínimo
+        currency_id: 'ARS'
+      };
+    });
+    
+    console.log('📦 Items preparados para MP:', mpItems);
+    
+    // Validar que todos los items tengan precios válidos
+    const itemsInvalidos = mpItems.filter(item => item.unit_price <= 0 || item.quantity <= 0);
+    if (itemsInvalidos.length > 0) {
+      console.error('❌ Items con precios inválidos:', itemsInvalidos);
+      this.cargandoMP.set(false);
+      this.mostrarErrorPago('Error: Algunos productos tienen precios inválidos');
+      return;
+    }
 
+    // Obtener la URL base correcta
+    let baseUrl = window.location.origin;
+    
+    // Si estamos en localhost, usar una URL de prueba válida para Mercado Pago
+    if (baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1')) {
+      baseUrl = 'https://aled2025-5be25.web.app'; // URL de producción
+      console.log('🌐 Usando URL de producción para MP:', baseUrl);
+    } else {
+      console.log('🌐 URL base detectada:', baseUrl);
+    }
+    
+    // Configuración mínima y básica de Mercado Pago
     const preference = {
       items: mpItems,
       back_urls: {
-        success: `${window.location.origin}/pago-exitoso`,
-        failure: `${window.location.origin}/pago-fallido`,
-        pending: `${window.location.origin}/pago-pendiente`
-      },
-      auto_return: 'approved'
+        success: `${baseUrl}/pago-exitoso`,
+        failure: `${baseUrl}/pago-fallido`,
+        pending: `${baseUrl}/pago-pendiente`
+      }
     };
 
     const headers = {
@@ -184,6 +179,8 @@ export class Carrito {
     };
 
     console.log('💳 Creando preferencia de Mercado Pago...');
+    console.log('📋 Preferencia a enviar:', JSON.stringify(preference, null, 2));
+    console.log('🔑 Headers:', headers);
 
     this.http.post('https://api.mercadopago.com/checkout/preferences', preference, { headers })
       .subscribe({
@@ -203,13 +200,18 @@ export class Carrito {
         },
         error: (error: any) => {
           console.error('❌ Error creando preferencia:', error);
+          console.error('❌ Detalles del error:', error.error);
           this.cargandoMP.set(false);
           
           let mensaje = 'Error al conectar con Mercado Pago';
           if (error.status === 401) {
             mensaje = 'Credenciales de Mercado Pago inválidas';
           } else if (error.status === 400) {
-            mensaje = 'Datos de pago inválidos';
+            if (error.error?.message) {
+              mensaje = `Error de configuración: ${error.error.message}`;
+            } else {
+              mensaje = 'Datos de pago inválidos. Revisa la configuración.';
+            }
           }
           
           this.mostrarErrorPago(mensaje);
@@ -220,7 +222,7 @@ export class Carrito {
   /**
    * Simula un pago exitoso para desarrollo
    */
-  private simularPagoExitoso(items: ItemCarrito[], usuario: any): void {
+  private simularPagoExitoso(items: any[], usuario: any): void {
     const totalPagado = this.carritoService.totalPrecio();
     
     console.log('✅ Simulando pago exitoso:', {
@@ -268,6 +270,12 @@ export class Carrito {
   cerrar(): void {
     // Método para cerrar el carrito (si se usa en modal)
     console.log('Cerrando carrito');
+  }
+  
+  // --- Método de prueba temporal ---
+  probarCarrito(): void {
+    console.log('🧪 Probando carrito...');
+    this.carritoService.agregarProductosDePrueba();
   }
 
   manejarEliminar(idProducto: string | undefined): void {

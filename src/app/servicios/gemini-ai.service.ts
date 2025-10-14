@@ -50,9 +50,7 @@ export class GeminiAiService {
   };
 
   constructor(private http: HttpClient) {
-    console.log('🤖 Inicializando GeminiAiService para ALED2025...');
-    console.log('🚀 Modelo: Gemini 2.0 Flash Experimental (más reciente y potente)');
-    console.log('🔑 API Key configurada:', this.configuracion.apiKey ? '✅ Disponible' : '❌ No configurada');
+    console.log('🤖 GeminiAiService inicializado - Modelo: Gemini 2.0 Flash');
   }
 
   /**
@@ -72,8 +70,7 @@ export class GeminiAiService {
    * @returns Observable con los datos generados por Gemini Pro
    */
   analizarProducto(imagenBase64: string, tipoAnalisis: 'completo' | 'descripcion' | 'precio' = 'completo'): Observable<ResultadoGemini> {
-    console.log('🔍 Iniciando análisis de producto con Gemini AI...');
-    console.log('📊 Tipo de análisis:', tipoAnalisis);
+    console.log('🔍 Análisis Gemini AI - Tipo:', tipoAnalisis);
 
     const prompt = this.generarPrompt(tipoAnalisis);
     const payload = this.crearPayload(imagenBase64, prompt);
@@ -154,30 +151,19 @@ Responde SOLO JSON:
    * Crea el payload para la API de Gemini con validación mejorada
    */
   private crearPayload(imagenBase64: string, prompt: string): any {
-    console.log('🔧 Creando payload para Gemini 2.5 Flash...');
-    
     // Detectar el tipo MIME de la imagen
-    let mimeType = 'image/jpeg'; // Por defecto
+    let mimeType = 'image/jpeg';
     let imageData = imagenBase64;
     
-    // Si la imagen viene con el prefijo data:image, extraer el tipo MIME
-    const mimeMatch = imagenBase64.match(/^data:(image\/[a-z]+);base64,/);
+    const mimeMatch = imagenBase64.match(/^data:image\/([a-z]+);base64,/);
     if (mimeMatch) {
       mimeType = mimeMatch[1];
       imageData = imagenBase64.replace(/^data:image\/[a-z]+;base64,/, '');
-      console.log('🎯 Tipo MIME detectado:', mimeType);
-    } else {
-      // Si no tiene prefijo, asumir que es Base64 puro
-      console.log('📝 Imagen sin prefijo, usando MIME por defecto:', mimeType);
     }
     
-    // Validar que tenemos datos de imagen
     if (!imageData || imageData.length < 100) {
       throw new Error('Datos de imagen inválidos o muy pequeños');
     }
-    
-    console.log('📊 Tamaño de imagen Base64:', imageData.length, 'caracteres');
-    console.log('🎨 Tipo MIME final:', mimeType);
     
     const payload = {
       contents: [
@@ -223,7 +209,6 @@ Responde SOLO JSON:
       ]
     };
     
-    console.log('✅ Payload creado exitosamente');
     return payload;
   }
 

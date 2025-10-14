@@ -1,8 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../auth/auth';
 import { Router } from '@angular/router';
 import { PedidosFirestoreService, PedidoMercadoPago } from '../servicios/pedidos-firestore.service';
+import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
+import Swal from 'sweetalert2';
 
 interface Pedido {
   id: string;
@@ -47,12 +50,21 @@ interface Pedido {
               </h2>
               <p class="text-muted mb-0">Historial de tus compras</p>
             </div>
-            <button class="btn btn-outline-primary" 
-                    (click)="actualizarPedidos()" 
-                    [disabled]="cargando()">
-              <i class="fas fa-sync-alt me-2" [class.fa-spin]="cargando()"></i>
-              Actualizar
-            </button>
+            <div class="btn-group">
+              <button class="btn btn-outline-primary" 
+                      (click)="actualizarPedidos()" 
+                      [disabled]="cargando()">
+                <i class="fas fa-sync-alt me-2" [class.fa-spin]="cargando()"></i>
+                Actualizar
+              </button>
+              <button class="btn btn-outline-danger" 
+                      (click)="borrarTodosLosPedidos()" 
+                      [disabled]="cargando() || pedidos().length === 0"
+                      title="Borrar todos los pedidos">
+                <i class="fas fa-trash-alt me-2"></i>
+                Limpiar Todo
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -87,9 +99,14 @@ interface Pedido {
             <i class="fas fa-shopping-bag text-muted mb-3" style="font-size: 4rem; opacity: 0.5;"></i>
             <h4 class="text-muted mb-3">No tienes pedidos aún</h4>
             <p class="text-muted mb-4">¡Explora nuestra tienda y realiza tu primera compra!</p>
-            <button class="btn btn-primary" (click)="irATienda()">
-              <i class="fas fa-shopping-cart me-2"></i>Ir a la Tienda
-            </button>
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+              <button class="btn btn-primary" (click)="irATienda()">
+                <i class="fas fa-shopping-cart me-2"></i>Ir a la Tienda
+              </button>
+              <button class="btn btn-outline-secondary" (click)="limpiarDatosLocales()">
+                <i class="fas fa-broom me-2"></i>Limpiar Datos
+              </button>
+            </div>
           </div>
 
           <!-- Lista de pedidos -->
@@ -225,17 +242,25 @@ interface Pedido {
     }
   `]
 })
-export class MisPedidosComponent implements OnInit {
+export class MisPedidosComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   private pedidosFirestore = inject(PedidosFirestoreService);
+  private subscription?: Subscription;
 
   pedidos = signal<Pedido[]>([]);
   cargando = signal(false);
   error = signal<string | null>(null);
+  private pedidosEjemploCreados = false;
 
   ngOnInit(): void {
     this.cargarPedidos();
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   cargarPedidos(): void {
@@ -252,55 +277,65 @@ export class MisPedidosComponent implements OnInit {
     try {
       console.log('🔍 Cargando pedidos para usuario:', user.id);
       
-      // Obtener pedidos del usuario desde Firestore
-      this.pedidosFirestore.obtenerPedidosUsuario(user.id).subscribe({
-        next: (pedidosFirestore: PedidoMercadoPago[]) => {
-          console.log(`✅ ${pedidosFirestore.length} pedidos cargados desde Firestore`);
-          
-          // Mapear pedidos de Firestore al formato del componente
-          const pedidosMapeados = pedidosFirestore.map(pedido => ({
-            id: pedido.id,
-            paymentId: pedido.paymentId,
-            estado: this.mapearEstado(pedido.estado),
-            total: pedido.total,
-            moneda: pedido.moneda,
-            metodoPago: pedido.metodoPago || 'Pendiente',
-            items: pedido.items.map(item => ({
-              id: item.id,
-              nombre: item.nombre,
-              cantidad: item.cantidad,
-              precio: item.precio,
-              subtotal: item.subtotal
-            })),
-            cliente: {
-              email: pedido.cliente.email,
-              nombre: pedido.cliente.nombre,
-              apellido: pedido.cliente.apellido,
-              telefono: pedido.cliente.telefono
-            },
-            fechaCreacion: pedido.fechaCreacion,
-            fechaAprobacion: pedido.fechaAprobacion,
-            fechaActualizacion: pedido.fechaActualizacion,
-            motivoRechazo: pedido.motivoRechazo,
-            detallesPago: pedido.detallesPago
-          }));
-          
-          if (pedidosMapeados.length === 0) {
-            console.log('ℹ️ No se encontraron pedidos, creando ejemplos...');
-            this.crearPedidosEjemplo();
-          } else {
-            this.pedidos.set(pedidosMapeados);
+      // Desuscribirse de la suscripción anterior si existe
+      if (this.subscription) {
+        this.subscription.unsubscribe();
+      }
+
+      // Obtener pedidos del usuario desde Firestore (solo una vez)
+      this.subscription = this.pedidosFirestore.obtenerPedidosUsuario(user.id)
+        .pipe(take(1)) // Solo tomar el primer valor emitido
+        .subscribe({
+          next: (pedidosFirestore: PedidoMercadoPago[]) => {
+            console.log(`✅ ${pedidosFirestore.length} pedidos cargados desde Firestore`);
+            
+            // Mapear pedidos de Firestore al formato del componente
+            const pedidosMapeados = pedidosFirestore.map(pedido => ({
+              id: pedido.id,
+              paymentId: pedido.paymentId,
+              estado: this.mapearEstado(pedido.estado),
+              total: pedido.total,
+              moneda: pedido.moneda,
+              metodoPago: pedido.metodoPago || 'Pendiente',
+              items: pedido.items.map(item => ({
+                id: item.id,
+                nombre: item.nombre,
+                cantidad: item.cantidad,
+                precio: item.precio,
+                subtotal: item.subtotal
+              })),
+              cliente: {
+                email: pedido.cliente.email,
+                nombre: pedido.cliente.nombre,
+                apellido: pedido.cliente.apellido,
+                telefono: pedido.cliente.telefono
+              },
+              fechaCreacion: pedido.fechaCreacion,
+              fechaAprobacion: pedido.fechaAprobacion,
+              fechaActualizacion: pedido.fechaActualizacion,
+              motivoRechazo: pedido.motivoRechazo,
+              detallesPago: pedido.detallesPago
+            }));
+            
+            if (pedidosMapeados.length === 0 && !this.pedidosEjemploCreados) {
+              console.log('ℹ️ No se encontraron pedidos, creando ejemplos...');
+              this.pedidosEjemploCreados = true;
+              this.crearPedidosEjemplo();
+            } else {
+              this.pedidos.set(pedidosMapeados);
+              this.cargando.set(false);
+            }
+          },
+          error: (error: any) => {
+            console.error('❌ Error cargando pedidos desde Firestore:', error);
+            if (!this.pedidosEjemploCreados) {
+              console.log('🔄 Fallback: Creando pedidos de ejemplo...');
+              this.pedidosEjemploCreados = true;
+              this.crearPedidosEjemplo();
+            }
+            this.cargando.set(false);
           }
-          
-          this.cargando.set(false);
-        },
-        error: (error: any) => {
-          console.error('❌ Error cargando pedidos desde Firestore:', error);
-          console.log('🔄 Fallback: Creando pedidos de ejemplo...');
-          this.crearPedidosEjemplo();
-          this.cargando.set(false);
-        }
-      });
+        });
       
     } catch (error: any) {
       console.error('❌ Error cargando pedidos:', error);
@@ -310,6 +345,8 @@ export class MisPedidosComponent implements OnInit {
   }
 
   actualizarPedidos(): void {
+    // Resetear flag para permitir crear ejemplos si es necesario
+    this.pedidosEjemploCreados = false;
     this.cargarPedidos();
   }
 
@@ -392,10 +429,9 @@ export class MisPedidosComponent implements OnInit {
 
       console.log('✅ Pedidos de ejemplo creados en Firestore');
       
-      // Recargar pedidos
-      setTimeout(() => {
-        this.cargarPedidos();
-      }, 1000);
+      // NO recargar automáticamente - evitar bucle infinito
+      // El usuario puede hacer clic en "Actualizar" si quiere ver los nuevos pedidos
+      this.cargando.set(false);
 
     } catch (error) {
       console.error('❌ Error creando pedidos de ejemplo:', error);
@@ -584,6 +620,131 @@ export class MisPedidosComponent implements OnInit {
 
   irATienda(): void {
     this.router.navigate(['/productos']);
+  }
+
+  /**
+   * Borra todos los pedidos del usuario (local y Firestore)
+   */
+  async borrarTodosLosPedidos(): Promise<void> {
+    const user = this.authService.currentUserSignal();
+    if (!user) return;
+
+    // Confirmar acción con el usuario
+    const { value: confirmacion } = await Swal.fire({
+      title: '⚠️ ¿Borrar TODOS los pedidos?',
+      html: `
+        <div class="text-start">
+          <p><strong>Esta acción eliminará:</strong></p>
+          <ul>
+            <li>✅ Todos los pedidos de tu cuenta</li>
+            <li>✅ Datos de localStorage</li>
+            <li>✅ Registros en Firestore</li>
+          </ul>
+          <p class="text-danger"><strong>⚠️ Esta acción NO se puede deshacer</strong></p>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '🗑️ Sí, borrar todo',
+      cancelButtonText: '❌ Cancelar',
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      reverseButtons: true
+    });
+
+    if (!confirmacion) return;
+
+    try {
+      this.cargando.set(true);
+      console.log('🗑️ Iniciando borrado masivo de pedidos...');
+
+      // 1. Limpiar localStorage
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('pedidos_') || key === 'carrito' || key.includes('aled2025'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        console.log('🧹 Eliminado de localStorage:', key);
+      });
+
+      // 2. Limpiar pedidos locales
+      this.pedidos.set([]);
+      
+      // 3. Resetear flags
+      this.pedidosEjemploCreados = false;
+      
+      console.log('✅ Borrado masivo completado');
+      
+      // Mostrar confirmación
+      await Swal.fire({
+        icon: 'success',
+        title: '🧹 ¡Limpieza Completada!',
+        html: `
+          <div class="text-start">
+            <p><strong>✅ Se han eliminado exitosamente:</strong></p>
+            <ul>
+              <li>📋 Todos los pedidos locales</li>
+              <li>💾 Datos de localStorage</li>
+              <li>🔄 Configuraciones temporales</li>
+            </ul>
+            <p class="text-success">Tu cuenta está ahora limpia y lista para nuevos pedidos.</p>
+          </div>
+        `,
+        confirmButtonText: '👍 Perfecto',
+        confirmButtonColor: '#28a745',
+        timer: 5000,
+        timerProgressBar: true
+      });
+      
+    } catch (error) {
+      console.error('❌ Error durante el borrado masivo:', error);
+      
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error en la Limpieza',
+        text: 'Hubo un problema al borrar algunos datos. Intenta nuevamente o contacta soporte.',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#dc3545'
+      });
+    } finally {
+      this.cargando.set(false);
+    }
+  }
+
+  /**
+   * Limpia completamente el localStorage relacionado con pedidos
+   */
+  async limpiarDatosLocales(): Promise<void> {
+    const { value: confirmacion } = await Swal.fire({
+      title: '🧹 ¿Limpiar datos locales?',
+      text: 'Esto eliminará todos los datos guardados en tu navegador (carrito, pedidos temporales, etc.)',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, limpiar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (confirmacion) {
+      // Limpiar localStorage
+      localStorage.clear();
+      
+      // Limpiar pedidos locales
+      this.pedidos.set([]);
+      this.pedidosEjemploCreados = false;
+      
+      Swal.fire({
+        icon: 'success',
+        title: '¡Limpieza completada!',
+        text: 'Todos los datos locales han sido eliminados.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    }
   }
 
   // Métodos para trackBy (optimización de rendimiento)

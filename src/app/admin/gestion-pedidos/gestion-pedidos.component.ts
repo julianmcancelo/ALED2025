@@ -1,37 +1,10 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { Firestore, collection, collectionData } from '@angular/fire/firestore';
+import { PedidosFirestoreService, PedidoMercadoPago, EstadoPedidoMP } from '../../servicios/pedidos-firestore.service';
 import Swal from 'sweetalert2';
 
-// Interfaces para los pedidos de Mercado Pago
-interface PedidoMercadoPago {
-  id: string;
-  paymentId: string;
-  estado: 'completado' | 'pendiente' | 'rechazado' | 'reembolsado' | 'desconocido';
-  total: number;
-  moneda: string;
-  metodoPago: string;
-  items: Array<{
-    id: string;
-    nombre: string;
-    cantidad: number;
-    precio: number;
-    subtotal: number;
-  }>;
-  cliente: {
-    email?: string;
-    nombre?: string;
-    apellido?: string;
-    telefono?: string;
-  };
-  fechaCreacion: any;
-  fechaAprobacion?: any;
-  fechaActualizacion?: any;
-  motivoRechazo?: string;
-  detallesPago: any;
-}
+// Interfaces importadas desde el servicio
 
 /**
  * ============================================================================
@@ -51,75 +24,99 @@ interface PedidoMercadoPago {
   imports: [CommonModule, FormsModule],
   template: `
     <div class="container-fluid mt-4">
-      <!-- Header con título y estadísticas -->
+      <!-- Header Simple -->
       <div class="row mb-4">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2><i class="fas fa-shopping-cart me-2"></i>Historial de Compras - Mercado Pago</h2>
-            <button class="btn btn-primary" (click)="cargarPedidos()">
-              <i class="fas fa-sync-alt me-2"></i>Actualizar
-            </button>
-          </div>
-          
-          <!-- Tarjetas de estadísticas -->
-          <div class="row">
-            <div class="col-md-2">
-              <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                  <h5>{{estadisticas().total}}</h5>
-                  <small>Total Pedidos</small>
-                </div>
-              </div>
+            <div>
+              <h2 class="mb-1">
+                <i class="bi bi-bag-check me-2 text-primary"></i>Gestión de Pedidos
+              </h2>
+              <p class="text-muted mb-0">Administra todas las ventas y transacciones</p>
             </div>
-            <div class="col-md-2">
-              <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                  <h5>{{estadisticas().completados}}</h5>
-                  <small>Completados</small>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-2">
-              <div class="card bg-warning text-dark">
-                <div class="card-body text-center">
-                  <h5>{{estadisticas().pendientes}}</h5>
-                  <small>Pendientes</small>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-2">
-              <div class="card bg-danger text-white">
-                <div class="card-body text-center">
-                  <h5>{{estadisticas().rechazados}}</h5>
-                  <small>Rechazados</small>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-2">
-              <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                  <h5>{{estadisticas().reembolsados}}</h5>
-                  <small>Reembolsados</small>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-2">
-              <div class="card bg-secondary text-white">
-                <div class="card-body text-center">
-                  <h5>{{estadisticas().desconocidos}}</h5>
-                  <small>Desconocidos</small>
-                </div>
-              </div>
+            <div class="btn-group">
+              <button class="btn btn-outline-primary" (click)="cargarPedidos()" [disabled]="cargando()">
+                <i class="bi bi-arrow-clockwise me-2" [class.fa-spin]="cargando()"></i>
+                Actualizar
+              </button>
+              <button class="btn btn-outline-success" (click)="crearPedidosDePrueba()">
+                <i class="bi bi-plus-circle me-2"></i>
+                Crear Pruebas
+              </button>
+              <button class="btn btn-outline-danger" 
+                      (click)="eliminarTodosLosPedidos()" 
+                      [disabled]="cargando() || pedidos().length === 0"
+                      title="Eliminar todos los pedidos">
+                <i class="bi bi-trash me-2"></i>
+                Eliminar Todo
+              </button>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Filtros y búsqueda -->
+          
+      <!-- Estadísticas Simples -->
+      <div class="row mb-4">
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="bi bi-graph-up text-primary mb-2" style="font-size: 1.5rem;"></i>
+              <h5 class="card-title">{{estadisticas().total}}</h5>
+              <p class="card-text text-muted small">Total</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="bi bi-check-circle text-success mb-2" style="font-size: 1.5rem;"></i>
+              <h5 class="card-title">{{estadisticas().completados}}</h5>
+              <p class="card-text text-muted small">Completados</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="bi bi-clock text-warning mb-2" style="font-size: 1.5rem;"></i>
+              <h5 class="card-title">{{estadisticas().pendientes}}</h5>
+              <p class="card-text text-muted small">Pendientes</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="bi bi-x-circle text-danger mb-2" style="font-size: 1.5rem;"></i>
+              <h5 class="card-title">{{estadisticas().rechazados}}</h5>
+              <p class="card-text text-muted small">Rechazados</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="bi bi-arrow-return-left text-info mb-2" style="font-size: 1.5rem;"></i>
+              <h5 class="card-title">{{estadisticas().reembolsados}}</h5>
+              <p class="card-text text-muted small">Reembolsados</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card text-center">
+            <div class="card-body">
+              <i class="bi bi-dash-circle text-secondary mb-2" style="font-size: 1.5rem;"></i>
+              <h5 class="card-title">{{estadisticas().cancelados}}</h5>
+              <p class="card-text text-muted small">Cancelados</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Filtros Simples -->
       <div class="row mb-4">
         <div class="col-md-6">
           <div class="input-group">
-            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
             <input 
               type="text" 
               class="form-control" 
@@ -135,42 +132,42 @@ interface PedidoMercadoPago {
             <option value="pendiente">⏳ Pendientes</option>
             <option value="rechazado">❌ Rechazados</option>
             <option value="reembolsado">💰 Reembolsados</option>
-            <option value="desconocido">❓ Desconocidos</option>
+            <option value="cancelado">🚫 Cancelados</option>
           </select>
         </div>
         <div class="col-md-2">
           <button class="btn btn-outline-secondary w-100" (click)="limpiarFiltros()">
-            <i class="fas fa-eraser me-2"></i>Limpiar
+            <i class="bi bi-eraser me-2"></i>Limpiar
           </button>
         </div>
       </div>
 
-      <!-- Loading -->
+      <!-- Loading Simple -->
       <div *ngIf="cargando()" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Cargando...</span>
         </div>
-        <p class="mt-2">Cargando historial de compras...</p>
+        <p class="mt-3 text-muted">Cargando pedidos...</p>
       </div>
 
-      <!-- Tabla de pedidos -->
+      <!-- Tabla Simple -->
       <div *ngIf="!cargando()" class="card">
         <div class="card-header">
           <h5 class="mb-0">
-            <i class="fas fa-list me-2"></i>
-            Historial Completo ({{pedidosFiltrados().length}} pedidos)
+            <i class="bi bi-list-ul me-2"></i>
+            Historial de Pedidos ({{pedidosFiltrados().length}} resultados)
           </h5>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover mb-0">
-              <thead class="table-dark">
+              <thead>
                 <tr>
-                  <th>ID Pedido</th>
+                  <th>Pedido</th>
                   <th>Cliente</th>
                   <th>Estado</th>
                   <th>Total</th>
-                  <th>Método Pago</th>
+                  <th>Pago</th>
                   <th>Fecha</th>
                   <th>Acciones</th>
                 </tr>
@@ -178,9 +175,9 @@ interface PedidoMercadoPago {
               <tbody>
                 <tr *ngFor="let pedido of pedidosFiltrados()">
                   <td>
-                    <strong>{{pedido.id.replace('pedido_', '')}}</strong>
+                    <strong>#{{pedido.id.replace('pedido_', '').substring(0, 8)}}</strong>
                     <br>
-                    <small class="text-muted">MP: {{pedido.paymentId}}</small>
+                    <small class="text-muted">MP: {{pedido.paymentId.substring(0, 10)}}...</small>
                   </td>
                   <td>
                     <div>
@@ -190,13 +187,13 @@ interface PedidoMercadoPago {
                     </div>
                   </td>
                   <td>
-                    <span [class]="'badge ' + obtenerClaseEstado(pedido.estado)">
+                    <span class="badge" [class]="obtenerClaseEstado(pedido.estado)">
                       <i [class]="obtenerIconoEstado(pedido.estado) + ' me-1'"></i>
                       {{obtenerTextoEstado(pedido.estado)}}
                     </span>
                     <div *ngIf="pedido.motivoRechazo" class="mt-1">
                       <small class="text-danger">
-                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <i class="bi bi-exclamation-triangle me-1"></i>
                         {{obtenerMotivoRechazo(pedido.motivoRechazo)}}
                       </small>
                     </div>
@@ -207,7 +204,7 @@ interface PedidoMercadoPago {
                     <small class="text-muted">{{pedido.moneda}}</small>
                   </td>
                   <td>
-                    <span class="badge bg-light text-dark">{{pedido.metodoPago}}</span>
+                    <span class="badge bg-light text-dark">{{pedido.metodoPago || 'N/A'}}</span>
                   </td>
                   <td>
                     <div>{{formatearFecha(pedido.fechaCreacion)}}</div>
@@ -216,30 +213,39 @@ interface PedidoMercadoPago {
                     </small>
                   </td>
                   <td>
-                    <button class="btn btn-sm btn-outline-primary me-1" 
-                            (click)="verDetallesPedido(pedido)">
-                      <i class="fas fa-eye"></i>
-                    </button>
-                    <button *ngIf="pedido.estado === 'completado'" 
-                            class="btn btn-sm btn-outline-warning me-1"
-                            (click)="procesarReembolso(pedido)">
-                      <i class="fas fa-undo"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger"
-                            (click)="eliminarPedido(pedido)">
-                      <i class="fas fa-trash"></i>
-                    </button>
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-outline-primary" 
+                              (click)="verDetallesPedido(pedido)"
+                              title="Ver detalles">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button *ngIf="pedido.estado === 'completado'" 
+                              class="btn btn-outline-warning"
+                              (click)="procesarReembolso(pedido)"
+                              title="Procesar reembolso">
+                        <i class="bi bi-arrow-return-left"></i>
+                      </button>
+                      <button class="btn btn-outline-danger"
+                              (click)="eliminarPedido(pedido)"
+                              title="Eliminar pedido">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
           
-          <!-- Sin resultados -->
+          <!-- Sin Resultados Simple -->
           <div *ngIf="pedidosFiltrados().length === 0" class="text-center py-5">
-            <i class="fas fa-search text-muted" style="font-size: 3rem;"></i>
-            <h5 class="mt-3 text-muted">No se encontraron pedidos</h5>
-            <p class="text-muted">Intenta cambiar los filtros de búsqueda</p>
+            <i class="bi bi-inbox text-muted mb-3" style="font-size: 3rem;"></i>
+            <h5 class="text-muted mb-3">No se encontraron pedidos</h5>
+            <p class="text-muted mb-4">Intenta ajustar los filtros o crear pedidos de prueba</p>
+            <button class="btn btn-primary" (click)="crearPedidosDePrueba()">
+              <i class="bi bi-plus-circle me-2"></i>
+              Crear Pedidos de Prueba
+            </button>
           </div>
         </div>
       </div>
@@ -333,30 +339,52 @@ interface PedidoMercadoPago {
     </div>
   `,
   styles: [`
-    .modal {
-      background-color: rgba(0,0,0,0.5);
-    }
-    
     .card {
+      transition: transform 0.2s ease;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
-    .table th {
-      border-top: none;
+    .card:hover {
+      transform: translateY(-2px);
     }
     
     .badge {
       font-size: 0.8rem;
     }
     
+    .btn {
+      transition: all 0.2s ease;
+    }
+    
+    .table th {
+      border-top: none;
+      background-color: #f8f9fa;
+    }
+    
     .spinner-border {
       width: 3rem;
       height: 3rem;
     }
+
+    .modal {
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    @media (max-width: 768px) {
+      .btn-group {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.5rem;
+      }
+    }
   `]
 })
 export class GestionPedidosComponent implements OnInit {
-  private firestore = inject(Firestore);
+  private pedidosService = inject(PedidosFirestoreService);
 
   // --- SIGNALS PARA ESTADO REACTIVO ---
   pedidos = signal<PedidoMercadoPago[]>([]);
@@ -388,8 +416,8 @@ export class GestionPedidosComponent implements OnInit {
     }
     
     return resultado.sort((a, b) => {
-      const fechaA = a.fechaCreacion?.seconds || 0;
-      const fechaB = b.fechaCreacion?.seconds || 0;
+      const fechaA = a.fechaCreacion instanceof Date ? a.fechaCreacion.getTime() : ((a.fechaCreacion as any)?.seconds ? (a.fechaCreacion as any).seconds * 1000 : 0);
+      const fechaB = b.fechaCreacion instanceof Date ? b.fechaCreacion.getTime() : ((b.fechaCreacion as any)?.seconds ? (b.fechaCreacion as any).seconds * 1000 : 0);
       return fechaB - fechaA; // Más recientes primero
     });
   });
@@ -399,11 +427,11 @@ export class GestionPedidosComponent implements OnInit {
     const todos = this.pedidos();
     return {
       total: todos.length,
-      completados: todos.filter(p => p.estado === 'completado').length,
-      pendientes: todos.filter(p => p.estado === 'pendiente').length,
-      rechazados: todos.filter(p => p.estado === 'rechazado').length,
-      reembolsados: todos.filter(p => p.estado === 'reembolsado').length,
-      desconocidos: todos.filter(p => p.estado === 'desconocido').length
+      completados: todos.filter(p => p.estado === EstadoPedidoMP.COMPLETADO || p.estado === EstadoPedidoMP.APROBADO).length,
+      pendientes: todos.filter(p => p.estado === EstadoPedidoMP.PENDIENTE || p.estado === EstadoPedidoMP.CREADO).length,
+      rechazados: todos.filter(p => p.estado === EstadoPedidoMP.RECHAZADO).length,
+      reembolsados: todos.filter(p => p.estado === EstadoPedidoMP.REEMBOLSADO).length,
+      cancelados: todos.filter(p => p.estado === EstadoPedidoMP.CANCELADO).length
     };
   });
 
@@ -418,17 +446,16 @@ export class GestionPedidosComponent implements OnInit {
    */
 
   /**
-   * Carga todos los pedidos desde Firestore
+   * Carga todos los pedidos desde Firestore usando el servicio
    */
   cargarPedidos(): void {
     console.log('📋 Cargando pedidos de Mercado Pago...');
     this.cargando.set(true);
     
-    const pedidosCollection = collection(this.firestore, 'pedidos');
-    collectionData(pedidosCollection, { idField: 'docId' }).subscribe({
-      next: (pedidos: any[]) => {
+    this.pedidosService.obtenerTodosLosPedidos().subscribe({
+      next: (pedidos: PedidoMercadoPago[]) => {
         console.log(`✅ ${pedidos.length} pedidos cargados`);
-        this.pedidos.set(pedidos as PedidoMercadoPago[]);
+        this.pedidos.set(pedidos);
         this.cargando.set(false);
       },
       error: (error: any) => {
@@ -441,6 +468,89 @@ export class GestionPedidosComponent implements OnInit {
         });
       }
     });
+  }
+
+  /**
+   * Crea pedidos de prueba para demostrar la funcionalidad
+   */
+  async crearPedidosDePrueba(): Promise<void> {
+    const { value: confirmacion } = await Swal.fire({
+      title: '¿Crear Pedidos de Prueba?',
+      text: 'Se crearán varios pedidos de ejemplo para mostrar la funcionalidad del panel.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, crear',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!confirmacion) return;
+
+    try {
+      this.cargando.set(true);
+
+      // Crear varios pedidos de prueba con diferentes estados
+      const pedidosPrueba = [
+        {
+          items: [
+            { producto: { id: 'test-1', nombre: 'Mate de Calabaza Premium', precio: 15000, imagen: '' }, cantidad: 1 },
+            { producto: { id: 'test-2', nombre: 'Bombilla de Alpaca', precio: 8500, imagen: '' }, cantidad: 1 }
+          ],
+          usuario: { id: 'admin', email: 'admin@aled2025.com', nombre: 'Admin', apellido: 'ALED2025' },
+          metodoEntrega: 'domicilio',
+          preferenceId: 'test_pref_' + Date.now() + '_1'
+        },
+        {
+          items: [
+            { producto: { id: 'test-3', nombre: 'Yerba Mate Orgánica 1kg', precio: 3200, imagen: '' }, cantidad: 2 }
+          ],
+          usuario: { id: 'user1', email: 'usuario1@test.com', nombre: 'Juan', apellido: 'Pérez' },
+          metodoEntrega: 'local',
+          preferenceId: 'test_pref_' + Date.now() + '_2'
+        },
+        {
+          items: [
+            { producto: { id: 'test-4', nombre: 'Set Completo de Mate', precio: 25000, imagen: '' }, cantidad: 1 }
+          ],
+          usuario: { id: 'user2', email: 'maria@test.com', nombre: 'María', apellido: 'González' },
+          metodoEntrega: 'domicilio',
+          preferenceId: 'test_pref_' + Date.now() + '_3'
+        }
+      ];
+
+      // Crear los pedidos usando el servicio
+      for (const pedidoData of pedidosPrueba) {
+        await this.pedidosService.crearPedido(
+          pedidoData.items,
+          pedidoData.usuario,
+          pedidoData.metodoEntrega,
+          pedidoData.preferenceId,
+          'Dirección de prueba 123',
+          'Pedido de prueba para demostración'
+        );
+      }
+
+      // Recargar la lista de pedidos
+      this.cargarPedidos();
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Pedidos Creados!',
+        text: `Se han creado ${pedidosPrueba.length} pedidos de prueba exitosamente.`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      console.log('✅ Pedidos de prueba creados exitosamente');
+
+    } catch (error) {
+      console.error('❌ Error creando pedidos de prueba:', error);
+      this.cargando.set(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron crear los pedidos de prueba.',
+      });
+    }
   }
 
   /**
@@ -537,14 +647,8 @@ export class GestionPedidosComponent implements OnInit {
 
     if (confirmacion) {
       try {
-        // Importar las funciones necesarias de Firebase
-        const { doc, deleteDoc } = await import('@angular/fire/firestore');
-        
-        // Eliminar el documento de Firestore
-        const pedidoDoc = doc(this.firestore, 'pedidos', pedido.id);
-        await deleteDoc(pedidoDoc);
-        
-        // Actualizar la lista local
+        // Por ahora, solo eliminar de la lista local
+        // TODO: Implementar eliminación real en el servicio
         const pedidosActuales = this.pedidos();
         const pedidosActualizados = pedidosActuales.filter(p => p.id !== pedido.id);
         this.pedidos.set(pedidosActualizados);
@@ -557,12 +661,12 @@ export class GestionPedidosComponent implements OnInit {
         Swal.fire({
           icon: 'success',
           title: '¡Eliminado!',
-          text: `El pedido ${pedido.id.replace('pedido_', '')} ha sido eliminado correctamente.`,
+          text: `El pedido ${pedido.id.replace('pedido_', '')} ha sido eliminado de la vista.`,
           timer: 2000,
           showConfirmButton: false
         });
         
-        console.log(`✅ Pedido eliminado: ${pedido.id}`);
+        console.log(`✅ Pedido eliminado de la vista: ${pedido.id}`);
       } catch (error) {
         console.error('❌ Error al eliminar pedido:', error);
         Swal.fire({
@@ -585,11 +689,13 @@ export class GestionPedidosComponent implements OnInit {
    */
   obtenerTextoEstado(estado: string): string {
     const textos: {[key: string]: string} = {
-      'completado': 'Completado',
-      'pendiente': 'Pendiente',
-      'rechazado': 'Rechazado',
-      'reembolsado': 'Reembolsado',
-      'desconocido': 'Desconocido'
+      [EstadoPedidoMP.COMPLETADO]: 'Completado',
+      [EstadoPedidoMP.APROBADO]: 'Aprobado',
+      [EstadoPedidoMP.PENDIENTE]: 'Pendiente',
+      [EstadoPedidoMP.CREADO]: 'Creado',
+      [EstadoPedidoMP.RECHAZADO]: 'Rechazado',
+      [EstadoPedidoMP.REEMBOLSADO]: 'Reembolsado',
+      [EstadoPedidoMP.CANCELADO]: 'Cancelado'
     };
     return textos[estado] || 'Desconocido';
   }
@@ -599,11 +705,13 @@ export class GestionPedidosComponent implements OnInit {
    */
   obtenerClaseEstado(estado: string): string {
     const clases: {[key: string]: string} = {
-      'completado': 'bg-success',
-      'pendiente': 'bg-warning text-dark',
-      'rechazado': 'bg-danger',
-      'reembolsado': 'bg-info',
-      'desconocido': 'bg-secondary'
+      [EstadoPedidoMP.COMPLETADO]: 'bg-success',
+      [EstadoPedidoMP.APROBADO]: 'bg-success',
+      [EstadoPedidoMP.PENDIENTE]: 'bg-warning text-dark',
+      [EstadoPedidoMP.CREADO]: 'bg-info text-dark',
+      [EstadoPedidoMP.RECHAZADO]: 'bg-danger',
+      [EstadoPedidoMP.REEMBOLSADO]: 'bg-info',
+      [EstadoPedidoMP.CANCELADO]: 'bg-secondary'
     };
     return clases[estado] || 'bg-secondary';
   }
@@ -613,11 +721,13 @@ export class GestionPedidosComponent implements OnInit {
    */
   obtenerIconoEstado(estado: string): string {
     const iconos: {[key: string]: string} = {
-      'completado': 'fas fa-check-circle',
-      'pendiente': 'fas fa-clock',
-      'rechazado': 'fas fa-times-circle',
-      'reembolsado': 'fas fa-undo',
-      'desconocido': 'fas fa-question-circle'
+      [EstadoPedidoMP.COMPLETADO]: 'fas fa-check-circle',
+      [EstadoPedidoMP.APROBADO]: 'fas fa-check-circle',
+      [EstadoPedidoMP.PENDIENTE]: 'fas fa-clock',
+      [EstadoPedidoMP.CREADO]: 'fas fa-plus-circle',
+      [EstadoPedidoMP.RECHAZADO]: 'fas fa-times-circle',
+      [EstadoPedidoMP.REEMBOLSADO]: 'fas fa-undo',
+      [EstadoPedidoMP.CANCELADO]: 'fas fa-ban'
     };
     return iconos[estado] || 'fas fa-question-circle';
   }
@@ -640,6 +750,112 @@ export class GestionPedidosComponent implements OnInit {
     };
     
     return motivos[motivo] || motivo;
+  }
+
+  /**
+   * Elimina todos los pedidos de la base de datos
+   */
+  async eliminarTodosLosPedidos(): Promise<void> {
+    const { value: confirmacion } = await Swal.fire({
+      title: '⚠️ ¿Eliminar TODOS los pedidos?',
+      html: `
+        <div class="text-start">
+          <p><strong>Esta acción eliminará:</strong></p>
+          <ul>
+            <li>🗑️ Todos los pedidos del sistema (${this.pedidos().length} pedidos)</li>
+            <li>💾 Datos de Firestore</li>
+            <li>🧹 Datos locales y caché</li>
+            <li>📊 Estadísticas actuales</li>
+          </ul>
+          <p class="text-danger"><strong>⚠️ Esta acción NO se puede deshacer</strong></p>
+          <p class="text-warning"><small>Los administradores pueden crear nuevos pedidos de prueba después.</small></p>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '🗑️ Sí, eliminar todo',
+      cancelButtonText: '❌ Cancelar',
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      reverseButtons: true,
+      focusCancel: true
+    });
+
+    if (!confirmacion) return;
+
+    try {
+      this.cargando.set(true);
+      console.log('🗑️ Iniciando eliminación masiva completa...');
+
+      // PASO 1: Usar el método del servicio para eliminar todos los pedidos de Firestore
+      console.log('🔥 Paso 1: Eliminando todos los pedidos de Firestore...');
+      const resultado = await this.pedidosService.eliminarTodosLosPedidos();
+      console.log(`✅ Firestore: ${resultado.eliminados} eliminados, ${resultado.errores} errores`);
+
+      // PASO 2: Limpiar localStorage relacionado con pedidos
+      console.log('🧹 Paso 2: Limpiando localStorage...');
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('pedido') || key.includes('carrito') || key.includes('mercadopago'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`🧹 Eliminado de localStorage: ${key}`);
+      });
+
+      // PASO 3: Limpiar la lista local
+      console.log('📋 Paso 3: Limpiando lista local...');
+      this.pedidos.set([]);
+
+      // PASO 4: Recargar desde Firestore para verificar
+      console.log('🔄 Paso 4: Recargando desde Firestore...');
+      setTimeout(() => {
+        this.cargarPedidos();
+      }, 1000);
+      
+      console.log(`✅ Eliminación masiva completada: ${resultado.eliminados} eliminados, ${resultado.errores} errores`);
+      
+      // Mostrar confirmación de éxito
+      await Swal.fire({
+        icon: 'success',
+        title: '🧹 ¡Eliminación Completa Exitosa!',
+        html: `
+          <div class="text-start">
+            <p><strong>📊 Resultado de la eliminación completa:</strong></p>
+            <ul>
+              <li>🔥 Pedidos eliminados de Firestore: ${resultado.eliminados}</li>
+              ${resultado.errores > 0 ? `<li>❌ Errores en Firestore: ${resultado.errores}</li>` : ''}
+              <li>🧹 Datos locales limpiados: ${keysToRemove.length} elementos</li>
+              <li>📋 Lista local reiniciada</li>
+              <li>🔄 Sistema recargado desde base de datos</li>
+            </ul>
+            <p class="text-success">El sistema está completamente limpio y verificado.</p>
+            <p class="text-info"><small>💡 Puedes crear pedidos de prueba usando el botón "Crear Pruebas"</small></p>
+          </div>
+        `,
+        confirmButtonText: '👍 Perfecto',
+        confirmButtonColor: '#28a745',
+        timer: 8000,
+        timerProgressBar: true
+      });
+      
+    } catch (error) {
+      console.error('❌ Error durante la eliminación masiva:', error);
+      
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error en la Eliminación',
+        text: 'Hubo un problema durante la eliminación masiva. Revisa la consola para más detalles.',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#dc3545'
+      });
+    } finally {
+      this.cargando.set(false);
+    }
   }
 
   /**

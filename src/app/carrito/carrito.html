@@ -17,7 +17,13 @@
   <!-- Mensaje de Carrito Vacío -->
   <div class="flex flex-col items-center justify-center h-full text-gray-500 py-8">
     <i class="bi bi-cart-x text-5xl mb-4"></i>
-    <p class="text-center">Tu carrito de compras está vacío.</p>
+    <p class="text-center mb-4">Tu carrito de compras está vacío.</p>
+    <!-- Botón de prueba temporal -->
+    <button 
+      class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors"
+      (click)="probarCarrito()">
+      🧪 Agregar Productos de Prueba
+    </button>
   </div>
   } @else {
   <!-- Contenedor con scroll para la lista y el pie de página -->

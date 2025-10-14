@@ -12,7 +12,14 @@
           class="carousel slide premium-carousel"
           data-bs-ride="carousel"
           data-bs-interval="5000"
+          data-bs-pause="hover"
         >
+          <!-- Contador de slides -->
+          <div class="slide-counter">
+            <span class="current-slide">1</span>
+            <span class="slide-separator">/</span>
+            <span class="total-slides">{{ novedades.length }}</span>
+          </div>
           <!-- Indicadores mejorados -->
           <div class="carousel-indicators premium-indicators">
             @for (novedad of novedades; track novedad.id; let i = $index) {
@@ -63,9 +70,11 @@
             type="button"
             data-bs-target="#productCarousel"
             data-bs-slide="prev"
+            aria-label="Slide anterior"
+            title="Ir al slide anterior"
           >
             <div class="control-icon">
-              <i class="bi bi-chevron-left"></i>
+              <i class="bi bi-chevron-left" aria-hidden="true"></i>
             </div>
             <span class="visually-hidden">Anterior</span>
           </button>
@@ -75,9 +84,11 @@
             type="button"
             data-bs-target="#productCarousel"
             data-bs-slide="next"
+            aria-label="Slide siguiente"
+            title="Ir al slide siguiente"
           >
             <div class="control-icon">
-              <i class="bi bi-chevron-right"></i>
+              <i class="bi bi-chevron-right" aria-hidden="true"></i>
             </div>
             <span class="visually-hidden">Siguiente</span>
           </button>

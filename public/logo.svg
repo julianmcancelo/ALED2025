@@ -1,0 +1,75 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradiente de fondo -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0077b6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#005f8a;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Gradiente para el texto -->
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e3f2fd;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Gradiente para el carrito -->
+    <linearGradient id="cartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f7931e;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Sombra -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Fondo circular con gradiente -->
+  <circle cx="32" cy="32" r="30" fill="url(#bgGradient)" filter="url(#shadow)"/>
+  
+  <!-- Libro/Educación (parte izquierda) -->
+  <g transform="translate(8, 16)">
+    <!-- Páginas del libro -->
+    <rect x="2" y="4" width="16" height="20" rx="2" fill="#ffffff" opacity="0.9"/>
+    <rect x="4" y="6" width="12" height="16" rx="1" fill="url(#textGradient)"/>
+    
+    <!-- Líneas del texto en el libro -->
+    <line x1="6" y1="10" x2="14" y2="10" stroke="#0077b6" stroke-width="1" opacity="0.7"/>
+    <line x1="6" y1="13" x2="12" y2="13" stroke="#0077b6" stroke-width="1" opacity="0.7"/>
+    <line x1="6" y1="16" x2="13" y2="16" stroke="#0077b6" stroke-width="1" opacity="0.7"/>
+    <line x1="6" y1="19" x2="11" y2="19" stroke="#0077b6" stroke-width="1" opacity="0.7"/>
+  </g>
+  
+  <!-- Carrito de compras (parte derecha) -->
+  <g transform="translate(38, 18)">
+    <!-- Cuerpo del carrito -->
+    <rect x="2" y="6" width="14" height="10" rx="2" fill="url(#cartGradient)" opacity="0.9"/>
+    
+    <!-- Mango del carrito -->
+    <path d="M 2 6 Q 0 6 0 8 Q 0 10 2 10" stroke="url(#cartGradient)" stroke-width="2" fill="none"/>
+    
+    <!-- Ruedas del carrito -->
+    <circle cx="6" cy="18" r="2" fill="#ffffff"/>
+    <circle cx="12" cy="18" r="2" fill="#ffffff"/>
+    <circle cx="6" cy="18" r="1" fill="url(#cartGradient)"/>
+    <circle cx="12" cy="18" r="1" fill="url(#cartGradient)"/>
+    
+    <!-- Productos en el carrito -->
+    <rect x="5" y="4" width="3" height="3" rx="0.5" fill="#ffffff" opacity="0.8"/>
+    <rect x="9" y="3" width="3" height="4" rx="0.5" fill="#ffffff" opacity="0.8"/>
+  </g>
+  
+  <!-- Texto ALED en el centro -->
+  <text x="32" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="url(#textGradient)">ALED</text>
+  <text x="32" y="52" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#e3f2fd" opacity="0.9">2025</text>
+  
+  <!-- Estrella decorativa -->
+  <g transform="translate(48, 12)">
+    <path d="M 4 0 L 5 3 L 8 3 L 6 5 L 7 8 L 4 6 L 1 8 L 2 5 L 0 3 L 3 3 Z" fill="#ffd700" opacity="0.8"/>
+  </g>
+  
+  <!-- Elementos decorativos (puntos) -->
+  <circle cx="12" cy="12" r="1.5" fill="#ffffff" opacity="0.6"/>
+  <circle cx="52" cy="52" r="1.5" fill="#ffffff" opacity="0.6"/>
+  <circle cx="16" cy="48" r="1" fill="#e3f2fd" opacity="0.7"/>
+</svg>

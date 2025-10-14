@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Favicon ALED2025</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #0077b6 0%, #005f8a 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .preview {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .favicon-preview {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px;
+        }
+        .favicon-preview canvas {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            margin: 10px 0;
+            background: white;
+        }
+        button {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .logo-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Generador de Favicon ALED2025</h1>
+        
+        <div class="logo-display">
+            <h3>Logo Principal</h3>
+            <div id="mainLogo"></div>
+        </div>
+
+        <div class="preview">
+            <div class="favicon-preview">
+                <h4>16x16</h4>
+                <canvas id="favicon16" width="16" height="16"></canvas>
+            </div>
+            <div class="favicon-preview">
+                <h4>32x32</h4>
+                <canvas id="favicon32" width="32" height="32"></canvas>
+            </div>
+            <div class="favicon-preview">
+                <h4>48x48</h4>
+                <canvas id="favicon48" width="48" height="48"></canvas>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <button onclick="generateFavicon()">🚀 Generar Favicon.ico</button>
+            <button onclick="downloadSVG()">📥 Descargar Logo SVG</button>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Instrucciones:</h3>
+            <ol>
+                <li><strong>Generar Favicon:</strong> Haz clic en "Generar Favicon.ico" para crear el archivo favicon.ico</li>
+                <li><strong>Reemplazar:</strong> Guarda el archivo generado como "favicon.ico" en la carpeta public</li>
+                <li><strong>Logo SVG:</strong> Usa "Descargar Logo SVG" para obtener el logo en formato vectorial</li>
+                <li><strong>Uso:</strong> El favicon aparecerá en la pestaña del navegador y marcadores</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // SVG del favicon optimizado para ALED2025
+        const faviconSVG = `
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#0077b6"/>
+                    <stop offset="100%" style="stop-color:#005f8a"/>
+                </linearGradient>
+                <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#ff6b35"/>
+                    <stop offset="100%" style="stop-color:#f7931e"/>
+                </linearGradient>
+            </defs>
+            <circle cx="16" cy="16" r="15" fill="url(#bgGrad)"/>
+            <rect x="4" y="8" width="10" height="12" rx="1" fill="#ffffff" opacity="0.9"/>
+            <rect x="5" y="9" width="8" height="10" rx="0.5" fill="#e3f2fd"/>
+            <line x1="6" y1="12" x2="12" y2="12" stroke="#0077b6" stroke-width="0.8"/>
+            <line x1="6" y1="14" x2="11" y2="14" stroke="#0077b6" stroke-width="0.8"/>
+            <line x1="6" y1="16" x2="12" y2="16" stroke="#0077b6" stroke-width="0.8"/>
+            <rect x="18" y="12" width="8" height="6" rx="1" fill="url(#accentGrad)"/>
+            <circle cx="20" cy="20" r="1.5" fill="#ffffff"/>
+            <circle cx="24" cy="20" r="1.5" fill="#ffffff"/>
+            <text x="16" y="26" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="6" font-weight="900" fill="#ffffff">A</text>
+        </svg>`;
+
+        // Logo principal más detallado
+        const mainLogoSVG = `
+        <svg width="128" height="128" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#0077b6;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#005f8a;stop-opacity:1" />
+                </linearGradient>
+                <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#e3f2fd;stop-opacity:1" />
+                </linearGradient>
+                <linearGradient id="cartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#f7931e;stop-opacity:1" />
+                </linearGradient>
+                <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.3"/>
+                </filter>
+            </defs>
+            <circle cx="32" cy="32" r="30" fill="url(#bgGradient)" filter="url(#shadow)"/>
+            <g transform="translate(8, 16)">
+                <rect x="2" y="4" width="16" height="20" rx="2" fill="#ffffff" opacity="0.9"/>
+                <rect x="4" y="6" width="12" height="16" rx="1" fill="url(#textGradient)"/>
+                <line x1="6" y1="10" x2="14" y2="10" stroke="#0077b6" stroke-width="1" opacity="0.7"/>
+                <line x1="6" y1="13" x2="12" y2="13" stroke="#0077b6" stroke-width="1" opacity="0.7"/>
+                <line x1="6" y1="16" x2="13" y2="16" stroke="#0077b6" stroke-width="1" opacity="0.7"/>
+                <line x1="6" y1="19" x2="11" y2="19" stroke="#0077b6" stroke-width="1" opacity="0.7"/>
+            </g>
+            <g transform="translate(38, 18)">
+                <rect x="2" y="6" width="14" height="10" rx="2" fill="url(#cartGradient)" opacity="0.9"/>
+                <path d="M 2 6 Q 0 6 0 8 Q 0 10 2 10" stroke="url(#cartGradient)" stroke-width="2" fill="none"/>
+                <circle cx="6" cy="18" r="2" fill="#ffffff"/>
+                <circle cx="12" cy="18" r="2" fill="#ffffff"/>
+                <circle cx="6" cy="18" r="1" fill="url(#cartGradient)"/>
+                <circle cx="12" cy="18" r="1" fill="url(#cartGradient)"/>
+                <rect x="5" y="4" width="3" height="3" rx="0.5" fill="#ffffff" opacity="0.8"/>
+                <rect x="9" y="3" width="3" height="4" rx="0.5" fill="#ffffff" opacity="0.8"/>
+            </g>
+            <text x="32" y="42" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="url(#textGradient)">ALED</text>
+            <text x="32" y="52" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#e3f2fd" opacity="0.9">2025</text>
+            <g transform="translate(48, 12)">
+                <path d="M 4 0 L 5 3 L 8 3 L 6 5 L 7 8 L 4 6 L 1 8 L 2 5 L 0 3 L 3 3 Z" fill="#ffd700" opacity="0.8"/>
+            </g>
+            <circle cx="12" cy="12" r="1.5" fill="#ffffff" opacity="0.6"/>
+            <circle cx="52" cy="52" r="1.5" fill="#ffffff" opacity="0.6"/>
+            <circle cx="16" cy="48" r="1" fill="#e3f2fd" opacity="0.7"/>
+        </svg>`;
+
+        function loadSVGToCanvas(svgString, canvas, size) {
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            const blob = new Blob([svgString], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            
+            img.onload = function() {
+                ctx.clearRect(0, 0, size, size);
+                ctx.drawImage(img, 0, 0, size, size);
+                URL.revokeObjectURL(url);
+            };
+            img.src = url;
+        }
+
+        function generateFavicon() {
+            // Crear un canvas temporal para generar el ICO
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            
+            const img = new Image();
+            const blob = new Blob([faviconSVG], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, 32, 32);
+                
+                // Convertir a blob y descargar
+                canvas.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.download = 'favicon.ico';
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+            };
+            img.src = url;
+        }
+
+        function downloadSVG() {
+            const blob = new Blob([mainLogoSVG], { type: 'image/svg+xml' });
+            const link = document.createElement('a');
+            link.download = 'aled2025-logo.svg';
+            link.href = URL.createObjectURL(blob);
+            link.click();
+        }
+
+        // Cargar previews al cargar la página
+        window.onload = function() {
+            // Mostrar logo principal
+            document.getElementById('mainLogo').innerHTML = mainLogoSVG;
+            
+            // Cargar previews de favicon
+            loadSVGToCanvas(faviconSVG, document.getElementById('favicon16'), 16);
+            loadSVGToCanvas(faviconSVG, document.getElementById('favicon32'), 32);
+            loadSVGToCanvas(faviconSVG, document.getElementById('favicon48'), 48);
+        };
+    </script>
+</body>
+</html>

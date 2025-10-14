@@ -25,27 +25,14 @@ import { GestionProductos } from './admin/gestion-productos/gestion-productos'; 
 import { GestionPedidosComponent } from './admin/gestion-pedidos/gestion-pedidos.component';
 import { PerfilUsuarioComponent } from './perfil-usuario/perfil-usuario';
 import { authGuard } from './auth/auth.guard';
-import { PagoExitosoComponent } from './pago-exitoso/pago-exitoso.component';
-import { PagoFallidoComponent } from './pago-fallido/pago-fallido.component';
-import { PagoPendienteComponent } from './pago-pendiente/pago-pendiente.component';
+import { PagoExitoso } from './pago-exitoso/pago-exitoso';
+import { PagoFallido } from './pago-fallido/pago-fallido';
+import { PagoPendiente } from './pago-pendiente/pago-pendiente';
 import { MisPedidosComponent } from './mis-pedidos/mis-pedidos.component';
 import { CategoriasComponent } from './categorias/categorias';
 import { OfertasComponent } from './ofertas/ofertas';
 
-// Importaciones de Firebase
-import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
-import { provideFirestore, getFirestore } from '@angular/fire/firestore';
-import { provideAuth, getAuth } from '@angular/fire/auth';
-
-const firebaseConfig = {
-  apiKey: 'AIzaSyAYof5X_SayXySktaeT1NZjfcWKBmqbxqM',
-  authDomain: 'aled2025-5be25.firebaseapp.com',
-  projectId: 'aled2025-5be25',
-  storageBucket: 'aled2025-5be25.firebasestorage.app',
-  messagingSenderId: '773634182293',
-  appId: '1:773634182293:web:a91a4778c57065faca1f9c',
-  measurementId: 'G-90LCBTBJLJ',
-};
+// Configuración migrada a Supabase - Firebase eliminado
 
 // Función Factory para el APP_INITIALIZER
 const initializeAppFactory = () => {
@@ -86,9 +73,9 @@ export const appConfig: ApplicationConfig = {
       { path: 'primer-usuario', component: PrimerUsuario },
       { path: 'perfil', component: PerfilUsuarioComponent, canActivate: [authGuard] }, // Nueva ruta de perfil
       { path: 'mis-pedidos', component: MisPedidosComponent, canActivate: [authGuard] }, // Nueva ruta de mis pedidos
-      { path: 'pago-exitoso', component: PagoExitosoComponent },
-      { path: 'pago-fallido', component: PagoFallidoComponent },
-      { path: 'pago-pendiente', component: PagoPendienteComponent },
+      { path: 'pago-exitoso', component: PagoExitoso },
+      { path: 'pago-fallido', component: PagoFallido },
+      { path: 'pago-pendiente', component: PagoPendiente },
       {
         path: 'administracion',
         component: Admin,
@@ -103,9 +90,5 @@ export const appConfig: ApplicationConfig = {
         ],
       },
     ]),
-
-    provideFirebaseApp(() => initializeApp(firebaseConfig)),
-    provideFirestore(() => getFirestore()),
-    provideAuth(() => getAuth()),
   ],
 };

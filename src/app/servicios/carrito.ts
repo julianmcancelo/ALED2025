@@ -67,6 +67,12 @@ export interface ElementoCarrito {
 export class CarritoService {
   
   // ========================================================================
+  // CONSTANTES
+  // ========================================================================
+  
+  private readonly CARRITO_STORAGE_KEY = 'aled2025_carrito';
+  
+  // ========================================================================
   // SIGNALS DE ESTADO
   // ========================================================================
   
@@ -82,6 +88,49 @@ export class CarritoService {
    * Inicializado con array vacío: []
    */
   items = signal<ElementoCarrito[]>([]);
+  
+  // ========================================================================
+  // CONSTRUCTOR
+  // ========================================================================
+  
+  constructor() {
+    console.log('🛒 Inicializando CarritoService...');
+    this.cargarCarritoDesdeStorage();
+  }
+  
+  /**
+   * Método de prueba para agregar productos de ejemplo al carrito
+   */
+  agregarProductosDePrueba(): void {
+    console.log('🧪 Agregando productos de prueba al carrito...');
+    
+    const productosPrueba: Producto[] = [
+      {
+        id: 'test-1',
+        nombre: 'Mate de Calabaza Premium',
+        precio: 15000,
+        imagen: 'https://via.placeholder.com/150x150/0077b6/ffffff?text=Mate'
+      },
+      {
+        id: 'test-2', 
+        nombre: 'Bombilla de Alpaca',
+        precio: 8500,
+        imagen: 'https://via.placeholder.com/150x150/28a745/ffffff?text=Bombilla'
+      },
+      {
+        id: 'test-3',
+        nombre: 'Yerba Mate Orgánica 1kg',
+        precio: 3200,
+        imagen: 'https://via.placeholder.com/150x150/dc3545/ffffff?text=Yerba'
+      }
+    ];
+    
+    productosPrueba.forEach(producto => {
+      this.agregarProducto(producto);
+    });
+    
+    console.log('✅ Productos de prueba agregados. Total:', this.totalItems());
+  }
 
   // ========================================================================
   // COMPUTED SIGNALS (Señales Computadas)
@@ -141,6 +190,7 @@ export class CarritoService {
    * 1. Busca si el producto ya existe en el carrito (por ID)
    * 2. Si existe: incrementa su cantidad en 1
    * 3. Si no existe: lo agrega con cantidad 1
+   * 4. Guarda el carrito en localStorage
    * 
    * EJEMPLO DE USO:
    * ```typescript
@@ -151,6 +201,8 @@ export class CarritoService {
    * @param producto - El producto que se va a agregar
    */
   agregarProducto(producto: Producto): void {
+    console.log('🛒 Agregando producto al carrito:', producto.nombre);
+    
     // Buscamos si el producto ya está en el carrito
     // find() devuelve el elemento si lo encuentra, o undefined si no
     const itemExistente = this.items().find(
@@ -160,14 +212,8 @@ export class CarritoService {
     if (itemExistente) {
       // CASO 1: El producto YA está en el carrito
       // Incrementamos su cantidad usando update()
-      // 
-      // update() recibe una función que:
-      // - Recibe el valor actual del signal
-      // - Devuelve el nuevo valor
-      // 
-      // Usamos map() para crear un nuevo array donde:
-      // - Si el item coincide con el producto: incrementamos cantidad
-      // - Si no coincide: lo dejamos igual
+      console.log('📦 Producto existente, incrementando cantidad');
+      
       this.items.update((items) =>
         items.map((item) =>
           item.producto.id === producto.id 
@@ -178,15 +224,18 @@ export class CarritoService {
     } else {
       // CASO 2: El producto NO está en el carrito
       // Lo agregamos como nuevo elemento con cantidad 1
-      // 
-      // Usamos el spread operator (...) para:
-      // - Mantener todos los items existentes
-      // - Agregar el nuevo item al final
+      console.log('🆕 Producto nuevo, agregando al carrito');
+      
       this.items.update((items) => [
         ...items,                          // Items existentes
         { producto, cantidad: 1 }          // Nuevo item
       ]);
     }
+    
+    // Guardar en localStorage después de cada cambio
+    this.guardarCarritoEnStorage();
+    
+    console.log('✅ Carrito actualizado. Total items:', this.totalItems());
   }
 
   /**
@@ -203,12 +252,19 @@ export class CarritoService {
    * @param idProducto - El ID del producto a eliminar
    */
   eliminarProducto(idProducto: string): void {
+    console.log('🗑️ Eliminando producto del carrito:', idProducto);
+    
     // Usamos filter() para crear un nuevo array que:
     // - Incluye todos los items EXCEPTO el que queremos eliminar
     // - filter() devuelve true para los items que queremos MANTENER
     this.items.update((items) => 
       items.filter((item) => item.producto.id !== idProducto)
     );
+    
+    // Guardar en localStorage después del cambio
+    this.guardarCarritoEnStorage();
+    
+    console.log('✅ Producto eliminado. Total items:', this.totalItems());
   }
 
   /**
@@ -226,9 +282,56 @@ export class CarritoService {
    * ```
    */
   vaciarCarrito(): void {
+    console.log('🧹 Vaciando carrito completo');
+    
     // Usamos set() para reemplazar todo el contenido con un array vacío
     // set() es más directo que update() cuando queremos reemplazar todo
     this.items.set([]);
+    
+    // Limpiar localStorage
+    this.guardarCarritoEnStorage();
+    
+    console.log('✅ Carrito vaciado completamente');
+  }
+  
+  // ========================================================================
+  // MÉTODOS PRIVADOS - Persistencia en localStorage
+  // ========================================================================
+  
+  /**
+   * Carga el carrito desde localStorage al inicializar el servicio.
+   */
+  private cargarCarritoDesdeStorage(): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const carritoGuardado = localStorage.getItem(this.CARRITO_STORAGE_KEY);
+        if (carritoGuardado) {
+          const items = JSON.parse(carritoGuardado) as ElementoCarrito[];
+          this.items.set(items);
+          console.log('✅ Carrito cargado desde localStorage:', items.length, 'items');
+        } else {
+          console.log('ℹ️ No hay carrito guardado en localStorage');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error cargando carrito desde localStorage:', error);
+      this.items.set([]);
+    }
+  }
+  
+  /**
+   * Guarda el carrito actual en localStorage.
+   */
+  private guardarCarritoEnStorage(): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const items = this.items();
+        localStorage.setItem(this.CARRITO_STORAGE_KEY, JSON.stringify(items));
+        console.log('💾 Carrito guardado en localStorage:', items.length, 'items');
+      }
+    } catch (error) {
+      console.error('❌ Error guardando carrito en localStorage:', error);
+    }
   }
 }
 
