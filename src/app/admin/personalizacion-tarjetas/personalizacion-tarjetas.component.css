@@ -1,0 +1,444 @@
+/**
+ * ESTILOS DE PERSONALIZACIÓN DE TARJETAS VIRTUALES
+ * 
+ * Estilos para el panel de administración que permite personalizar
+ * la apariencia de las tarjetas virtuales.
+ */
+
+/* Contenedor principal */
+.personalizacion-tarjetas-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Encabezado */
+.header-section {
+  margin-bottom: 32px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.page-subtitle {
+  color: #6b7280;
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Estado de carga */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loading-text {
+  margin-top: 16px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Grid principal */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+/* Panel de configuración */
+.config-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* Sección de colores */
+.color-section {
+  margin: 16px 0;
+}
+
+.color-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.color-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.color-field input[type="color"] {
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Sección de logo */
+.logo-section {
+  margin: 16px 0;
+}
+
+.logo-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.logo-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.logo-image {
+  max-width: 80px;
+  max-height: 50px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.sin-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  color: #9ca3af;
+}
+
+.sin-logo-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.upload-section {
+  text-align: center;
+}
+
+.upload-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.spinner-inline {
+  margin-right: 8px;
+}
+
+/* Panel de vista previa */
+.preview-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Tarjeta de ejemplo */
+.tarjeta-ejemplo {
+  width: 100%;
+  max-width: 350px;
+  height: 220px;
+  border-radius: 16px;
+  padding: 20px;
+  color: white;
+  position: relative;
+  margin: 0 auto 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tarjeta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.logo-container {
+  width: 60px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tarjeta-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.logo-placeholder {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-placeholder mat-icon {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tipo-tarjeta {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+
+.numero-tarjeta {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  margin: 16px 0;
+}
+
+.info-tarjeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.titular,
+.vencimiento {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.valor {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.nombre-banco {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+/* Información de vista previa */
+.preview-info {
+  margin-top: 16px;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #f0f9ff;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.info-icon {
+  color: #3b82f6;
+  margin-top: 2px;
+}
+
+.info-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #1e40af;
+}
+
+/* Información adicional */
+.info-adicional {
+  margin-top: 24px;
+}
+
+.info-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.info-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.info-content .info-icon {
+  font-size: 24px;
+  color: #d97706;
+  margin-top: 4px;
+}
+
+.info-texto h4 {
+  margin: 0 0 12px 0;
+  color: #92400e;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.info-texto ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #92400e;
+}
+
+.info-texto li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .personalizacion-tarjetas-container {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 24px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .color-inputs {
+    grid-template-columns: 1fr;
+  }
+  
+  .tarjeta-ejemplo {
+    max-width: 300px;
+    height: 190px;
+    padding: 16px;
+  }
+  
+  .numero-tarjeta {
+    font-size: 18px;
+  }
+  
+  .info-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .personalizacion-tarjetas-container {
+    padding: 12px;
+  }
+  
+  .tarjeta-ejemplo {
+    max-width: 280px;
+    height: 170px;
+    padding: 12px;
+  }
+  
+  .numero-tarjeta {
+    font-size: 16px;
+    margin: 12px 0;
+  }
+  
+  .tipo-tarjeta {
+    font-size: 12px;
+  }
+}
+
+/* Animaciones */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.main-content {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* Efectos de hover */
+.tarjeta-ejemplo {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tarjeta-ejemplo:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .main-content,
+  .tarjeta-ejemplo {
+    transition: none;
+    animation: none;
+  }
+  
+  .tarjeta-ejemplo:hover {
+    transform: none;
+  }
+}
+
+/* Estados de focus */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}

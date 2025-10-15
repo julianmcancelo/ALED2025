@@ -1,0 +1,155 @@
+<!-- 
+  TEMPLATE DE MÉTODO DE PAGO VIRTUAL
+  
+  Este template muestra la opción de pago con tarjeta virtual
+  como alternativa a Mercado Pago, con validaciones y estado visual.
+-->
+
+<div class="metodo-pago-virtual">
+  
+  <!-- Estado de carga -->
+  <div *ngIf="estaCargandoTarjeta()" class="loading-state">
+    <mat-spinner diameter="32"></mat-spinner>
+    <p class="loading-text">Cargando tarjeta virtual...</p>
+  </div>
+
+  <!-- Estado de error -->
+  <div *ngIf="hayError() && !estaCargandoTarjeta()" class="error-state">
+    <mat-icon class="error-icon">error</mat-icon>
+    <p class="error-text">{{ hayError() }}</p>
+    <button mat-button color="primary" (click)="recargarTarjeta()">
+      <mat-icon>refresh</mat-icon>
+      Reintentar
+    </button>
+  </div>
+
+  <!-- Tarjeta virtual disponible -->
+  <div *ngIf="tarjetaData() && !estaCargandoTarjeta() && !hayError()" class="tarjeta-disponible">
+    
+    <mat-card class="tarjeta-pago-card" [class.tarjeta-habilitada]="puedeUsarTarjeta() && habilitado">
+      <mat-card-header>
+        <div mat-card-avatar class="tarjeta-avatar">
+          <mat-icon>credit_card</mat-icon>
+        </div>
+        <mat-card-title>Tarjeta Virtual</mat-card-title>
+        <mat-card-subtitle>Método de pago de prueba</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        
+        <!-- Información de la tarjeta -->
+        <div class="tarjeta-info">
+          <div class="info-row">
+            <span class="info-label">Número:</span>
+            <span class="info-value numero-tarjeta">{{ formatearNumeroTarjeta(tarjetaData()!.numero) }}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">Titular:</span>
+            <span class="info-value">{{ tarjetaData()!.titular }}</span>
+          </div>
+          
+          <div class="info-row">
+            <span class="info-label">Vencimiento:</span>
+            <span class="info-value">{{ tarjetaData()!.fechaVencimiento }}</span>
+          </div>
+          
+          <div class="info-row saldo-row">
+            <span class="info-label">Saldo disponible:</span>
+            <span class="info-value saldo-valor" [class.saldo-insuficiente]="tarjetaData() && datosPago && tarjetaData()!.saldo < datosPago.monto">
+              {{ tarjetaData() ? formatearMonto(tarjetaData()!.saldo) : '$0.00' }}</span>
+          </div>
+        </div>
+
+        <!-- Estado de la tarjeta -->
+        <div class="estado-tarjeta">
+          <mat-chip [color]="getColorEstado()" selected class="estado-chip">
+            {{ getTextoEstado() }}
+          </mat-chip>
+        </div>
+
+        <!-- Información del pago -->
+        <div *ngIf="datosPago" class="pago-info">
+          <div class="pago-detalle">
+            <h4 class="pago-titulo">Detalle del pago</h4>
+            <div class="info-row">
+              <span class="info-label">Descripción:</span>
+              <span class="info-value">{{ datosPago.descripcion }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Monto:</span>
+              <span class="info-value monto-pago">{{ formatearMonto(datosPago.monto) }}</span>
+            </div>
+            <div *ngIf="datosPago.detalleProducto" class="info-row">
+              <span class="info-label">Producto:</span>
+              <span class="info-value">{{ datosPago.detalleProducto.nombre }} (x{{ datosPago.detalleProducto.cantidad }})</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Validaciones y advertencias -->
+        <div *ngIf="!puedeUsarTarjeta()" class="validaciones">
+          <div class="advertencia">
+            <mat-icon class="advertencia-icon">warning</mat-icon>
+            <span class="advertencia-texto">{{ motivoNoDisponible() }}</span>
+          </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="info-adicional">
+          <div class="info-item">
+            <mat-icon class="info-icon">info</mat-icon>
+            <span class="info-texto">
+              Esta es una tarjeta virtual para pruebas. No se procesará dinero real.
+            </span>
+          </div>
+        </div>
+
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button 
+          mat-button 
+          color="accent"
+          (click)="cancelarPago()"
+          [disabled]="estaProcesandoPago()">
+          Cancelar
+        </button>
+        
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="procesarPago()"
+          [disabled]="!puedeUsarTarjeta() || !habilitado || estaProcesandoPago()">
+          
+          <mat-spinner *ngIf="estaProcesandoPago()" diameter="20" class="spinner-inline"></mat-spinner>
+          <mat-icon *ngIf="!estaProcesandoPago()">payment</mat-icon>
+          
+          <span *ngIf="!estaProcesandoPago()">Pagar {{ datosPago ? formatearMonto(datosPago.monto) : '' }}</span>
+          <span *ngIf="estaProcesandoPago()">Procesando...</span>
+        </button>
+      </mat-card-actions>
+
+    </mat-card>
+
+    <!-- Información de seguridad -->
+    <div class="seguridad-info">
+      <mat-card class="seguridad-card">
+        <mat-card-content>
+          <div class="seguridad-content">
+            <mat-icon class="seguridad-icon">security</mat-icon>
+            <div class="seguridad-texto">
+              <h5>Pago Seguro</h5>
+              <p>
+                Tu pago será procesado de forma segura utilizando tu tarjeta virtual.
+                Todas las transacciones quedan registradas en tu historial.
+              </p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+  </div>
+
+</div>

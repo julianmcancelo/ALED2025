@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Necesario para usar ngModel
+import { RouterModule, Router } from '@angular/router'; // Necesario para routerLink y navegación
 import { ConfiguracionService } from '../../servicios/configuracion';
 
 /**
@@ -10,13 +11,14 @@ import { ConfiguracionService } from '../../servicios/configuracion';
 @Component({
   selector: 'app-personalizacion-sitio',
   standalone: true,
-  imports: [CommonModule, FormsModule], // Importamos FormsModule
+  imports: [CommonModule, FormsModule, RouterModule], // Importamos FormsModule y RouterModule
   templateUrl: './personalizacion-sitio.html',
   styleUrl: './personalizacion-sitio.css',
 })
 export class PersonalizacionSitio {
   // --- INYECCIÓN DE DEPENDENCIAS ---
   private configuracionService = inject(ConfiguracionService);
+  private router = inject(Router);
 
   // --- SEÑALES DE ESTADO LOCAL ---
   /**
@@ -67,4 +69,13 @@ export class PersonalizacionSitio {
       this.estadoGuardado.set('error'); // Si falla, estado 'error'
     }
   }
+
+  /**
+   * Navega al panel de personalización de tarjetas virtuales
+   */
+  navegarAPersonalizacionTarjetas(): void {
+    console.log('🔄 Navegando a personalización de tarjetas...');
+    this.router.navigate(['/admin/personalizacion-tarjetas']);
+  }
+
 }

@@ -5,7 +5,12 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth';
 import { CarritoService } from '../servicios/carrito';
+import { TarjetaVirtualService } from '../servicios/tarjeta-virtual.service';
+import { PagoVirtualService } from '../servicios/pago-virtual.service';
+import { PedidosService } from '../servicios/pedidos.service';
 import { getMercadoPagoCredentials, getMercadoPagoSettings } from '../config/mercadopago.config';
+import { SolicitudCrearPago } from '../shared/models/tarjeta-virtual.model';
+import { SolicitudCrearPedido } from '../shared/models/pedido.model';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -20,11 +25,60 @@ export class Carrito {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private tarjetaVirtualService = inject(TarjetaVirtualService);
+  private pagoVirtualService = inject(PagoVirtualService);
+  private pedidosService = inject(PedidosService);
 
   cargandoMP = signal(false);
+  cargandoTarjetaVirtual = signal(false);
+  tarjetaVirtual = signal<any>(null);
+  mostrandoMetodosPago = signal(false);
 
   /**
-   * Inicia el proceso de pago, verificando primero la autenticación del usuario.
+   * Muestra las opciones de pago disponibles
+   */
+  async mostrarOpcionesPago(): Promise<void> {
+    const currentUser = this.authService.currentUserSignal();
+    
+    if (!currentUser) {
+      // Si no ha iniciado sesión, mostrar alerta
+      const result = await Swal.fire({
+        title: 'Iniciar Sesión Requerido',
+        text: '¿Deseas iniciar sesión para continuar con la compra?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Iniciar Sesión',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+        this.router.navigate(['/auth']);
+      }
+      return;
+    }
+
+    // Cargar tarjeta virtual del usuario
+    await this.cargarTarjetaVirtual(currentUser.id!);
+    
+    // Mostrar opciones de pago
+    this.mostrandoMetodosPago.set(true);
+  }
+
+  /**
+   * Carga la tarjeta virtual del usuario
+   */
+  private async cargarTarjetaVirtual(usuarioId: string): Promise<void> {
+    try {
+      const tarjeta = await this.tarjetaVirtualService.obtenerTarjetaPorUsuario(usuarioId);
+      this.tarjetaVirtual.set(tarjeta);
+    } catch (error) {
+      console.error('Error al cargar tarjeta virtual:', error);
+      this.tarjetaVirtual.set(null);
+    }
+  }
+
+  /**
+   * Inicia el proceso de pago con Mercado Pago
    */
   async pagarConMercadoPago(): Promise<void> {
     const currentUser = this.authService.currentUserSignal();
@@ -48,6 +102,204 @@ export class Carrito {
 
     // Usuario autenticado - proceder al pago
     await this.procesarPago();
+  }
+
+  /**
+   * Procesa el pago con tarjeta virtual
+   */
+  async pagarConTarjetaVirtual(): Promise<void> {
+    const currentUser = this.authService.currentUserSignal();
+    const tarjeta = this.tarjetaVirtual();
+    const items = this.carritoService.items();
+    
+    if (!currentUser || !tarjeta || items.length === 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pueden procesar los datos del pago'
+      });
+      return;
+    }
+
+    // Validar saldo suficiente
+    const total = this.carritoService.totalPrecio();
+    if (tarjeta.saldo < total) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Saldo Insuficiente',
+        html: `
+          <p>Tu tarjeta virtual no tiene saldo suficiente para esta compra.</p>
+          <p><strong>Saldo disponible:</strong> $${tarjeta.saldo.toLocaleString('es-AR')}</p>
+          <p><strong>Total a pagar:</strong> $${total.toLocaleString('es-AR')}</p>
+          <p><small>Contacta al administrador para recargar tu tarjeta.</small></p>
+        `
+      });
+      return;
+    }
+
+    // Validar estado de la tarjeta
+    if (tarjeta.estado !== 'activa') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Tarjeta No Disponible',
+        text: `Tu tarjeta virtual está ${tarjeta.estado}. Contacta al administrador.`
+      });
+      return;
+    }
+
+    this.cargandoTarjetaVirtual.set(true);
+
+    try {
+      // Preparar datos del pago
+      const descripcionPago = `Compra de ${items.length} producto(s) - Carrito`;
+      const solicitudPago: SolicitudCrearPago = {
+        tarjetaId: tarjeta.id!,
+        monto: total,
+        descripcion: descripcionPago,
+        referenciaExterna: `CARRITO-${Date.now()}`,
+        detalleProducto: {
+          nombre: items.length === 1 ? items[0].producto.nombre : `${items.length} productos`,
+          categoria: 'Compra Online',
+          cantidad: items.reduce((sum, item) => sum + item.cantidad, 0),
+          precioUnitario: total / items.reduce((sum, item) => sum + item.cantidad, 0)
+        },
+        claveIdempotencia: `carrito-${currentUser.id}-${Date.now()}`
+      };
+
+      // 1. Crear intento de pago
+      const resultadoCreacion = await this.pagoVirtualService.crearIntentoPago(solicitudPago, currentUser.id!);
+      
+      if (!resultadoCreacion.exito || !resultadoCreacion.pago?.id) {
+        throw new Error(resultadoCreacion.mensaje);
+      }
+
+      const pagoId = resultadoCreacion.pago.id;
+
+      // 2. Autorizar pago
+      const resultadoAutorizacion = await this.pagoVirtualService.autorizarPago(pagoId, currentUser.id!);
+      
+      if (!resultadoAutorizacion.exito) {
+        throw new Error(resultadoAutorizacion.mensaje);
+      }
+
+      // 3. Confirmar pago
+      const resultadoConfirmacion = await this.pagoVirtualService.confirmarPago(pagoId, currentUser.id!);
+      
+      if (!resultadoConfirmacion.exito) {
+        throw new Error(resultadoConfirmacion.mensaje);
+      }
+
+      // Pago exitoso - crear pedido
+      await this.crearPedidoYProcesarPago(items, currentUser, total, pagoId);
+
+    } catch (error) {
+      console.error('❌ Error al procesar pago con tarjeta virtual:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error en el Pago',
+        text: error instanceof Error ? error.message : 'Error desconocido al procesar el pago'
+      });
+    } finally {
+      this.cargandoTarjetaVirtual.set(false);
+    }
+  }
+
+  /**
+   * Crea un pedido real después del pago exitoso
+   */
+  private async crearPedidoYProcesarPago(items: any[], usuario: any, total: number, pagoId?: string): Promise<void> {
+    try {
+      console.log('🛒 Creando pedido después del pago exitoso...');
+      
+      // Preparar datos del pedido
+      const solicitudPedido: SolicitudCrearPedido = {
+        items: items.map(item => ({
+          productoId: item.producto.id || `prod-${Date.now()}`,
+          nombre: item.producto.nombre,
+          descripcion: item.producto.descripcion || '',
+          imagen: item.producto.imagen,
+          precioUnitario: item.producto.precio,
+          cantidad: item.cantidad
+        })),
+        envio: {
+          direccion: usuario.direccion || 'Dirección no especificada',
+          ciudad: usuario.ciudad || 'Ciudad no especificada',
+          codigoPostal: usuario.codigoPostal || '0000',
+          provincia: 'Buenos Aires',
+          pais: 'Argentina',
+          metodoEnvio: 'Envío estándar'
+        },
+        metodoPago: 'tarjeta_virtual',
+        notas: `Pedido creado desde carrito - Pago ID: ${pagoId}`
+      };
+      
+      // Crear el pedido
+      const resultadoPedido = await this.pedidosService.crearPedido(solicitudPedido, usuario.id);
+      
+      if (resultadoPedido.exito && resultadoPedido.pedido) {
+        console.log('✅ Pedido creado exitosamente:', resultadoPedido.pedido.numeroPedido);
+        
+        // Procesar pago del pedido (esto actualizará el estado)
+        const resultadoProcesarPago = await this.pedidosService.procesarPagoPedido(
+          resultadoPedido.pedido.id!,
+          usuario.id
+        );
+        
+        if (resultadoProcesarPago.exito) {
+          console.log('✅ Pago del pedido procesado exitosamente');
+        }
+        
+        // Mostrar éxito y redirigir
+        this.procesarPagoExitoso(items, usuario, total, pagoId, resultadoPedido.pedido.numeroPedido);
+      } else {
+        console.warn('⚠️ No se pudo crear el pedido, pero el pago fue exitoso');
+        this.procesarPagoExitoso(items, usuario, total, pagoId);
+      }
+      
+    } catch (error) {
+      console.error('❌ Error al crear pedido:', error);
+      // Aunque falle la creación del pedido, el pago fue exitoso
+      this.procesarPagoExitoso(items, usuario, total, pagoId);
+    }
+  }
+
+  /**
+   * Procesa un pago exitoso (común para ambos métodos)
+   */
+  private procesarPagoExitoso(items: any[], usuario: any, total: number, pagoId?: string, numeroPedido?: string): void {
+    // Vaciar el carrito
+    this.carritoService.vaciarCarrito();
+    
+    // Ocultar métodos de pago
+    this.mostrandoMetodosPago.set(false);
+
+    // Mostrar confirmación
+    Swal.fire({
+      icon: 'success',
+      title: '¡Pago Exitoso!',
+      html: `
+        <div class="text-start">
+          <p><strong>✅ Compra procesada correctamente</strong></p>
+          ${numeroPedido ? `<p>Número de Pedido: <strong>${numeroPedido}</strong></p>` : ''}
+          <p>Total pagado: <strong>$${total.toLocaleString('es-AR')}</strong></p>
+          <p>Cliente: <strong>${usuario.nombre} ${usuario.apellido}</strong></p>
+          <p>Productos: <strong>${items.length} items</strong></p>
+          ${pagoId ? `<p>ID de Pago: <strong>${pagoId}</strong></p>` : ''}
+          <hr>
+          <p class="text-muted small">🎉 ¡Gracias por tu compra!</p>
+          ${numeroPedido ? `<p class="text-info small">📦 Puedes ver el estado de tu pedido en "Mis Pedidos"</p>` : ''}
+        </div>
+      `,
+      confirmButtonText: '¡Genial!',
+      confirmButtonColor: '#28a745'
+    });
+  }
+
+  /**
+   * Cancela la selección de método de pago
+   */
+  cancelarPago(): void {
+    this.mostrandoMetodosPago.set(false);
   }
 
   /**

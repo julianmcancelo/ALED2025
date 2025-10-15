@@ -706,6 +706,55 @@ Responde EXCLUSIVAMENTE con el JSON, sin texto adicional.
   }
 
   /**
+   * Genera contenido completo con banner en base64
+   */
+  async generarContenidoConBanner(ideaUsuario: string): Promise<{contenido: ResultadoGeneracionContenido, bannerBase64: string} | null> {
+    try {
+      console.log('🎨 Generando contenido completo con banner para:', ideaUsuario);
+      
+      // Primero generar el contenido con IA
+      const contenido = await this.generarContenidoNovedad(ideaUsuario);
+      
+      if (!contenido) {
+        console.warn('⚠️ No se pudo generar contenido, usando banner de fallback');
+        // Si falla la IA, usar contenido de fallback
+        const contenidoFallback: ResultadoGeneracionContenido = {
+          titulo: '¡Nueva Oferta Disponible!',
+          descripcion: 'Descubre nuestras increíbles promociones',
+          enlaceUrl: '/ofertas',
+          promptImagen: 'Banner promocional atractivo'
+        };
+        const bannerBase64 = await this.generarBannerBase64(contenidoFallback);
+        return { contenido: contenidoFallback, bannerBase64 };
+      }
+      
+      // Generar banner con el contenido de IA
+      const bannerBase64 = await this.generarBannerBase64(contenido);
+      
+      return { contenido, bannerBase64 };
+      
+    } catch (error) {
+      console.error('❌ Error generando contenido completo:', error);
+      
+      // Fallback completo en caso de error
+      const contenidoFallback: ResultadoGeneracionContenido = {
+        titulo: '¡Oferta Especial!',
+        descripcion: 'No te pierdas nuestras promociones',
+        enlaceUrl: '/productos',
+        promptImagen: 'Banner promocional'
+      };
+      
+      try {
+        const bannerBase64 = await this.generarBannerBase64(contenidoFallback);
+        return { contenido: contenidoFallback, bannerBase64 };
+      } catch (bannerError) {
+        console.error('❌ Error generando banner de fallback:', bannerError);
+        return null;
+      }
+    }
+  }
+
+  /**
    * Genera una imagen promocional profesional usando Canvas API
    */
   async generarImagenPromocion(prompt: string): Promise<ImagenGenerada | null> {
@@ -1341,78 +1390,190 @@ Responde EXCLUSIVAMENTE con el JSON, sin texto adicional.
     ctx.fillStyle = '#808080';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = 1;
   }
 
 
   /**
-   * Método de prueba para generar imagen simple
+   * Genera una imagen de banner en base64 usando Canvas
    */
-  async generarImagenPrueba(): Promise<string> {
-    console.log('🧪 Generando imagen de prueba...');
+  async generarBannerBase64(contenido: ResultadoGeneracionContenido): Promise<string> {
+    console.log('🎨 Generando banner en base64 para:', contenido.titulo);
     
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
     
-    canvas.width = 800;
-    canvas.height = 400;
+    // Dimensiones del banner
+    canvas.width = 1200;
+    canvas.height = 600;
     
-    // Fondo simple
-    ctx.fillStyle = '#FF6B6B';
+    // Crear gradiente de fondo
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#667eea');
+    gradient.addColorStop(0.5, '#764ba2');
+    gradient.addColorStop(1, '#f093fb');
+    
+    // Aplicar fondo con gradiente
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Texto simple
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 48px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('PRUEBA IA', canvas.width / 2, canvas.height / 2);
+    // Agregar overlay semi-transparente
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     
+    // Configurar texto
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Título principal
+    ctx.font = 'bold 72px Arial, sans-serif';
+    const tituloY = canvas.height / 2 - 60;
+    this.dibujarTextoConSombra(ctx, contenido.titulo, canvas.width / 2, tituloY);
+    
+    // Descripción
+    ctx.font = '36px Arial, sans-serif';
+    const descripcionY = canvas.height / 2 + 40;
+    this.dibujarTextoConSombra(ctx, contenido.descripcion, canvas.width / 2, descripcionY);
+    
+    // Decoración - círculos
+    this.agregarDecoracion(ctx, canvas.width, canvas.height);
+    
+    // Convertir a base64
     return new Promise((resolve) => {
       canvas.toBlob((blob) => {
         if (blob) {
-          const url = URL.createObjectURL(blob);
-          console.log('🎉 Imagen de prueba generada:', url);
-          resolve(url);
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64 = reader.result as string;
+            console.log('✅ Banner generado en base64');
+            resolve(base64);
+          };
+          reader.readAsDataURL(blob);
         } else {
+          console.error('❌ Error generando blob del banner');
           resolve('');
         }
-      }, 'image/png');
+      }, 'image/png', 0.9);
     });
   }
 
   /**
-   * Llama a la API de Gemini con un prompt
+   * Dibuja texto con sombra para mejor legibilidad
    */
-  private async llamarGeminiAPI(prompt: string): Promise<string | null> {
-    try {
-      const requestBody = {
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        }
-      };
+  private dibujarTextoConSombra(ctx: CanvasRenderingContext2D, texto: string, x: number, y: number): void {
+    // Sombra
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillText(texto, x + 3, y + 3);
+    
+    // Texto principal
+    ctx.fillStyle = 'white';
+    ctx.fillText(texto, x, y);
+  }
 
-      const url = `${this.GEMINI_API_URL}?key=${this.API_KEY}`;
-      const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-      
-      const response = await this.http.post<any>(url, requestBody, { headers }).toPromise();
-      
-      if (response?.candidates?.[0]?.content?.parts?.[0]?.text) {
-        return response.candidates[0].content.parts[0].text.trim();
+  /**
+   * Agrega elementos decorativos al banner
+   */
+  private agregarDecoracion(ctx: CanvasRenderingContext2D, width: number, height: number): void {
+    // Círculos decorativos
+    const circulos = [
+      { x: width * 0.1, y: height * 0.2, radio: 80, alpha: 0.1 },
+      { x: width * 0.9, y: height * 0.8, radio: 120, alpha: 0.15 },
+      { x: width * 0.85, y: height * 0.15, radio: 60, alpha: 0.1 },
+      { x: width * 0.15, y: height * 0.85, radio: 100, alpha: 0.12 }
+    ];
+    
+    circulos.forEach(circulo => {
+      ctx.beginPath();
+      ctx.arc(circulo.x, circulo.y, circulo.radio, 0, 2 * Math.PI);
+      ctx.fillStyle = `rgba(255, 255, 255, ${circulo.alpha})`;
+      ctx.fill();
+    });
+  }
+
+  /**
+   * Genera una imagen de prueba simple usando Canvas (fallback)
+   */
+  async generarImagenPrueba(): Promise<string> {
+    console.log('🧪 Generando imagen de prueba...');
+    
+    const contenidoPrueba: ResultadoGeneracionContenido = {
+      titulo: '¡OFERTA ESPECIAL!',
+      descripcion: 'Descuentos increíbles por tiempo limitado',
+      enlaceUrl: '/ofertas',
+      promptImagen: 'Banner promocional colorido'
+    };
+    
+    return await this.generarBannerBase64(contenidoPrueba);
+  }
+
+  /**
+   * Llama a la API de Gemini con un prompt con reintentos y mejor manejo de errores
+   */
+  private async llamarGeminiAPI(prompt: string, reintentos: number = 3): Promise<string | null> {
+    for (let intento = 1; intento <= reintentos; intento++) {
+      try {
+        console.log(`🤖 Intento ${intento}/${reintentos} - Llamando a Gemini API...`);
+        
+        const requestBody = {
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          }
+        };
+
+        const url = `${this.GEMINI_API_URL}?key=${this.API_KEY}`;
+        const headers = new HttpHeaders({ 
+          'Content-Type': 'application/json',
+          'User-Agent': 'ALED2025-App/1.0'
+        });
+        
+        // Agregar timeout más largo para evitar errores 503
+        const response = await this.http.post<any>(url, requestBody, { 
+          headers,
+          timeout: 30000 // 30 segundos
+        }).toPromise();
+        
+        if (response?.candidates?.[0]?.content?.parts?.[0]?.text) {
+          console.log('✅ Respuesta exitosa de Gemini API');
+          return response.candidates[0].content.parts[0].text.trim();
+        }
+        
+        console.warn('⚠️ Respuesta vacía de Gemini API');
+        return null;
+        
+      } catch (error: any) {
+        console.error(`❌ Error en intento ${intento}/${reintentos}:`, error);
+        
+        // Si es error 503 (Service Unavailable), esperar antes del siguiente intento
+        if (error.status === 503 && intento < reintentos) {
+          const tiempoEspera = intento * 2000; // 2s, 4s, 6s...
+          console.log(`⏳ Error 503 - Esperando ${tiempoEspera}ms antes del siguiente intento...`);
+          await new Promise(resolve => setTimeout(resolve, tiempoEspera));
+          continue;
+        }
+        
+        // Si es el último intento o error diferente a 503, lanzar error
+        if (intento === reintentos) {
+          if (error.status === 503) {
+            throw new Error('Servicio de IA temporalmente no disponible. Intente más tarde.');
+          } else if (error.status === 429) {
+            throw new Error('Límite de solicitudes excedido. Espere un momento antes de intentar nuevamente.');
+          } else if (error.status === 401) {
+            throw new Error('API Key de Gemini inválida o expirada.');
+          } else {
+            throw new Error(`Error de conexión con el servicio de IA: ${error.message || 'Error desconocido'}`);
+          }
+        }
       }
-      
-      return null;
-      
-    } catch (error) {
-      console.error('Error llamando a Gemini API:', error);
-      return null;
     }
+    
+    return null;
   }
 }

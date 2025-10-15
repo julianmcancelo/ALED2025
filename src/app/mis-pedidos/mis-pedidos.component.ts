@@ -7,38 +7,10 @@ import Swal from 'sweetalert2'; // Librería para alertas elegantes y modernas
 
 // Importaciones de servicios del proyecto
 import { AuthService } from '../auth/auth';
+import { PedidosService } from '../servicios/pedidos.service';
 
-// --- INTERFACES Y TIPOS ---
-
-/**
- * Interfaz que define la estructura de un pedido del usuario.
- */
-interface PedidoDemo {
-  id: string;
-  paymentId: string;
-  estado: 'completado' | 'pendiente' | 'rechazado' | 'reembolsado' | 'desconocido' | 'creado';
-  total: number;
-  moneda: string;
-  metodoPago: string;
-  items: Array<{
-    id: string;
-    nombre: string;
-    cantidad: number;
-    precio: number;
-    subtotal: number;
-  }>;
-  cliente: {
-    email?: string;
-    nombre?: string;
-    apellido?: string;
-    telefono?: string;
-  };
-  fechaCreacion: Date;
-  fechaAprobacion?: Date;
-  fechaActualizacion?: Date;
-  motivoRechazo?: string;
-  detallesPago?: any;
-}
+// Importaciones de modelos
+import { Pedido, EstadoPedido } from '../shared/models/pedido.model';
 
 /**
  * ============================================================================
@@ -193,12 +165,21 @@ interface PedidoDemo {
             <p class="text-muted">
               Aún no has realizado ninguna compra.
             </p>
-            <button 
-              class="btn btn-primary"
-              (click)="irATienda()">
-              <i class="bi bi-shop me-1"></i>
-              Ir a la Tienda
-            </button>
+            <div class="d-flex gap-2 justify-content-center">
+              <button 
+                class="btn btn-primary"
+                (click)="irATienda()">
+                <i class="bi bi-shop me-1"></i>
+                Ir a la Tienda
+              </button>
+              <button 
+                class="btn btn-outline-secondary"
+                (click)="generarDatosDemo()"
+                title="Generar pedidos de demostración para probar la funcionalidad">
+                <i class="bi bi-gear me-1"></i>
+                Datos Demo
+              </button>
+            </div>
           </div>
 
           <!-- Tarjetas de pedidos -->
@@ -207,7 +188,7 @@ interface PedidoDemo {
               <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                   <div>
-                    <h6 class="mb-0">Pedido #{{ pedido.id }}</h6>
+                    <h6 class="mb-0">Pedido #{{ pedido.numeroPedido }}</h6>
                     <small class="text-muted">{{ pedido.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</small>
                   </div>
                   <span [class]="'badge ' + obtenerClaseEstado(pedido.estado)">
@@ -218,8 +199,8 @@ interface PedidoDemo {
                   <!-- Información del pedido -->
                   <div class="mb-3">
                     <h6>Total: <span class="text-success">{{ pedido.total | currency:'ARS':'symbol':'1.0-0' }}</span></h6>
-                    <p class="mb-1"><strong>Método de pago:</strong> {{ pedido.metodoPago }}</p>
-                    <p class="mb-1"><strong>Payment ID:</strong> <code>{{ pedido.paymentId }}</code></p>
+                    <p class="mb-1"><strong>Método de pago:</strong> {{ pedido.pago.metodoPago }}</p>
+                    <p class="mb-1"><strong>Transaction ID:</strong> <code>{{ pedido.pago.transaccionId || 'N/A' }}</code></p>
                   </div>
 
                   <!-- Productos del pedido -->
@@ -238,7 +219,7 @@ interface PedidoDemo {
                           <div class="text-end">
                             <strong>{{ item.subtotal | currency:'ARS':'symbol':'1.0-0' }}</strong>
                             <br>
-                            <small class="text-muted">{{ item.precio | currency:'ARS':'symbol':'1.0-0' }} c/u</small>
+                            <small class="text-muted">{{ item.precioUnitario | currency:'ARS':'symbol':'1.0-0' }} c/u</small>
                           </div>
                         </div>
                       </div>
@@ -246,13 +227,13 @@ interface PedidoDemo {
                   </div>
 
                   <!-- Información adicional según estado -->
-                  <div *ngIf="pedido.motivoRechazo" class="alert alert-danger">
-                    <strong>Motivo de rechazo:</strong> {{ pedido.motivoRechazo }}
+                  <div *ngIf="pedido.pago.motivoRechazo" class="alert alert-danger">
+                    <strong>Motivo de rechazo:</strong> {{ pedido.pago.motivoRechazo }}
                   </div>
 
-                  <div *ngIf="pedido.fechaAprobacion" class="text-success">
+                  <div *ngIf="pedido.pago.fechaPago" class="text-success">
                     <i class="bi bi-check-circle me-1"></i>
-                    Aprobado el {{ pedido.fechaAprobacion | date:'dd/MM/yyyy HH:mm' }}
+                    Pagado el {{ pedido.pago.fechaPago | date:'dd/MM/yyyy HH:mm' }}
                   </div>
                 </div>
                 <div class="card-footer">
@@ -264,14 +245,14 @@ interface PedidoDemo {
                       Ver Detalles
                     </button>
                     <button 
-                      *ngIf="pedido.estado === 'completado'"
+                      *ngIf="pedido.estado === 'entregado'"
                       class="btn btn-outline-success btn-sm"
                       (click)="descargarFactura(pedido)">
                       <i class="bi bi-download me-1"></i>
                       Factura
                     </button>
                     <button 
-                      *ngIf="pedido.estado === 'pendiente'"
+                      *ngIf="pedido.estado === 'pendiente' || pedido.estado === 'preparando' || pedido.estado === 'enviado'"
                       class="btn btn-outline-warning btn-sm"
                       (click)="consultarEstado(pedido)">
                       <i class="bi bi-question-circle me-1"></i>
@@ -333,13 +314,18 @@ export class MisPedidosComponent implements OnInit {
    */
   private router = inject(Router);
 
+  /**
+   * PedidosService: Servicio para gestionar operaciones con pedidos
+   */
+  private pedidosService = inject(PedidosService);
+
   // --- PROPIEDADES DEL COMPONENTE ---
 
   /**
    * Signal que contiene la lista completa de pedidos del usuario.
    * Se actualiza automáticamente cuando se cargan nuevos datos.
    */
-  pedidos = signal<PedidoDemo[]>([]);
+  pedidos = signal<Pedido[]>([]);
 
   /**
    * Filtro actual por estado de pedido.
@@ -372,11 +358,11 @@ export class MisPedidosComponent implements OnInit {
     
     return {
       total: todos.length,
-      completados: todos.filter(p => p.estado === 'completado').length,
-      pendientes: todos.filter(p => p.estado === 'pendiente').length,
-      rechazados: todos.filter(p => p.estado === 'rechazado').length,
+      completados: todos.filter(p => p.estado === 'entregado').length,
+      pendientes: todos.filter(p => p.estado === 'pendiente' || p.estado === 'preparando' || p.estado === 'enviado').length,
+      rechazados: todos.filter(p => p.estado === 'rechazado' || p.estado === 'cancelado').length,
       totalGastado: todos
-        .filter(p => p.estado === 'completado')
+        .filter(p => p.estado === 'entregado' || p.estado === 'pagado')
         .reduce((sum, p) => sum + p.total, 0)
     };
   });
@@ -420,97 +406,223 @@ export class MisPedidosComponent implements OnInit {
 
   /**
    * Carga los pedidos del usuario autenticado.
-   * En una aplicación real, esto haría una llamada al backend.
    */
-  cargarPedidos(): void {
+  async cargarPedidos(): Promise<void> {
     const usuario = this.authService.currentUserSignal();
     
     if (!usuario) {
       return;
     }
 
-    // Simular carga de pedidos con datos de demostración
-    this.generarPedidosDemostacion(usuario.email || 'usuario@demo.com');
+    try {
+      console.log('🛒 Cargando pedidos del usuario...');
+      
+      const resultado = await this.pedidosService.obtenerPedidosUsuario(usuario.id!);
+      
+      if (resultado.exito && resultado.pedidos) {
+        this.pedidos.set(resultado.pedidos);
+        console.log(`✅ Se cargaron ${resultado.pedidos.length} pedidos`);
+      } else {
+        console.warn('⚠️ No se pudieron cargar los pedidos:', resultado.mensaje);
+        // No hay pedidos reales, mostrar lista vacía
+        this.pedidos.set([]);
+      }
+      
+    } catch (error) {
+      console.error('❌ Error al cargar pedidos:', error);
+      // En caso de error, mostrar lista vacía
+      this.pedidos.set([]);
+    }
   }
 
   /**
    * Genera pedidos de demostración para el usuario.
    * En una aplicación real, esto vendría del backend.
    * 
-   * @param emailUsuario - Email del usuario para asociar los pedidos
+   * @param usuarioId - ID del usuario para asociar los pedidos
    */
-  private generarPedidosDemostacion(emailUsuario: string): void {
-    const pedidosDemo: PedidoDemo[] = [
+  private generarPedidosDemostacion(usuarioId: string): void {
+    const pedidosDemo: Pedido[] = [
       {
-        id: 'PED-001',
-        paymentId: 'MP-123456789',
-        estado: 'completado',
-        total: 89999,
-        moneda: 'ARS',
-        metodoPago: 'Tarjeta de Crédito',
+        id: 'demo-ped-001',
+        numeroPedido: 'ALED-240115-A1B2',
+        usuarioId,
+        cliente: {
+          nombre: 'Usuario',
+          apellido: 'Demo',
+          email: 'usuario@demo.com',
+          telefono: '123456789'
+        },
+        estado: 'entregado',
         items: [
           {
-            id: 'PROD-001',
+            id: 'item-1',
+            productoId: 'prod-001',
             nombre: 'Smartphone Samsung Galaxy A54',
+            descripcion: 'Smartphone con cámara de 50MP',
+            precioUnitario: 89999,
             cantidad: 1,
-            precio: 89999,
             subtotal: 89999
           }
         ],
-        cliente: {
-          email: emailUsuario,
-          nombre: 'Usuario',
-          apellido: 'Demo'
+        envio: {
+          direccion: 'Av. Corrientes 1234',
+          ciudad: 'Buenos Aires',
+          codigoPostal: '1043',
+          provincia: 'CABA',
+          pais: 'Argentina',
+          costoEnvio: 0,
+          metodoEnvio: 'Envío gratis',
+          tiempoEstimado: '3-5 días hábiles'
         },
+        pago: {
+          metodoPago: 'tarjeta_virtual',
+          transaccionId: 'txn-123456',
+          estadoPago: 'aprobado',
+          montoPagado: 89999,
+          moneda: 'ARS',
+          fechaPago: new Date('2025-01-10')
+        },
+        subtotal: 89999,
+        totalDescuentos: 0,
+        costoEnvio: 0,
+        total: 89999,
         fechaCreacion: new Date('2025-01-10'),
-        fechaAprobacion: new Date('2025-01-10')
+        fechaActualizacion: new Date('2025-01-15'),
+        fechaEntregaReal: new Date('2025-01-15'),
+        historialEstados: [
+          {
+            estadoNuevo: 'creado',
+            fecha: new Date('2025-01-10'),
+            motivo: 'Pedido creado'
+          },
+          {
+            estadoAnterior: 'creado',
+            estadoNuevo: 'entregado',
+            fecha: new Date('2025-01-15'),
+            motivo: 'Pedido entregado exitosamente'
+          }
+        ]
       },
       {
-        id: 'PED-002',
-        paymentId: 'MP-987654321',
-        estado: 'pendiente',
-        total: 22000,
-        moneda: 'ARS',
-        metodoPago: 'Transferencia Bancaria',
+        id: 'demo-ped-002',
+        numeroPedido: 'ALED-240112-C3D4',
+        usuarioId,
+        cliente: {
+          nombre: 'Usuario',
+          apellido: 'Demo',
+          email: 'usuario@demo.com',
+          telefono: '123456789'
+        },
+        estado: 'enviado',
         items: [
           {
-            id: 'PROD-005',
+            id: 'item-2',
+            productoId: 'prod-005',
             nombre: 'Zapatillas Running Adidas Ultraboost',
+            descripcion: 'Zapatillas deportivas premium',
+            precioUnitario: 22000,
             cantidad: 1,
-            precio: 22000,
             subtotal: 22000
           }
         ],
-        cliente: {
-          email: emailUsuario,
-          nombre: 'Usuario',
-          apellido: 'Demo'
+        envio: {
+          direccion: 'Av. Corrientes 1234',
+          ciudad: 'Buenos Aires',
+          codigoPostal: '1043',
+          provincia: 'CABA',
+          pais: 'Argentina',
+          costoEnvio: 2500,
+          metodoEnvio: 'Envío estándar',
+          tiempoEstimado: '3-5 días hábiles',
+          numeroSeguimiento: 'AR123456789'
         },
-        fechaCreacion: new Date('2025-01-12')
+        pago: {
+          metodoPago: 'tarjeta_virtual',
+          transaccionId: 'txn-987654',
+          estadoPago: 'aprobado',
+          montoPagado: 24500,
+          moneda: 'ARS',
+          fechaPago: new Date('2025-01-12')
+        },
+        subtotal: 22000,
+        totalDescuentos: 0,
+        costoEnvio: 2500,
+        total: 24500,
+        fechaCreacion: new Date('2025-01-12'),
+        fechaActualizacion: new Date('2025-01-13'),
+        historialEstados: [
+          {
+            estadoNuevo: 'creado',
+            fecha: new Date('2025-01-12'),
+            motivo: 'Pedido creado'
+          },
+          {
+            estadoAnterior: 'pagado',
+            estadoNuevo: 'enviado',
+            fecha: new Date('2025-01-13'),
+            motivo: 'Pedido enviado'
+          }
+        ]
       },
       {
-        id: 'PED-003',
-        paymentId: 'MP-555666777',
+        id: 'demo-ped-003',
+        numeroPedido: 'ALED-240108-E5F6',
+        usuarioId,
+        cliente: {
+          nombre: 'Usuario',
+          apellido: 'Demo',
+          email: 'usuario@demo.com',
+          telefono: '123456789'
+        },
         estado: 'rechazado',
-        total: 8500,
-        moneda: 'ARS',
-        metodoPago: 'Tarjeta de Débito',
         items: [
           {
-            id: 'PROD-003',
+            id: 'item-3',
+            productoId: 'prod-003',
             nombre: 'Remera Deportiva Nike Dri-FIT',
+            descripcion: 'Remera deportiva transpirable',
+            precioUnitario: 8500,
             cantidad: 1,
-            precio: 8500,
             subtotal: 8500
           }
         ],
-        cliente: {
-          email: emailUsuario,
-          nombre: 'Usuario',
-          apellido: 'Demo'
+        envio: {
+          direccion: 'Av. Corrientes 1234',
+          ciudad: 'Buenos Aires',
+          codigoPostal: '1043',
+          provincia: 'CABA',
+          pais: 'Argentina',
+          costoEnvio: 2500,
+          metodoEnvio: 'Envío estándar',
+          tiempoEstimado: '3-5 días hábiles'
         },
+        pago: {
+          metodoPago: 'tarjeta_virtual',
+          estadoPago: 'rechazado',
+          montoPagado: 0,
+          moneda: 'ARS',
+          motivoRechazo: 'Fondos insuficientes en tarjeta virtual'
+        },
+        subtotal: 8500,
+        totalDescuentos: 0,
+        costoEnvio: 2500,
+        total: 11000,
         fechaCreacion: new Date('2025-01-08'),
-        motivoRechazo: 'Fondos insuficientes'
+        fechaActualizacion: new Date('2025-01-08'),
+        historialEstados: [
+          {
+            estadoNuevo: 'creado',
+            fecha: new Date('2025-01-08'),
+            motivo: 'Pedido creado'
+          },
+          {
+            estadoAnterior: 'creado',
+            estadoNuevo: 'rechazado',
+            fecha: new Date('2025-01-08'),
+            motivo: 'Pago rechazado por fondos insuficientes'
+          }
+        ]
       }
     ];
 
@@ -535,7 +647,7 @@ export class MisPedidosComponent implements OnInit {
    * 
    * @param pedido - El pedido del cual mostrar los detalles
    */
-  verDetalles(pedido: PedidoDemo): void {
+  verDetalles(pedido: Pedido): void {
     const productosHtml = pedido.items.map(item => `
       <div class="d-flex justify-content-between mb-2">
         <span>${item.nombre} (x${item.cantidad})</span>
@@ -544,7 +656,7 @@ export class MisPedidosComponent implements OnInit {
     `).join('');
 
     Swal.fire({
-      title: `Detalles del Pedido #${pedido.id}`,
+      title: `Detalles del Pedido #${pedido.numeroPedido}`,
       html: `
         <div class="text-start">
           <h6><strong>Estado:</strong></h6>
@@ -554,13 +666,16 @@ export class MisPedidosComponent implements OnInit {
           <p class="text-success fs-5"><strong>$${pedido.total.toLocaleString()}</strong></p>
           
           <h6><strong>Método de Pago:</strong></h6>
-          <p>${pedido.metodoPago}</p>
+          <p>${pedido.pago.metodoPago}</p>
           
-          <h6><strong>Payment ID:</strong></h6>
-          <p><code>${pedido.paymentId}</code></p>
+          <h6><strong>Transaction ID:</strong></h6>
+          <p><code>${pedido.pago.transaccionId || 'N/A'}</code></p>
           
           <h6><strong>Fecha de Creación:</strong></h6>
           <p>${pedido.fechaCreacion.toLocaleDateString()}</p>
+          
+          <h6><strong>Dirección de Envío:</strong></h6>
+          <p>${pedido.envio.direccion}, ${pedido.envio.ciudad}</p>
           
           <h6><strong>Productos:</strong></h6>
           <div class="border rounded p-2">
@@ -578,7 +693,7 @@ export class MisPedidosComponent implements OnInit {
    * 
    * @param pedido - El pedido para el cual descargar la factura
    */
-  descargarFactura(pedido: PedidoDemo): void {
+  descargarFactura(pedido: Pedido): void {
     Swal.fire({
       icon: 'info',
       title: 'Descarga de Factura',
@@ -592,7 +707,7 @@ export class MisPedidosComponent implements OnInit {
    * 
    * @param pedido - El pedido del cual consultar el estado
    */
-  consultarEstado(pedido: PedidoDemo): void {
+  consultarEstado(pedido: Pedido): void {
     Swal.fire({
       icon: 'info',
       title: 'Consulta de Estado',
@@ -608,6 +723,34 @@ export class MisPedidosComponent implements OnInit {
     this.router.navigate(['/tienda']);
   }
 
+  /**
+   * Genera datos de demostración para probar la funcionalidad
+   */
+  generarDatosDemo(): void {
+    const usuario = this.authService.currentUserSignal();
+    if (!usuario) return;
+
+    Swal.fire({
+      title: 'Generar Datos Demo',
+      text: '¿Quieres generar pedidos de demostración para probar la funcionalidad?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, generar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.generarPedidosDemostacion(usuario.id!);
+        Swal.fire({
+          icon: 'success',
+          title: 'Datos Demo Generados',
+          text: 'Se han creado pedidos de demostración para probar la funcionalidad.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    });
+  }
+
   // --- MÉTODOS AUXILIARES ---
 
   /**
@@ -616,17 +759,20 @@ export class MisPedidosComponent implements OnInit {
    * @param estado - El estado del pedido
    * @returns La clase CSS correspondiente
    */
-  obtenerClaseEstado(estado: string): string {
+  obtenerClaseEstado(estado: EstadoPedido): string {
     const clases = {
-      'completado': 'bg-success',
-      'pendiente': 'bg-warning text-dark',
-      'rechazado': 'bg-danger',
-      'reembolsado': 'bg-info',
       'creado': 'bg-secondary',
-      'desconocido': 'bg-secondary'
+      'pendiente': 'bg-warning text-dark',
+      'pagado': 'bg-primary',
+      'preparando': 'bg-info',
+      'enviado': 'bg-warning text-dark',
+      'entregado': 'bg-success',
+      'cancelado': 'bg-secondary',
+      'rechazado': 'bg-danger',
+      'reembolsado': 'bg-info'
     };
 
-    return clases[estado as keyof typeof clases] || 'bg-secondary';
+    return clases[estado] || 'bg-secondary';
   }
 
   /**
@@ -635,17 +781,20 @@ export class MisPedidosComponent implements OnInit {
    * @param estado - El estado del pedido
    * @returns El texto descriptivo correspondiente
    */
-  obtenerTextoEstado(estado: string): string {
+  obtenerTextoEstado(estado: EstadoPedido): string {
     const textos = {
-      'completado': 'Completado',
-      'pendiente': 'Pendiente',
-      'rechazado': 'Rechazado',
-      'reembolsado': 'Reembolsado',
       'creado': 'Creado',
-      'desconocido': 'Desconocido'
+      'pendiente': 'Pendiente',
+      'pagado': 'Pagado',
+      'preparando': 'Preparando',
+      'enviado': 'Enviado',
+      'entregado': 'Entregado',
+      'cancelado': 'Cancelado',
+      'rechazado': 'Rechazado',
+      'reembolsado': 'Reembolsado'
     };
 
-    return textos[estado as keyof typeof textos] || 'Desconocido';
+    return textos[estado] || 'Desconocido';
   }
 
   /**

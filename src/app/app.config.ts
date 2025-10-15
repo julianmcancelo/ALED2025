@@ -4,11 +4,17 @@ import {
   APP_INITIALIZER,
   inject,
   importProvidersFrom,
+  LOCALE_ID,
 } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
 import { UserService } from './servicios/user';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es-AR';
+
+// Registrar datos de localización para español de Argentina
+registerLocaleData(localeEs);
 
 // Importaciones de Firebase/Firestore
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
@@ -95,6 +101,9 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideHttpClient(),
     provideAnimations(),
+    
+    // Configuración de localización para español de Argentina
+    { provide: LOCALE_ID, useValue: 'es-AR' },
 
     // Configuración de Firebase/Firestore - DEBE IR ANTES DEL APP_INITIALIZER
     provideFirebaseApp(() => {

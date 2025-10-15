@@ -1,0 +1,417 @@
+/**
+ * ESTILOS DE MÉTODO DE PAGO VIRTUAL
+ * 
+ * Estilos para el componente de selección y procesamiento
+ * de pagos con tarjeta virtual.
+ */
+
+/* Contenedor principal */
+.metodo-pago-virtual {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Estados de carga y error */
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.loading-text {
+  margin-top: 12px;
+  color: #666;
+  font-size: 14px;
+}
+
+.error-icon {
+  font-size: 48px;
+  color: #f44336;
+  margin-bottom: 16px;
+}
+
+.error-text {
+  color: #666;
+  margin-bottom: 16px;
+  max-width: 300px;
+}
+
+/* Tarjeta de pago */
+.tarjeta-pago-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.tarjeta-habilitada {
+  border-color: #4caf50;
+  box-shadow: 0 4px 20px rgba(76, 175, 80, 0.2);
+}
+
+.tarjeta-habilitada:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(76, 175, 80, 0.25);
+}
+
+/* Avatar de la tarjeta */
+.tarjeta-avatar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Información de la tarjeta */
+.tarjeta-info {
+  margin: 16px 0;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 500;
+  color: #666;
+  font-size: 14px;
+}
+
+.info-value {
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.numero-tarjeta {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+.saldo-row {
+  background: rgba(76, 175, 80, 0.05);
+  margin: 0 -16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: none;
+}
+
+.saldo-valor {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4caf50;
+}
+
+.saldo-insuficiente {
+  color: #f44336 !important;
+}
+
+/* Estado de la tarjeta */
+.estado-tarjeta {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.estado-chip {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Información del pago */
+.pago-info {
+  margin: 20px 0;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #2196f3;
+}
+
+.pago-titulo {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.monto-pago {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2196f3;
+}
+
+/* Validaciones y advertencias */
+.validaciones {
+  margin: 16px 0;
+}
+
+.advertencia {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  color: #856404;
+}
+
+.advertencia-icon {
+  color: #ff9800;
+}
+
+.advertencia-texto {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Información adicional */
+.info-adicional {
+  margin: 16px 0;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.info-icon {
+  color: #2196f3;
+  font-size: 18px;
+  margin-top: 2px;
+}
+
+.info-texto {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Acciones de la tarjeta */
+.mat-mdc-card-actions {
+  padding: 16px;
+  gap: 8px;
+}
+
+.spinner-inline {
+  margin-right: 8px;
+}
+
+/* Información de seguridad */
+.seguridad-info {
+  margin-top: 20px;
+}
+
+.seguridad-card {
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.seguridad-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.seguridad-icon {
+  color: #4caf50;
+  font-size: 24px;
+  margin-top: 4px;
+}
+
+.seguridad-texto h5 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+.seguridad-texto p {
+  margin: 0;
+  font-size: 12px;
+  color: #388e3c;
+  line-height: 1.4;
+}
+
+/* Estados de botones */
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:not([disabled]):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Animaciones */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tarjeta-disponible {
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
+}
+
+.tarjeta-habilitada {
+  animation: pulse 2s infinite;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .metodo-pago-virtual {
+    margin: 0;
+    padding: 0 16px;
+  }
+  
+  .tarjeta-pago-card {
+    border-radius: 12px;
+  }
+  
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .info-label {
+    font-size: 12px;
+  }
+  
+  .info-value {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .pago-info {
+    margin: 16px -16px;
+    border-radius: 0;
+  }
+  
+  .seguridad-content {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mat-mdc-card-actions {
+    flex-direction: column;
+  }
+  
+  .mat-mdc-card-actions button {
+    width: 100%;
+  }
+  
+  .saldo-row {
+    margin: 0 -24px;
+    padding: 12px 24px;
+  }
+}
+
+/* Modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .info-label {
+    color: #bbb;
+  }
+  
+  .info-value {
+    color: #fff;
+  }
+  
+  .pago-titulo {
+    color: #fff;
+  }
+  
+  .info-row {
+    border-bottom-color: #333;
+  }
+  
+  .pago-info {
+    background: #2a2a2a;
+    border-left-color: #64b5f6;
+  }
+  
+  .advertencia {
+    background: #3e2723;
+    border-color: #5d4037;
+    color: #ffcc02;
+  }
+  
+  .seguridad-card {
+    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+  }
+  
+  .seguridad-texto h5 {
+    color: #a5d6a7;
+  }
+  
+  .seguridad-texto p {
+    color: #c8e6c9;
+  }
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-pago-card,
+  .tarjeta-disponible,
+  button {
+    transition: none;
+    animation: none;
+  }
+  
+  .tarjeta-habilitada {
+    animation: none;
+  }
+  
+  button:hover {
+    transform: none;
+  }
+}
+
+/* Estados de focus para accesibilidad */
+button:focus-visible {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+.tarjeta-pago-card:focus-within {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}

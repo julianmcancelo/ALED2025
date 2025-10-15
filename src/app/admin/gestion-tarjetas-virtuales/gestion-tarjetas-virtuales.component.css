@@ -1,0 +1,505 @@
+/**
+ * ESTILOS DE GESTIÓN DE TARJETAS VIRTUALES (ADMIN)
+ * 
+ * Estilos para el panel de administración de tarjetas virtuales
+ * con diseño moderno, responsive y fácil de usar.
+ */
+
+/* Contenedor principal */
+.gestion-tarjetas-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Encabezado */
+.header-section {
+  margin-bottom: 32px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.page-subtitle {
+  color: #6b7280;
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Estados de carga y error */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loading-text {
+  margin-top: 16px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.error-icon {
+  font-size: 48px;
+  color: #ef4444;
+  margin-bottom: 16px;
+}
+
+.error-text {
+  color: #6b7280;
+  margin-bottom: 20px;
+  max-width: 400px;
+}
+
+/* Sección de estadísticas */
+.estadisticas-section {
+  margin-bottom: 24px;
+}
+
+.estadisticas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stat-icon {
+  font-size: 40px;
+  padding: 12px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.stat-total .stat-icon {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.stat-activas .stat-icon {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.stat-bloqueadas .stat-icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.stat-saldo .stat-icon {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+}
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Sección de filtros */
+.filtros-section {
+  margin-bottom: 24px;
+}
+
+.filtros-card {
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filtros-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filtro-texto {
+  flex: 2;
+  min-width: 300px;
+}
+
+.filtro-estado {
+  flex: 1;
+  min-width: 200px;
+}
+
+.acciones-generales {
+  display: flex;
+  gap: 8px;
+}
+
+/* Sección de tabla */
+.tabla-section {
+  margin-bottom: 24px;
+}
+
+.tabla-card {
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tabla-container {
+  overflow-x: auto;
+}
+
+.tarjetas-table {
+  width: 100%;
+  min-width: 800px;
+}
+
+.tarjetas-table th {
+  background: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+  padding: 16px 12px;
+}
+
+.tarjetas-table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.tarjetas-table tr:hover {
+  background: #f9fafb;
+}
+
+/* Estilos de celdas */
+.usuario-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.usuario-nombre {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.usuario-email {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.numero-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.numero-enmascarado {
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.fecha-vencimiento {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.saldo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+
+.saldo-actual {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 16px;
+}
+
+.saldo-limite {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.estado-chip {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fecha-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fecha-principal {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.fecha-secundaria {
+  color: #6b7280;
+}
+
+.acciones-tarjeta {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+/* Mensaje sin datos */
+.sin-datos {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.sin-datos-icon {
+  font-size: 64px;
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+.sin-datos h4 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.sin-datos p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Información adicional */
+.info-adicional {
+  margin-top: 24px;
+}
+
+.info-card {
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.info-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.info-icon {
+  font-size: 24px;
+  color: #d97706;
+  margin-top: 4px;
+}
+
+.info-texto h4 {
+  margin: 0 0 12px 0;
+  color: #92400e;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.info-texto ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #92400e;
+}
+
+.info-texto li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .gestion-tarjetas-container {
+    padding: 16px;
+  }
+  
+  .estadisticas-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  
+  .filtros-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filtro-texto,
+  .filtro-estado {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 24px;
+  }
+  
+  .estadisticas-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-content {
+    gap: 12px;
+  }
+  
+  .stat-icon {
+    font-size: 32px;
+    padding: 8px;
+  }
+  
+  .stat-number {
+    font-size: 20px;
+  }
+  
+  .tarjetas-table {
+    min-width: 600px;
+  }
+  
+  .info-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gestion-tarjetas-container {
+    padding: 12px;
+  }
+  
+  .header-section {
+    margin-bottom: 24px;
+  }
+  
+  .page-title {
+    font-size: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .acciones-generales {
+    width: 100%;
+    justify-content: stretch;
+  }
+  
+  .acciones-generales button {
+    flex: 1;
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.main-content {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Efectos de hover */
+.tarjetas-table tr {
+  transition: background-color 0.2s ease;
+}
+
+.acciones-tarjeta button {
+  transition: transform 0.2s ease;
+}
+
+.acciones-tarjeta button:hover {
+  transform: scale(1.1);
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,
+  .main-content,
+  .acciones-tarjeta button {
+    transition: none;
+    animation: none;
+  }
+  
+  .stat-card:hover,
+  .acciones-tarjeta button:hover {
+    transform: none;
+  }
+}
+
+/* Estilos para modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .page-title {
+    color: #f9fafb;
+  }
+  
+  .page-subtitle {
+    color: #9ca3af;
+  }
+  
+  .tarjetas-table th {
+    background: #374151;
+    color: #f9fafb;
+  }
+  
+  .tarjetas-table tr:hover {
+    background: #374151;
+  }
+  
+  .usuario-nombre,
+  .numero-enmascarado,
+  .saldo-actual,
+  .fecha-principal {
+    color: #f9fafb;
+  }
+  
+  .usuario-email,
+  .fecha-vencimiento,
+  .saldo-limite,
+  .fecha-secundaria {
+    color: #9ca3af;
+  }
+}

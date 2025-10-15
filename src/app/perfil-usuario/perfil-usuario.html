@@ -84,6 +84,52 @@
       </div>
     </div>
 
+    <!-- Tarjeta Virtual -->
+    <div class="col-12 mt-4">
+      <div class="card">
+        <div class="card-header bg-gradient-to-r from-[#0077b6] to-[#2c3e50] text-white">
+          <h5 class="card-title mb-0">
+            <i class="bi bi-credit-card-2-front me-2"></i>Mi Tarjeta Virtual
+          </h5>
+          <small class="text-white-50">Tarjeta de prueba para pagos dentro del sistema</small>
+        </div>
+        <div class="card-body p-0">
+          <!-- Componente de tarjeta virtual -->
+          <app-tarjeta-virtual 
+            [usuarioId]="user.id"
+            [mostrarHistorial]="false">
+          </app-tarjeta-virtual>
+          
+          <!-- Botón para crear tarjeta si no existe -->
+          <div class="p-4 border-top">
+            <div class="text-center">
+              <p class="text-muted mb-3">
+                <i class="bi bi-info-circle me-1"></i>
+                ¿No ves tu tarjeta virtual arriba?
+              </p>
+              <button 
+                class="btn btn-success"
+                (click)="crearTarjetaVirtual()"
+                [disabled]="creandoTarjeta()">
+                @if (creandoTarjeta()) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  Creando...
+                } @else {
+                  <i class="bi bi-plus-circle me-2"></i>
+                  Crear Mi Tarjeta Virtual
+                }
+              </button>
+              <div class="mt-2">
+                <small class="text-muted">
+                  Crea una tarjeta virtual de prueba para realizar pagos dentro del sistema
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Tarjeta para Historial de Compras -->
     <div class="col-12 mt-4">
       <div class="card">

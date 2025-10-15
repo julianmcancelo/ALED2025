@@ -21,8 +21,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 
-// Importamos nuestro servicio de usuario.
+// Importamos nuestros servicios.
 import { UserService } from '../../servicios/user';
+import { TarjetaVirtualService } from '../../servicios/tarjeta-virtual.service';
 
 /**
  * Validador personalizado para comprobar que dos campos de contraseña coinciden.
@@ -59,6 +60,7 @@ export class Registro implements OnInit {
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
+    private tarjetaVirtualService: TarjetaVirtualService,
     public dialogRef: MatDialogRef<Registro>,
     private snackBar: MatSnackBar,
   ) {}
@@ -108,18 +110,49 @@ export class Registro implements OnInit {
 
     this.userService
       .addUser(userData)
-      .then(async () => {
-        await Swal.fire({
-          icon: 'success',
-          title: '¡Registro exitoso!',
-          text: 'Usuario registrado con éxito',
-          timer: 2000,
-          showConfirmButton: false
-        });
+      .then(async (docRef) => {
+        console.log('✅ Usuario registrado exitosamente con ID:', docRef.id);
+        
+        // Crear automáticamente la tarjeta virtual para el nuevo usuario
+        try {
+          const nombreCompleto = `${userData.nombre} ${userData.apellido}`;
+          const tarjetaVirtual = await this.tarjetaVirtualService.crearTarjetaParaUsuario(
+            docRef.id,
+            nombreCompleto
+          );
+          
+          console.log('✅ Tarjeta virtual creada exitosamente:', tarjetaVirtual.id);
+          
+          await Swal.fire({
+            icon: 'success',
+            title: '¡Registro exitoso!',
+            html: `
+              <p>Usuario registrado con éxito</p>
+              <p><small>Se ha creado automáticamente una tarjeta virtual para realizar pagos de prueba</small></p>
+            `,
+            timer: 3000,
+            showConfirmButton: false
+          });
+        } catch (tarjetaError) {
+          console.error('⚠️ Error al crear tarjeta virtual:', tarjetaError);
+          
+          // El usuario se registró correctamente, pero falló la creación de la tarjeta
+          // Mostrar mensaje de éxito pero con advertencia
+          await Swal.fire({
+            icon: 'warning',
+            title: 'Usuario registrado',
+            html: `
+              <p>El usuario se registró correctamente</p>
+              <p><small>Hubo un problema al crear la tarjeta virtual. Contacte al administrador.</small></p>
+            `,
+            confirmButtonText: 'Entendido'
+          });
+        }
+        
         this.dialogRef.close();
       })
       .catch(async (error: any) => {
-        console.error('Error al registrar el usuario:', error);
+        console.error('❌ Error al registrar el usuario:', error);
         await Swal.fire({
           icon: 'error',
           title: 'Error en el registro',

@@ -9,8 +9,8 @@
         <div class="col-lg-3 col-md-6 mb-4">
           <h5 class="footer-title">SOBRE NOSOTROS</h5>
           <ul class="footer-links">
+            <li><a href="#" (click)="openModal('proyecto-academico')">Acerca del Proyecto</a></li>
             <li><a href="#" (click)="openModal('quienes-somos')">Quienes Somos</a></li>
-            <li><a href="#" (click)="openModal('nuestra-historia')">Nuestra Historia</a></li>
             <li><a href="#" (click)="openModal('terminos')">Términos y Condiciones</a></li>
             <li><a href="#" (click)="openModal('privacidad')">Política de Privacidad</a></li>
           </ul>
@@ -98,33 +98,121 @@
 </footer>
 
 <!-- MODALS -->
+<!-- Modal Acerca del Proyecto -->
+<div class="modal fade" id="proyecto-academico-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-mortarboard me-2"></i>
+          Acerca del Proyecto ALED2025
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-4">
+          <i class="bi bi-code-slash display-1 text-primary"></i>
+          <h4 class="mt-3">Proyecto Académico - E-commerce</h4>
+          <p class="text-muted">Trabajo Final - ALED III T.A.S.</p>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <h6><i class="bi bi-people me-2 text-success"></i>Desarrolladores</h6>
+            <ul class="list-unstyled ms-3">
+              <li>👨‍💻 <strong>Julian Cancelo</strong></li>
+              <li>👨‍💻 <strong>Nicolas Otero</strong></li>
+            </ul>
+            
+            <h6><i class="bi bi-person-badge me-2 text-info"></i>Profesor</h6>
+            <p class="ms-3">🎓 <strong>Sebastian Saldivar</strong></p>
+          </div>
+          
+          <div class="col-md-6">
+            <h6><i class="bi bi-building me-2 text-warning"></i>Institución</h6>
+            <p class="ms-3">🏫 <strong>Instituto Beltrán</strong><br>
+            📚 Tecnicatura en Análisis de Sistemas</p>
+            
+            <h6><i class="bi bi-calendar-event me-2 text-danger"></i>Año Académico</h6>
+            <p class="ms-3">📅 <strong>2025</strong></p>
+          </div>
+        </div>
+        
+        <hr>
+        
+        <h6><i class="bi bi-gear me-2 text-primary"></i>Stack Tecnológico</h6>
+        <div class="row">
+          <div class="col-md-6">
+            <ul class="list-unstyled ms-3">
+              <li>⚡ <strong>Angular 20.3</strong> - Frontend</li>
+              <li>🔥 <strong>Firebase/Firestore</strong> - Base de datos</li>
+              <li>💳 <strong>Mercado Pago</strong> - Pagos</li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <ul class="list-unstyled ms-3">
+              <li>🎨 <strong>Bootstrap 5</strong> - UI Framework</li>
+              <li>📝 <strong>TypeScript</strong> - Lenguaje</li>
+              <li>🤖 <strong>Gemini AI</strong> - Inteligencia Artificial</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+          <i class="bi bi-info-circle me-2"></i>
+          <strong>Objetivo:</strong> Desarrollar un e-commerce completo aplicando las mejores prácticas de desarrollo web moderno y demostrando competencias técnicas en desarrollo full-stack.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Quienes Somos -->
 <div class="modal fade" id="quienes-somos-modal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Quienes Somos</h5>
+        <h5 class="modal-title">
+          <i class="bi bi-people me-2"></i>
+          Quienes Somos
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <div class="about-content">
-          <h6>Información Corporativa</h6>
-          <p>E-commerce es una plataforma desarrollada por <strong>Cancelo Julian</strong> y <strong>Nicolas Otero</strong>, estudiantes de la Tecnicatura en Análisis de Sistemas del Instituto Beltrán.</p>
-          
-          <h6>Detalles del Proyecto</h6>
-          <p>Este proyecto corresponde al trabajo final de la materia ALED III - T.A.S., desarrollado bajo la supervisión académica del profesor Sebastian Saldivar.</p>
-          
-          <h6>Stack Tecnológico</h6>
-          <ul>
-            <li><strong>Frontend:</strong> Angular 20.3 con arquitectura standalone</li>
-            <li><strong>Base de Datos:</strong> Firebase/Firestore</li>
-            <li><strong>Pagos:</strong> Integración con Mercado Pago API</li>
-            <li><strong>UI Framework:</strong> Bootstrap 5</li>
-            <li><strong>Lenguaje:</strong> TypeScript</li>
-          </ul>
-          
-          <h6>Objetivo del Proyecto</h6>
-          <p>Desarrollar una solución de e-commerce completa que implemente las mejores prácticas de desarrollo web, demostrando competencias técnicas en desarrollo full-stack.</p>
+        <div class="text-center mb-4">
+          <i class="bi bi-shop display-1 text-success"></i>
+          <h4 class="mt-3">ALED2025 E-commerce</h4>
+          <p class="text-muted">Tu tienda online de confianza</p>
+        </div>
+        
+        <p>Somos <strong>Julian Cancelo</strong> y <strong>Nicolas Otero</strong>, estudiantes apasionados por la tecnología y el desarrollo web.</p>
+        
+        <p>Este proyecto nació como nuestro trabajo final para la materia ALED III en el Instituto Beltrán, pero se convirtió en algo más: una demostración de lo que podemos lograr cuando combinamos creatividad, técnica y dedicación.</p>
+        
+        <div class="row mt-4">
+          <div class="col-md-6">
+            <div class="card border-primary">
+              <div class="card-body text-center">
+                <i class="bi bi-person-circle display-4 text-primary"></i>
+                <h6 class="mt-2">Julian Cancelo</h6>
+                <small class="text-muted">Full-Stack Developer</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card border-success">
+              <div class="card-body text-center">
+                <i class="bi bi-person-circle display-4 text-success"></i>
+                <h6 class="mt-2">Nicolas Otero</h6>
+                <small class="text-muted">Full-Stack Developer</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="alert alert-primary mt-3">
+          <i class="bi bi-lightbulb me-2"></i>
+          <strong>Nuestra misión:</strong> Crear experiencias digitales que conecten a las personas con los productos que necesitan, de manera simple y segura.
         </div>
       </div>
     </div>
@@ -173,30 +261,34 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Términos y Condiciones</h5>
+        <h5 class="modal-title">
+          <i class="bi bi-file-text me-2"></i>
+          Términos y Condiciones
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <div class="terms-content">
-          <p><strong>Última actualización:</strong> Enero 2025</p>
-          
-          <h6>1. Aceptación de Términos</h6>
-          <p>Al utilizar E-commerce, aceptas estos términos y condiciones en su totalidad.</p>
-          
-          <h6>2. Uso de la Plataforma</h6>
-          <p>Esta plataforma es un proyecto académico desarrollado por estudiantes del Instituto Beltrán para fines educativos.</p>
-          
-          <h6>3. Registro de Usuario</h6>
-          <p>Para realizar compras, debes registrarte proporcionando información veraz y actualizada.</p>
-          
-          <h6>4. Productos y Precios</h6>
-          <p>Los precios están sujetos a cambios sin previo aviso. Las imágenes son referenciales.</p>
-          
-          <h6>5. Pagos</h6>
-          <p>Los pagos se procesan a través de Mercado Pago, garantizando seguridad en las transacciones.</p>
-          
-          <h6>6. Limitación de Responsabilidad</h6>
-          <p>Este es un proyecto académico. No nos hacemos responsables por transacciones reales.</p>
+        <div class="alert alert-warning">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <strong>Importante:</strong> Este es un proyecto académico con fines educativos.
+        </div>
+        
+        <h6><i class="bi bi-check-circle me-2 text-success"></i>Lo que necesitas saber:</h6>
+        <ul>
+          <li>✅ Puedes explorar y probar todas las funcionalidades</li>
+          <li>✅ Los datos se almacenan de forma segura en Firebase</li>
+          <li>✅ Los pagos se procesan a través de Mercado Pago (modo sandbox)</li>
+          <li>✅ Tu información personal está protegida</li>
+        </ul>
+        
+        <h6><i class="bi bi-info-circle me-2 text-primary"></i>Uso de la plataforma:</h6>
+        <p>Al usar ALED2025, aceptas que es un proyecto educativo desarrollado por estudiantes del Instituto Beltrán. Todas las transacciones son simuladas para fines de demostración.</p>
+        
+        <div class="text-center mt-4">
+          <small class="text-muted">
+            <i class="bi bi-calendar me-1"></i>
+            Última actualización: Enero 2025
+          </small>
         </div>
       </div>
     </div>
@@ -208,36 +300,57 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Política de Privacidad</h5>
+        <h5 class="modal-title">
+          <i class="bi bi-shield-check me-2"></i>
+          Política de Privacidad
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <div class="privacy-content">
-          <p><strong>Última actualización:</strong> Enero 2025</p>
+        <div class="text-center mb-4">
+          <i class="bi bi-lock-fill display-1 text-success"></i>
+          <h4 class="mt-3">Tu privacidad es importante</h4>
+          <p class="text-muted">Así protegemos tu información</p>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card border-success mb-3">
+              <div class="card-body">
+                <h6><i class="bi bi-database me-2 text-success"></i>¿Qué guardamos?</h6>
+                <ul class="small">
+                  <li>📧 Tu email y nombre</li>
+                  <li>🛒 Historial de compras</li>
+                  <li>📱 Preferencias de la app</li>
+                </ul>
+              </div>
+            </div>
+          </div>
           
-          <h6>1. Información que Recopilamos</h6>
-          <p>Recopilamos información personal como nombre, email y datos de contacto para el funcionamiento de la plataforma.</p>
-          
-          <h6>2. Uso de la Información</h6>
-          <p>La información se utiliza únicamente para:</p>
-          <ul>
-            <li>Gestión de cuentas de usuario</li>
-            <li>Procesamiento de pedidos</li>
-            <li>Comunicación con usuarios</li>
-            <li>Mejora del servicio</li>
-          </ul>
-          
-          <h6>3. Protección de Datos</h6>
-          <p>Utilizamos Firebase/Firestore con medidas de seguridad estándar de la industria.</p>
-          
-          <h6>4. Compartir Información</h6>
-          <p>No compartimos información personal con terceros, excepto cuando sea requerido por ley.</p>
-          
-          <h6>5. Cookies</h6>
-          <p>Utilizamos cookies para mejorar la experiencia del usuario y mantener sesiones activas.</p>
-          
-          <h6>6. Contacto</h6>
-          <p>Para consultas sobre privacidad, contacta a través del formulario de contacto.</p>
+          <div class="col-md-6">
+            <div class="card border-primary mb-3">
+              <div class="card-body">
+                <h6><i class="bi bi-shield me-2 text-primary"></i>¿Cómo lo protegemos?</h6>
+                <ul class="small">
+                  <li>🔥 Firebase Security Rules</li>
+                  <li>🔐 Encriptación de datos</li>
+                  <li>🛡️ Autenticación segura</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          <strong>¡Tranquilo!</strong> Solo usamos tu información para que la app funcione mejor. No vendemos ni compartimos tus datos con nadie.
+        </div>
+        
+        <div class="text-center">
+          <small class="text-muted">
+            <i class="bi bi-calendar me-1"></i>
+            Actualizado: Enero 2025
+          </small>
         </div>
       </div>
     </div>
@@ -249,32 +362,64 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Centro de Ayuda</h5>
+        <h5 class="modal-title">
+          <i class="bi bi-question-circle me-2"></i>
+          Centro de Ayuda
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <div class="help-content">
-          <h6>Soporte Técnico</h6>
-          <p>Nuestro equipo de soporte está disponible para resolver consultas técnicas y operativas de la plataforma.</p>
+        <div class="text-center mb-4">
+          <i class="bi bi-headset display-1 text-primary"></i>
+          <h4 class="mt-3">¿Necesitas ayuda?</h4>
+          <p class="text-muted">Estamos aquí para ayudarte</p>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card border-primary mb-3">
+              <div class="card-body text-center">
+                <i class="bi bi-envelope-fill text-primary fs-1"></i>
+                <h6 class="mt-2">Contáctanos</h6>
+                <p class="small text-muted">soporte@aled2025.com</p>
+                <small class="text-muted">Respondemos en 24-48 horas</small>
+              </div>
+            </div>
+          </div>
           
-          <h6>Canales de Contacto</h6>
-          <ul>
-            <li><strong>Email:</strong> soporte@aled2025.com</li>
-            <li><strong>Horario de Atención:</strong> Lunes a Viernes 9:00 - 18:00 hs</li>
-            <li><strong>SLA de Respuesta:</strong> 24-48 horas hábiles</li>
-          </ul>
-          
-          <h6>Categorías de Consultas</h6>
-          <ul>
-            <li>Incidencias de registro y autenticación</li>
-            <li>Recuperación de credenciales de acceso</li>
-            <li>Consultas sobre estado de transacciones</li>
-            <li>Configuración de métodos de pago</li>
-            <li>Procesos de devolución y reembolso</li>
-          </ul>
-          
-          <h6>Recursos de Autoayuda</h6>
-          <p>Consulte la sección de Preguntas Frecuentes para resolver consultas comunes de manera inmediata.</p>
+          <div class="col-md-6">
+            <div class="card border-success mb-3">
+              <div class="card-body text-center">
+                <i class="bi bi-chat-dots-fill text-success fs-1"></i>
+                <h6 class="mt-2">Preguntas Frecuentes</h6>
+                <p class="small text-muted">Respuestas rápidas</p>
+                <small class="text-muted">Consulta las dudas más comunes</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <h6><i class="bi bi-tools me-2 text-warning"></i>¿Con qué podemos ayudarte?</h6>
+        <div class="row">
+          <div class="col-md-6">
+            <ul class="list-unstyled">
+              <li>🔐 Problemas de login</li>
+              <li>🛒 Dudas sobre pedidos</li>
+              <li>💳 Configurar pagos</li>
+            </ul>
+          </div>
+          <div class="col-md-6">
+            <ul class="list-unstyled">
+              <li>📦 Seguir envíos</li>
+              <li>↩️ Devoluciones</li>
+              <li>⚙️ Configuración de cuenta</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="alert alert-info">
+          <i class="bi bi-lightbulb me-2"></i>
+          <strong>Tip:</strong> Antes de escribirnos, revisa las Preguntas Frecuentes. ¡Puede que ya tengamos la respuesta que buscas!
         </div>
       </div>
     </div>
@@ -286,40 +431,89 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Preguntas Frecuentes</h5>
+        <h5 class="modal-title">
+          <i class="bi bi-patch-question me-2"></i>
+          Preguntas Frecuentes
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <div class="faq-content">
-          <div class="faq-item">
-            <h6>1. Proceso de Registro de Usuario</h6>
-            <p>Acceda al formulario de registro, complete los campos requeridos y valide su dirección de correo electrónico mediante el enlace de confirmación.</p>
+        <div class="text-center mb-4">
+          <i class="bi bi-chat-square-text display-1 text-info"></i>
+          <h4 class="mt-3">Las dudas más comunes</h4>
+          <p class="text-muted">Respuestas rápidas a lo que más nos preguntan</p>
+        </div>
+        
+        <div class="accordion" id="faqAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                🔐 ¿Cómo me registro?
+              </button>
+            </h2>
+            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Es súper fácil: haz clic en "Registrarse", completa tus datos y ¡listo! Te enviaremos un email para confirmar tu cuenta.
+              </div>
+            </div>
           </div>
           
-          <div class="faq-item">
-            <h6>2. Recuperación de Credenciales</h6>
-            <p>Utilice la opción "Recuperar Contraseña" en la pantalla de inicio de sesión e ingrese su dirección de correo registrada.</p>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                🔑 ¿Olvidé mi contraseña?
+              </button>
+            </h2>
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                No te preocupes, pasa seguido. En la pantalla de login, haz clic en "¿Olvidaste tu contraseña?" y te ayudamos a crear una nueva.
+              </div>
+            </div>
           </div>
           
-          <div class="faq-item">
-            <h6>3. Métodos de Pago Disponibles</h6>
-            <p>La plataforma acepta tarjetas de crédito/débito, transferencias bancarias y procesamiento a través de Mercado Pago.</p>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                💳 ¿Qué formas de pago aceptan?
+              </button>
+            </h2>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Aceptamos tarjetas de crédito, débito, transferencias y Mercado Pago. Todo súper seguro y fácil de usar.
+              </div>
+            </div>
           </div>
           
-          <div class="faq-item">
-            <h6>4. Cancelación de Transacciones</h6>
-            <p>Las cancelaciones son posibles antes del procesamiento del pedido. Contacte al soporte técnico para iniciar el proceso.</p>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                📦 ¿Cómo sigo mi pedido?
+              </button>
+            </h2>
+            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Ve a "Mi Perfil" → "Mis Pedidos" y ahí verás todo: el estado actual, cuándo llega y el seguimiento completo.
+              </div>
+            </div>
           </div>
           
-          <div class="faq-item">
-            <h6>5. Seguimiento de Pedidos</h6>
-            <p>Acceda a su panel de usuario y consulte la sección "Historial de Pedidos" para verificar el estado de sus transacciones.</p>
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                ↩️ ¿Puedo devolver algo?
+              </button>
+            </h2>
+            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                ¡Claro! Tienes 30 días para devolver cualquier producto. Solo contáctanos y te explicamos cómo hacerlo.
+              </div>
+            </div>
           </div>
-          
-          <div class="faq-item">
-            <h6>6. Políticas de Garantía</h6>
-            <p>Todos los productos incluyen garantía del fabricante según especificaciones técnicas y condiciones establecidas.</p>
-          </div>
+        </div>
+        
+        <div class="alert alert-success mt-4">
+          <i class="bi bi-emoji-smile me-2"></i>
+          <strong>¿No encontraste lo que buscabas?</strong> Escríbenos a soporte@aled2025.com y te ayudamos personalmente.
         </div>
       </div>
     </div>
@@ -331,44 +525,81 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Contáctanos</h5>
+        <h5 class="modal-title">
+          <i class="bi bi-envelope-heart me-2"></i>
+          Contáctanos
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <div class="contact-content">
-          <h6>Datos de Contacto Institucional</h6>
-          <div class="contact-info">
-            <p><strong>Email Corporativo:</strong> contacto@aled2025.com</p>
-            <p><strong>Teléfono:</strong> +54 11 1234-5678</p>
-            <p><strong>Sede:</strong> Instituto Beltrán - Buenos Aires, Argentina</p>
+        <div class="text-center mb-4">
+          <i class="bi bi-chat-heart display-1 text-success"></i>
+          <h4 class="mt-3">¡Hablemos!</h4>
+          <p class="text-muted">Nos encanta escuchar de ti</p>
+        </div>
+        
+        <div class="row mb-4">
+          <div class="col-md-4 text-center">
+            <div class="contact-card">
+              <i class="bi bi-envelope-fill text-primary fs-1"></i>
+              <h6 class="mt-2">Email</h6>
+              <small class="text-muted">contacto@aled2025.com</small>
+            </div>
           </div>
-          
-          <h6>Formulario de Consultas</h6>
-          <form class="contact-form" (submit)="onContactSubmit($event)">
-            <div class="mb-3">
-              <label class="form-label">Nombre Completo</label>
-              <input type="text" class="form-control" required>
+          <div class="col-md-4 text-center">
+            <div class="contact-card">
+              <i class="bi bi-telephone-fill text-success fs-1"></i>
+              <h6 class="mt-2">Teléfono</h6>
+              <small class="text-muted">+54 11 1234-5678</small>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Email</label>
-              <input type="email" class="form-control" required>
+          </div>
+          <div class="col-md-4 text-center">
+            <div class="contact-card">
+              <i class="bi bi-geo-alt-fill text-warning fs-1"></i>
+              <h6 class="mt-2">Ubicación</h6>
+              <small class="text-muted">Buenos Aires, Argentina</small>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Asunto</label>
-              <select class="form-control">
-                <option>Consulta General</option>
-                <option>Problema Técnico</option>
-                <option>Pedido</option>
-                <option>Devolución</option>
-                <option>Sugerencia</option>
-              </select>
+          </div>
+        </div>
+        
+        <h6><i class="bi bi-pencil-square me-2 text-primary"></i>Envíanos un mensaje</h6>
+        <form class="contact-form" (submit)="onContactSubmit($event)">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Tu nombre</label>
+              <input type="text" class="form-control" placeholder="¿Cómo te llamas?" required>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Mensaje</label>
-              <textarea class="form-control" rows="4" required></textarea>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Tu email</label>
+              <input type="email" class="form-control" placeholder="tu@email.com" required>
             </div>
-            <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
-          </form>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">¿De qué se trata?</label>
+            <select class="form-select">
+              <option>💬 Consulta general</option>
+              <option>🔧 Problema técnico</option>
+              <option>📦 Sobre mi pedido</option>
+              <option>↩️ Quiero devolver algo</option>
+              <option>💡 Tengo una sugerencia</option>
+              <option>👋 Solo quería saludar</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tu mensaje</label>
+            <textarea class="form-control" rows="4" placeholder="Cuéntanos qué necesitas..." required></textarea>
+          </div>
+          <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="bi bi-send me-2"></i>
+              Enviar Mensaje
+            </button>
+          </div>
+        </form>
+        
+        <div class="alert alert-info mt-3">
+          <i class="bi bi-clock me-2"></i>
+          <strong>Tiempo de respuesta:</strong> Normalmente respondemos en menos de 24 horas. ¡A veces hasta más rápido!
         </div>
       </div>
     </div>

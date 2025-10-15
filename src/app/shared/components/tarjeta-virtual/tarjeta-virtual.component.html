@@ -1,0 +1,249 @@
+<!-- 
+  TEMPLATE DE TARJETA VIRTUAL
+  
+  Este template muestra la tarjeta virtual del usuario con un diseño
+  moderno y estético similar a una tarjeta de crédito real.
+  
+  Características:
+  - Diseño responsive con gradientes y sombras
+  - Animaciones suaves para interacciones
+  - Información enmascarada por seguridad
+  - Estados visuales según el estado de la tarjeta
+  - Historial de transacciones opcional
+-->
+
+<div class="tarjeta-virtual-container">
+  <!-- Estado de carga -->
+  <div *ngIf="estaCargando()" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p class="loading-text">Cargando tarjeta virtual...</p>
+  </div>
+
+  <!-- Estado de error o sin tarjeta -->
+  <div *ngIf="hayError() && !estaCargando()" class="error-container">
+    @if (hayError() === 'No se encontró una tarjeta virtual para este usuario') {
+      <!-- Mensaje específico cuando no hay tarjeta -->
+      <mat-icon class="info-icon">credit_card_off</mat-icon>
+      <h4 class="info-title">Sin Tarjeta Virtual</h4>
+      <p class="info-text">
+        Aún no tienes una tarjeta virtual creada.<br>
+        Usa el botón de abajo para crear una por única vez.
+      </p>
+    } @else {
+      <!-- Otros errores -->
+      <mat-icon class="error-icon">error</mat-icon>
+      <p class="error-text">{{ hayError() }}</p>
+      <button mat-raised-button color="primary" (click)="recargarTarjeta()">
+        <mat-icon>refresh</mat-icon>
+        Reintentar
+      </button>
+    }
+  </div>
+
+  <!-- Tarjeta virtual -->
+  <div *ngIf="tarjetaData() && !estaCargando()" class="tarjeta-wrapper">
+    
+    <!-- Encabezado con título y estado -->
+    <div class="tarjeta-header">
+      <h3 class="tarjeta-title">
+        <mat-icon>credit_card</mat-icon>
+        Mi Tarjeta Virtual
+      </h3>
+      <mat-chip 
+        [color]="estadoColor()" 
+        selected
+        class="estado-chip">
+        {{ estadoTexto() }}
+      </mat-chip>
+    </div>
+
+    <!-- Tarjeta principal -->
+    <mat-card class="tarjeta-card" [ngClass]="getGradienteTarjeta()">
+      <div class="tarjeta-content">
+        
+        <!-- Logo y tipo de tarjeta -->
+        <div class="tarjeta-logo">
+          <div class="logo-container">
+            @if (tarjetaData()?.logoBase64) {
+              <img [src]="tarjetaData()!.logoBase64" alt="Logo" class="logo-banco">
+            } @else {
+              <div class="logo-circles">
+                <div class="circle circle-1"></div>
+                <div class="circle circle-2"></div>
+              </div>
+            }
+          </div>
+          <span class="tarjeta-tipo">{{ tarjetaData()?.tipoTarjeta || 'VIRTUAL' }}</span>
+        </div>
+
+        <!-- Número de tarjeta -->
+        <div class="numero-container">
+          <div class="numero-tarjeta" [class.numero-visible]="mostrarNumeroCompleto()">
+            {{ numeroVisible() }}
+          </div>
+          <div class="numero-acciones">
+            <button 
+              mat-icon-button 
+              class="accion-btn"
+              (click)="toggleMostrarNumero()"
+              [matTooltip]="mostrarNumeroCompleto() ? 'Ocultar número' : 'Mostrar número completo'">
+              <mat-icon>{{ mostrarNumeroCompleto() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <button 
+              mat-icon-button 
+              class="accion-btn"
+              (click)="copiarNumeroTarjeta()"
+              matTooltip="Copiar número">
+              <mat-icon>content_copy</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Información del titular y vencimiento -->
+        <div class="info-container">
+          <div class="titular-info">
+            <label class="info-label">TITULAR</label>
+            <div class="info-value">{{ tarjetaData()?.titular }}</div>
+          </div>
+          <div class="vencimiento-info">
+            <label class="info-label">VENCE</label>
+            <div class="info-value">{{ tarjetaData()?.fechaVencimiento }}</div>
+          </div>
+          <div class="cvv-info">
+            <label class="info-label">CVV</label>
+            <div class="info-value">{{ tarjetaData()?.cvv }}</div>
+          </div>
+        </div>
+
+        <!-- Saldo disponible -->
+        <div class="saldo-container">
+          <label class="saldo-label">SALDO DISPONIBLE</label>
+          <div class="saldo-valor">
+            {{ tarjetaData()?.saldo | currency:'ARS':'symbol':'1.2-2' }}
+          </div>
+          <div class="limite-info">
+            Límite: {{ tarjetaData()?.limiteMaximo | currency:'ARS':'symbol':'1.2-2' }}
+          </div>
+        </div>
+
+        <!-- Nombre del banco -->
+        @if (tarjetaData()?.nombreBanco) {
+          <div class="nombre-banco">
+            {{ tarjetaData()!.nombreBanco }}
+          </div>
+        }
+
+      </div>
+    </mat-card>
+
+    <!-- Acciones de la tarjeta -->
+    <div class="tarjeta-acciones">
+      <button 
+        mat-raised-button 
+        color="primary"
+        (click)="recargarTarjeta()"
+        class="accion-button">
+        <mat-icon>refresh</mat-icon>
+        Actualizar
+      </button>
+      
+      <button 
+        mat-stroked-button 
+        color="accent"
+        (click)="abrirHistorialCompleto()"
+        class="accion-button"
+        matTooltip="Ver historial completo en ventana nueva">
+        <mat-icon>open_in_new</mat-icon>
+        Ver Historial Completo
+      </button>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="info-adicional">
+      <mat-card class="info-card">
+        <mat-card-content>
+          <div class="info-item">
+            <mat-icon class="info-icon">info</mat-icon>
+            <div class="info-texto">
+              <strong>Tarjeta de Prueba</strong>
+              <p>Esta es una tarjeta virtual para realizar pagos de prueba en el sistema. 
+                 No representa dinero real y solo funciona dentro de esta aplicación.</p>
+            </div>
+          </div>
+          
+          <div class="info-item" *ngIf="tarjetaData()?.habilitadaOnline">
+            <mat-icon class="info-icon text-green-600">check_circle</mat-icon>
+            <div class="info-texto">
+              <strong>Pagos Online Habilitados</strong>
+              <p>Puedes usar esta tarjeta para realizar pagos dentro de la aplicación.</p>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <mat-icon class="info-icon">schedule</mat-icon>
+            <div class="info-texto">
+              <strong>Creada el:</strong>
+              <p>{{ tarjetaData()?.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Historial de transacciones -->
+    <div *ngIf="mostrarHistorial && transacciones().length > 0" class="historial-container">
+      <mat-card class="historial-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>history</mat-icon>
+            Historial de Transacciones
+          </mat-card-title>
+          <mat-card-subtitle>
+            Últimas {{ transacciones().length }} operaciones
+          </mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="transacciones-lista">
+            <div 
+              *ngFor="let transaccion of transacciones()" 
+              class="transaccion-item">
+              
+              <div class="transaccion-icono">
+                <mat-icon [ngClass]="getColorTransaccion(transaccion.tipo)">
+                  {{ getIconoTransaccion(transaccion.tipo) }}
+                </mat-icon>
+              </div>
+              
+              <div class="transaccion-info">
+                <div class="transaccion-descripcion">{{ transaccion.descripcion }}</div>
+                <div class="transaccion-fecha">
+                  {{ transaccion.fecha | date:'dd/MM/yyyy HH:mm' }}
+                </div>
+              </div>
+              
+              <div class="transaccion-monto" [ngClass]="getColorTransaccion(transaccion.tipo)">
+                {{ formatearMontoTransaccion(transaccion.monto, transaccion.tipo) }}
+              </div>
+              
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Mensaje si no hay transacciones -->
+    <div *ngIf="mostrarHistorial && transacciones().length === 0" class="sin-transacciones">
+      <mat-card class="mensaje-card">
+        <mat-card-content>
+          <div class="mensaje-contenido">
+            <mat-icon class="mensaje-icon">receipt_long</mat-icon>
+            <h4>Sin transacciones</h4>
+            <p>Aún no hay movimientos registrados en esta tarjeta.</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+  </div>
+</div>

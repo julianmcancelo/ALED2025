@@ -1,0 +1,134 @@
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header">
+      <h2><i class="bi bi-credit-card me-2"></i>Gestión de Tarjetas Virtuales</h2>
+      <p class="text-muted mb-0">Administra las tarjetas virtuales de todos los usuarios</p>
+    </div>
+    
+    <div class="card-body">
+      <!-- Estado de carga -->
+      <div *ngIf="estaCargando()" class="text-center py-4">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2">Cargando tarjetas virtuales...</p>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="hayError() && !estaCargando()" class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ hayError() }}
+        <button class="btn btn-outline-danger btn-sm ms-2" (click)="recargarDatos()">
+          <i class="bi bi-arrow-clockwise me-1"></i>Reintentar
+        </button>
+      </div>
+
+      <!-- Estadísticas -->
+      <div *ngIf="!estaCargando() && !hayError()" class="row mb-4">
+        <div class="col-md-3">
+          <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+              <h3>{{ estadisticas().total }}</h3>
+              <p class="mb-0">Total Tarjetas</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-success text-white">
+            <div class="card-body text-center">
+              <h3>{{ estadisticas().activas }}</h3>
+              <p class="mb-0">Activas</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+              <h3>{{ estadisticas().bloqueadas }}</h3>
+              <p class="mb-0">Bloqueadas</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-info text-white">
+            <div class="card-body text-center">
+              <h3>{{ formatearMonto(estadisticas().saldoTotal) }}</h3>
+              <p class="mb-0">Saldo Total</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div *ngIf="!estaCargando() && !hayError()" class="row mb-3">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="filtroTexto">Buscar usuario o tarjeta</label>
+            <input type="text" class="form-control" id="filtroTexto" 
+                   [(ngModel)]="filtroTexto" 
+                   placeholder="Nombre, email o número de tarjeta">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="filtroEstado">Filtrar por estado</label>
+            <select class="form-control" id="filtroEstado" [(ngModel)]="filtroEstado">
+              <option value="todos">Todos los estados</option>
+              <option value="activa">Activas</option>
+              <option value="bloqueada">Bloqueadas</option>
+              <option value="suspendida">Suspendidas</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de tarjetas -->
+      <div *ngIf="!estaCargando() && !hayError()" class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Email</th>
+              <th>Número</th>
+              <th>Saldo</th>
+              <th>Estado</th>
+              <th>Fecha Creación</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of tarjetasFiltradas()">
+              <td>{{ item.usuario.nombre }} {{ item.usuario.apellido }}</td>
+              <td>{{ item.usuario.email }}</td>
+              <td>**** **** **** {{ item.tarjeta.numero.slice(-4) }}</td>
+              <td class="fw-bold">{{ formatearMonto(item.tarjeta.saldo) }}</td>
+              <td>
+                <span [class]="getClaseEstado(item.tarjeta.estado)">
+                  {{ item.tarjeta.estado.toUpperCase() }}
+                </span>
+              </td>
+              <td>{{ item.tarjeta.fechaCreacion.toLocaleDateString('es-AR') }}</td>
+              <td>
+                <button class="btn btn-primary btn-sm me-1" 
+                        (click)="modificarSaldo(item)"
+                        title="Modificar Saldo">
+                  <i class="bi bi-wallet2"></i>
+                </button>
+                <button class="btn btn-secondary btn-sm" 
+                        (click)="cambiarEstado(item)"
+                        [title]="item.tarjeta.estado === 'activa' ? 'Bloquear' : 'Desbloquear'">
+                  <i [class]="item.tarjeta.estado === 'activa' ? 'bi bi-lock' : 'bi bi-unlock'"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div *ngIf="tarjetasFiltradas().length === 0" class="text-center py-4">
+          <i class="bi bi-search display-1 text-muted"></i>
+          <p class="text-muted">No se encontraron tarjetas con los filtros aplicados</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

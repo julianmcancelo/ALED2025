@@ -1,0 +1,576 @@
+/**
+ * ESTILOS DE TARJETA VIRTUAL
+ * 
+ * Estilos para el componente de tarjeta virtual que simula
+ * el diseño de una tarjeta de crédito real con efectos
+ * modernos y animaciones suaves.
+ */
+
+/* Contenedor principal */
+.tarjeta-virtual-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Estados de carga y error */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.loading-text {
+  margin-top: 16px;
+  color: #666;
+  font-size: 14px;
+}
+
+.error-icon {
+  font-size: 48px;
+  color: #f44336;
+  margin-bottom: 16px;
+}
+
+.error-text {
+  color: #666;
+  margin-bottom: 20px;
+  max-width: 400px;
+}
+
+.info-icon {
+  font-size: 48px;
+  color: #2196f3;
+  margin-bottom: 16px;
+}
+
+.info-title {
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.info-text {
+  color: #666;
+  margin-bottom: 20px;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+/* Encabezado de la tarjeta */
+.tarjeta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.tarjeta-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  color: #333;
+}
+
+.estado-chip {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Tarjeta principal */
+.tarjeta-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 0;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tarjeta-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+}
+
+/* Gradientes para diferentes estados */
+.bg-gradient-to-br {
+  background: linear-gradient(to bottom right, var(--gradient-from), var(--gradient-to));
+}
+
+.from-blue-500.to-purple-600 {
+  --gradient-from: #3b82f6;
+  --gradient-to: #9333ea;
+}
+
+.from-red-500.to-red-700 {
+  --gradient-from: #ef4444;
+  --gradient-to: #b91c1c;
+}
+
+.from-orange-500.to-orange-700 {
+  --gradient-from: #f97316;
+  --gradient-to: #c2410c;
+}
+
+.from-gray-400.to-gray-600 {
+  --gradient-from: #9ca3af;
+  --gradient-to: #4b5563;
+}
+
+/* Contenido de la tarjeta */
+.tarjeta-content {
+  padding: 24px;
+  color: white;
+  position: relative;
+  min-height: 200px;
+}
+
+/* Logo y tipo de tarjeta */
+.tarjeta-logo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  height: 40px;
+}
+
+.logo-banco {
+  max-width: 80px;
+  max-height: 40px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.logo-circles {
+  display: flex;
+  gap: -8px;
+}
+
+.circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.circle-1 {
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 2;
+}
+
+.circle-2 {
+  background: rgba(255, 255, 255, 0.6);
+  margin-left: -16px;
+  z-index: 1;
+}
+
+.tarjeta-tipo {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+
+/* Número de tarjeta */
+.numero-container {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.numero-tarjeta {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.numero-visible {
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.numero-acciones {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.numero-container:hover .numero-acciones {
+  opacity: 1;
+}
+
+.accion-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 32px;
+  height: 32px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.accion-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* Información del titular y vencimiento */
+.info-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.info-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Saldo disponible */
+.saldo-container {
+  text-align: right;
+}
+
+.saldo-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.saldo-valor {
+  font-size: 24px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.limite-info {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+/* Nombre del banco */
+.nombre-banco {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0.9;
+  text-transform: uppercase;
+}
+
+/* Acciones de la tarjeta */
+.tarjeta-acciones {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.accion-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* Información adicional */
+.info-adicional {
+  margin-bottom: 24px;
+}
+
+.info-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-icon {
+  margin-top: 2px;
+  color: #666;
+}
+
+.info-texto strong {
+  display: block;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.info-texto p {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Historial de transacciones */
+.historial-container {
+  margin-top: 24px;
+}
+
+.historial-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.transacciones-lista {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.transaccion-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+.transaccion-item:last-child {
+  border-bottom: none;
+}
+
+.transaccion-item:hover {
+  background-color: #f9f9f9;
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-radius: 8px;
+}
+
+.transaccion-icono {
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f5f5f5;
+}
+
+.transaccion-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.transaccion-descripcion {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transaccion-fecha {
+  font-size: 12px;
+  color: #666;
+}
+
+.transaccion-monto {
+  font-weight: 600;
+  font-size: 14px;
+  text-align: right;
+  min-width: 80px;
+}
+
+/* Colores para tipos de transacción */
+.text-green-600 {
+  color: #16a34a !important;
+}
+
+.text-red-600 {
+  color: #dc2626 !important;
+}
+
+.text-orange-600 {
+  color: #ea580c !important;
+}
+
+.text-blue-600 {
+  color: #2563eb !important;
+}
+
+.text-gray-600 {
+  color: #4b5563 !important;
+}
+
+/* Mensaje sin transacciones */
+.sin-transacciones {
+  margin-top: 24px;
+}
+
+.mensaje-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.mensaje-contenido {
+  text-align: center;
+  padding: 20px;
+}
+
+.mensaje-icon {
+  font-size: 48px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.mensaje-contenido h4 {
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.mensaje-contenido p {
+  color: #999;
+  font-size: 14px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .tarjeta-virtual-container {
+    padding: 16px;
+  }
+  
+  .tarjeta-content {
+    padding: 20px;
+  }
+  
+  .numero-tarjeta {
+    font-size: 18px;
+  }
+  
+  .saldo-valor {
+    font-size: 20px;
+  }
+  
+  .info-container {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .saldo-container {
+    text-align: left;
+  }
+  
+  .tarjeta-acciones {
+    flex-direction: column;
+  }
+  
+  .accion-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .tarjeta-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .tarjeta-title {
+    font-size: 20px;
+  }
+  
+  .numero-tarjeta {
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+}
+
+/* Animaciones */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tarjeta-wrapper {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* Efectos de hover y focus */
+.tarjeta-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.tarjeta-card:hover::before {
+  transform: translateX(100%);
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-card,
+  .accion-btn,
+  .transaccion-item,
+  .tarjeta-wrapper {
+    transition: none;
+    animation: none;
+  }
+  
+  .tarjeta-card::before {
+    display: none;
+  }
+}

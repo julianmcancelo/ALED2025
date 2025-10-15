@@ -33,6 +33,10 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('../../admin/personalizacion-sitio/personalizacion-sitio').then(m => m.PersonalizacionSitio)
       },
       {
+        path: 'personalizacion-tarjetas',
+        loadComponent: () => import('../../admin/personalizacion-tarjetas').then(m => m.PersonalizacionTarjetasComponent)
+      },
+      {
         path: 'novedades',
         loadComponent: () => import('../../admin/gestion-novedades/gestion-novedades').then(m => m.GestionNovedadesComponent)
       },
@@ -47,6 +51,10 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'pedidos',
         loadComponent: () => import('../../admin/gestion-pedidos/gestion-pedidos.component').then(m => m.GestionPedidosComponent)
+      },
+      {
+        path: 'tarjetas-virtuales',
+        loadComponent: () => import('../../admin/gestion-tarjetas-virtuales').then(m => m.GestionTarjetasVirtualesComponent)
       },
       {
         path: 'estadisticas-vendedor',
