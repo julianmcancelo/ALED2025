@@ -115,7 +115,7 @@ export class PedidosService {
           }],
           metadata: {
             origen: 'web',
-            cuponDescuento: solicitud.cuponDescuento
+            ...(solicitud.cuponDescuento && { cuponDescuento: solicitud.cuponDescuento })
           }
         };
         

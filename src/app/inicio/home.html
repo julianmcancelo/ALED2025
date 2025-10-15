@@ -1,27 +1,213 @@
-<div class="hero-section">
-  <div class="container text-center">
-    <h1 class="display-4 fw-bold">{{ configuracionService.configuracionSignal().titulo }}</h1>
-    <p class="lead my-4">{{ configuracionService.configuracionSignal().subtitulo }}</p>
+<!-- Banner Principal estilo ML -->
+<div class="ml-banner">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <div class="banner-content">
+          <h1 class="banner-title">{{ configuracionService.configuracionSignal().titulo }}</h1>
+          <p class="banner-subtitle">{{ configuracionService.configuracionSignal().subtitulo }}</p>
+          <div class="banner-buttons">
+            <button class="btn-banner-primary" (click)="irATienda()">
+              <i class="bi bi-shop me-2"></i>Explorar Tienda
+            </button>
+            <button class="btn-banner-secondary" (click)="irARegistro()">
+              Crear cuenta
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="banner-image">
+          <div class="banner-objects">
+            <!-- Carrito de compras -->
+            <svg class="banner-obj obj-cart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="cartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#e8f6fb;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <path d="M 20 30 L 30 30 L 40 70 L 75 70 L 80 45 L 35 45" fill="none" stroke="url(#cartGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="45" cy="80" r="5" fill="white"/>
+              <circle cx="70" cy="80" r="5" fill="white"/>
+            </svg>
 
-    <!-- SLIDER DE NOVEDADES -->
+            <!-- Tarjeta de crédito -->
+            <svg class="banner-obj obj-card" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80">
+              <defs>
+                <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.95" />
+                  <stop offset="100%" style="stop-color:#d4edfa;stop-opacity:0.95" />
+                </linearGradient>
+              </defs>
+              <rect x="10" y="15" width="100" height="50" rx="5" fill="url(#cardGrad)" stroke="white" stroke-width="2"/>
+              <rect x="10" y="25" width="100" height="10" fill="rgba(0, 119, 182, 0.3)"/>
+              <rect x="20" y="45" width="30" height="8" rx="2" fill="rgba(255, 255, 255, 0.8)"/>
+              <circle cx="95" cy="52" r="8" fill="rgba(255, 255, 255, 0.6)"/>
+            </svg>
+
+            <!-- Caja de envío -->
+            <svg class="banner-obj obj-box" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="boxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#c8e9f7;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <rect x="25" y="35" width="50" height="45" rx="3" fill="url(#boxGrad)" stroke="white" stroke-width="2"/>
+              <rect x="25" y="35" width="50" height="8" fill="rgba(255, 255, 255, 0.5)"/>
+              <line x1="50" y1="35" x2="50" y2="80" stroke="white" stroke-width="2"/>
+              <circle cx="50" cy="57" r="8" fill="white"/>
+              <path d="M 45 57 L 48 60 L 55 53" stroke="#0077b6" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+
+            <!-- Regalo -->
+            <svg class="banner-obj obj-gift" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="giftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ffe8e8;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#ffcccc;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <rect x="30" y="45" width="40" height="35" rx="2" fill="url(#giftGrad)" stroke="white" stroke-width="2"/>
+              <rect x="25" y="40" width="50" height="10" rx="2" fill="rgba(255, 255, 255, 0.9)" stroke="white" stroke-width="2"/>
+              <rect x="47" y="40" width="6" height="40" fill="rgba(255, 100, 100, 0.6)"/>
+              <path d="M 50 25 Q 40 30 45 40" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+              <path d="M 50 25 Q 60 30 55 40" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+
+            <!-- Etiqueta de descuento -->
+            <svg class="banner-obj obj-tag" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="tagGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#fff4cc;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#ffe680;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <path d="M 20 30 L 60 30 L 80 50 L 60 70 L 20 70 Z" fill="url(#tagGrad)" stroke="white" stroke-width="2"/>
+              <circle cx="35" cy="50" r="5" fill="rgba(255, 255, 255, 0.8)"/>
+              <text x="48" y="55" font-size="18" font-weight="bold" fill="#ff6b00">%</text>
+            </svg>
+
+            <!-- Laptop/Computadora -->
+            <svg class="banner-obj obj-laptop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 100">
+              <defs>
+                <linearGradient id="laptopGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#e0e0e0;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#bdbdbd;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <rect x="20" y="20" width="80" height="50" rx="2" fill="url(#laptopGrad)" stroke="white" stroke-width="2"/>
+              <rect x="25" y="25" width="70" height="40" rx="1" fill="#0077b6"/>
+              <text x="60" y="50" font-size="12" fill="white" text-anchor="middle" font-family="monospace">&lt;/&gt;</text>
+              <path d="M 10 70 L 20 70 L 25 74 L 95 74 L 100 70 L 110 70" fill="#f0f0f0" stroke="white" stroke-width="2"/>
+            </svg>
+
+            <!-- Código/Algoritmo -->
+            <svg class="banner-obj obj-code" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="codeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#e8f5e9;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#a5d6a7;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <rect x="15" y="25" width="70" height="50" rx="5" fill="url(#codeGrad)" stroke="white" stroke-width="2"/>
+              <path d="M 30 40 L 25 45 L 30 50" stroke="#2e7d32" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M 45 40 L 50 45 L 45 50" stroke="#2e7d32" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="35" y1="38" x2="42" y2="52" stroke="#2e7d32" stroke-width="2.5"/>
+              <line x1="55" y1="60" x2="75" y2="60" stroke="#4caf50" stroke-width="2"/>
+              <line x1="55" y1="65" x2="70" y2="65" stroke="#66bb6a" stroke-width="2"/>
+            </svg>
+
+            <!-- Engranajes/Tech -->
+            <svg class="banner-obj obj-gears" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="gearGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#fff3e0;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#ffcc80;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <g fill="url(#gearGrad)" stroke="white" stroke-width="2">
+                <path d="M 35 25 L 40 25 L 40 20 L 45 20 L 45 25 L 50 25 L 50 30 L 52 30 L 55 25 L 58 28 L 55 33 L 58 33 L 58 38 L 55 38 L 55 43 L 50 43 L 50 48 L 45 48 L 45 43 L 40 43 L 40 38 L 35 38 Z"/>
+                <circle cx="42.5" cy="33.5" r="5" fill="white"/>
+              </g>
+              <g fill="url(#gearGrad)" stroke="white" stroke-width="1.5" transform="translate(15, 25)">
+                <path d="M 45 35 L 48 35 L 48 32 L 51 32 L 51 35 L 54 35 L 54 38 L 55 38 L 57 35 L 59 37 L 57 40 L 59 40 L 59 43 L 57 43 L 57 46 L 54 46 L 54 49 L 51 49 L 51 46 L 48 46 L 48 43 L 45 43 Z"/>
+                <circle cx="49.5" cy="40.5" r="3.5" fill="white"/>
+              </g>
+            </svg>
+
+            <!-- Dispositivo Móvil -->
+            <svg class="banner-obj obj-mobile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 100">
+              <defs>
+                <linearGradient id="mobileGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#f3e5f5;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#ce93d8;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <rect x="20" y="10" width="40" height="75" rx="5" fill="url(#mobileGrad)" stroke="white" stroke-width="2"/>
+              <rect x="25" y="18" width="30" height="50" rx="2" fill="#7b1fa2"/>
+              <circle cx="40" cy="78" r="3" fill="white"/>
+              <line x1="32" y1="14" x2="38" y2="14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+
+            <!-- Cloud/Nube -->
+            <svg class="banner-obj obj-cloud" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80">
+              <defs>
+                <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.95" />
+                  <stop offset="100%" style="stop-color:#e3f2fd;stop-opacity:0.95" />
+                </linearGradient>
+              </defs>
+              <path d="M 30 45 Q 25 35 35 30 Q 40 25 50 28 Q 60 25 70 30 Q 80 35 78 45 Q 85 45 85 55 Q 85 65 75 65 L 35 65 Q 25 65 25 55 Q 25 45 30 45 Z" fill="url(#cloudGrad)" stroke="white" stroke-width="2"/>
+              <path d="M 45 50 L 50 55 L 45 60" stroke="#1976d2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M 55 50 L 60 55 L 55 60" stroke="#1976d2" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+
+            <!-- Logo Angular -->
+            <svg class="banner-obj obj-angular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110">
+              <defs>
+                <linearGradient id="angularGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#dd0031;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#c3002f;stop-opacity:1" />
+                </linearGradient>
+                <linearGradient id="angularGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#dd0031;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#b30029;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <!-- Shield/Escudo -->
+              <path d="M 50 10 L 15 25 L 20 70 L 50 95 L 80 70 L 85 25 Z" fill="url(#angularGrad1)" stroke="white" stroke-width="2"/>
+              <path d="M 50 10 L 50 95 L 80 70 L 85 25 Z" fill="url(#angularGrad2)" opacity="0.9"/>
+              <!-- Letra A -->
+              <path d="M 50 30 L 35 70 L 42 70 L 45 62 L 55 62 L 58 70 L 65 70 Z" fill="white"/>
+              <polygon points="50,40 47,55 53,55" fill="#dd0031"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contenedor Principal -->
+<div class="main-container">
+  <div class="container">
+
+    <!-- SLIDER DE NOVEDADES estilo ML -->
     @if (novedades$ | async; as novedades) { @if (novedades.length > 0) {
-    <div class="container my-5">
-      <div class="premium-slider-container">
+    <div class="slider-section">
+      <h2 class="section-title-ml">Ofertas destacadas</h2>
+      <div class="ml-slider-container">
         <div
           id="productCarousel"
-          class="carousel slide premium-carousel"
+          class="carousel slide ml-carousel"
           data-bs-ride="carousel"
-          data-bs-interval="5000"
+          data-bs-interval="4000"
           data-bs-pause="hover"
         >
-          <!-- Contador de slides -->
-          <div class="slide-counter">
-            <span class="current-slide">1</span>
-            <span class="slide-separator">/</span>
-            <span class="total-slides">{{ novedades.length }}</span>
-          </div>
-          <!-- Indicadores mejorados -->
-          <div class="carousel-indicators premium-indicators">
+          <!-- Indicadores estilo ML -->
+          <div class="carousel-indicators ml-indicators">
             @for (novedad of novedades; track novedad.id; let i = $index) {
             <button
               type="button"
@@ -33,27 +219,21 @@
             }
           </div>
 
-          <div class="carousel-inner premium-carousel-inner">
+          <div class="carousel-inner ml-carousel-inner">
             @for (novedad of novedades; track novedad.id; let i = $index) {
-            <div class="carousel-item premium-slide" [class.active]="i === 0">
-              <div class="slide-image-container">
-                <img [src]="novedad.imagenUrl" class="slide-image" [alt]="novedad.titulo" />
-                <div class="image-overlay"></div>
-              </div>
-              
-              <div class="slide-content">
-                <div class="content-wrapper">
-                  <div class="badge-container">
-                    <span class="offer-badge">Oferta</span>
-                  </div>
-                  <h3 class="slide-title">{{ novedad.titulo }}</h3>
-                  <p class="slide-description">{{ novedad.descripcion }}</p>
-                  
-                  <div class="slide-actions">
+            <div class="carousel-item ml-slide" [class.active]="i === 0">
+              <div class="ml-slide-wrapper">
+                <div class="ml-slide-image">
+                  <img [src]="novedad.imagenUrl" [alt]="novedad.titulo" />
+                </div>
+                <div class="ml-slide-content">
+                  <div class="slide-content-inner">
+                    <span class="ml-badge">🔥 OFERTA DESTACADA</span>
+                    <h3 class="ml-slide-title">{{ novedad.titulo }}</h3>
+                    <p class="ml-slide-description">{{ novedad.descripcion }}</p>
                     @if (novedad.enlaceUrl) {
-                    <a [routerLink]="novedad.enlaceUrl" class="btn-premium">
-                      <i class="bi bi-eye me-2"></i>
-                      Ver Detalle
+                    <a [routerLink]="novedad.enlaceUrl" class="ml-btn-slide">
+                      Ver detalle
                       <i class="bi bi-arrow-right ms-2"></i>
                     </a>
                     }
@@ -64,59 +244,65 @@
             }
           </div>
           
-          <!-- Controles mejorados -->
+          <!-- Controles estilo ML -->
           <button
-            class="carousel-control-prev premium-control premium-control-prev"
+            class="carousel-control-prev ml-control"
             type="button"
             data-bs-target="#productCarousel"
             data-bs-slide="prev"
-            aria-label="Slide anterior"
-            title="Ir al slide anterior"
           >
-            <div class="control-icon">
-              <i class="bi bi-chevron-left" aria-hidden="true"></i>
-            </div>
-            <span class="visually-hidden">Anterior</span>
+            <i class="bi bi-chevron-left"></i>
           </button>
           
           <button
-            class="carousel-control-next premium-control premium-control-next"
+            class="carousel-control-next ml-control"
             type="button"
             data-bs-target="#productCarousel"
             data-bs-slide="next"
-            aria-label="Slide siguiente"
-            title="Ir al slide siguiente"
           >
-            <div class="control-icon">
-              <i class="bi bi-chevron-right" aria-hidden="true"></i>
-            </div>
-            <span class="visually-hidden">Siguiente</span>
+            <i class="bi bi-chevron-right"></i>
           </button>
         </div>
         
-        <!-- Información adicional -->
-        <div class="slider-footer">
-          <div class="row text-center">
-            <div class="col-md-4">
-              <i class="bi bi-truck feature-icon"></i>
-              <p class="feature-text">Envío gratis</p>
+      </div>
+    </div>
+    } }
+
+    <!-- Beneficios estilo ML -->
+    <div class="benefits-section">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="benefit-card">
+            <i class="bi bi-credit-card-2-front benefit-icon"></i>
+            <div class="benefit-content">
+              <h5 class="benefit-title">Pagá con tarjeta virtual</h5>
+              <p class="benefit-text">Sin costo adicional</p>
             </div>
-            <div class="col-md-4">
-              <i class="bi bi-shield-check feature-icon"></i>
-              <p class="feature-text">Compra protegida</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="benefit-card">
+            <i class="bi bi-truck benefit-icon"></i>
+            <div class="benefit-content">
+              <h5 class="benefit-title">Envío gratis</h5>
+              <p class="benefit-text">En pedidos seleccionados</p>
             </div>
-            <div class="col-md-4">
-              <i class="bi bi-credit-card feature-icon"></i>
-              <p class="feature-text">Hasta 12 cuotas</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="benefit-card">
+            <i class="bi bi-shield-check benefit-icon"></i>
+            <div class="benefit-content">
+              <h5 class="benefit-title">Seguridad</h5>
+              <p class="benefit-text">Compra protegida</p>
             </div>
           </div>
         </div>
       </div>
     </div>
-    } }
 
-    <!-- Sección de características destacadas -->
-    <div class="features-highlight-section my-5">
+    <!-- Características destacadas -->
+    <div class="features-section">
       <div class="row">
         <div class="col-12 text-center mb-4">
           <h3 class="section-title">¿Por qué elegir nuestra plataforma?</h3>
@@ -167,8 +353,8 @@
       </div>
     </div>
 
-    <!-- Sección de créditos con tarjetas -->
-    <div class="credits-section-container mt-5">
+    <!-- Créditos -->
+    <div class="credits-section">
       <div class="row justify-content-center gx-4 gy-3">
       <div class="col-md-5">
         <div class="credit-card">
@@ -187,16 +373,5 @@
       </div>
     </div>
 
-    <!-- Contenedor para los botones de acción -->
-    <div class="action-buttons-container mt-5">
-      <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-      <button class="btn btn-primary btn-lg" type="button" (click)="irATienda()">
-        <i class="bi bi-shop me-2"></i>Explorar Tienda
-      </button>
-      <button class="btn btn-outline-secondary btn-lg" type="button" (click)="irARegistro()">
-        ¡Crea tu cuenta!
-      </button>
-      </div>
-    </div>
   </div>
 </div>

@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Función auxiliar para verificar si un usuario es admin
+    function isAdmin(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId)) &&
+             get(/databases/$(database)/documents/users/$(userId)).data.rol == 'admin';
+    }
+    
+    // Reglas para usuarios - PERMISIVAS PARA DESARROLLO
+    match /users/{userId} {
+      // Permitir lectura y escritura para todos (desarrollo)
+      allow read, write: if true;
+    }
+    
+    // Reglas para tarjetas virtuales - PERMISIVAS
+    match /tarjetas-virtuales/{tarjetaId} {
+      allow read, write: if true;
+    }
+    
+    // Reglas para transacciones de tarjetas - PERMISIVAS
+    match /transacciones-tarjetas/{transaccionId} {
+      allow read, write: if true;
+    }
+    
+    // Reglas para pagos virtuales - PERMISIVAS
+    match /pagos-virtuales/{pagoId} {
+      allow read, write: if true;
+    }
+    
+    // Reglas para pedidos - PERMISIVAS
+    match /pedidos/{pedidoId} {
+      allow read, write: if true;
+    }
+    
+    // Reglas para configuración de tarjetas - PERMISIVAS
+    match /configuracion-tarjetas/{configId} {
+      allow read, write: if true;
+    }
+    
+    // Reglas para operaciones admin - PERMISIVAS
+    match /operaciones-admin/{operacionId} {
+      allow read, write: if true;
+    }
+    
+    // Reglas para contadores - PERMISIVAS
+    match /contadores/{contadorId} {
+      allow read, write: if true;
+    }
+    
+    // Reglas para productos
+    match /productos/{productoId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // Reglas para categorías
+    match /categorias/{categoriaId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // Reglas para configuración del sitio
+    match /configuracion-sitio/{configId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // Regla catch-all para cualquier otra colección
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
