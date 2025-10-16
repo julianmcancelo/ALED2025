@@ -7,6 +7,7 @@ import { map } from 'rxjs/operators';
 import { ConfiguracionService } from '../servicios/configuracion';
 import { NovedadesService, Novedad } from '../servicios/novedades.service'; // Importar NovedadesService
 import { Registro } from '../auth/registro/registro';
+import { AuthService } from '../auth/auth';
 
 @Component({
   selector: 'app-home',
@@ -19,6 +20,7 @@ export class Home implements OnInit {
   // --- INYECCIÓN DE DEPENDENCIAS ---
   protected configuracionService = inject(ConfiguracionService);
   private novedadesService = inject(NovedadesService); // Usar NovedadesService
+  protected authService = inject(AuthService);
   private router = inject(Router);
   private dialog = inject(MatDialog);
 
