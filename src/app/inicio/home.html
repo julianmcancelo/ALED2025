@@ -10,9 +10,11 @@
             <button class="btn-banner-primary" (click)="irATienda()">
               <i class="bi bi-shop me-2"></i>Explorar Tienda
             </button>
+            @if (!authService.currentUserSignal()) {
             <button class="btn-banner-secondary" (click)="irARegistro()">
               Crear cuenta
             </button>
+            }
           </div>
         </div>
       </div>
