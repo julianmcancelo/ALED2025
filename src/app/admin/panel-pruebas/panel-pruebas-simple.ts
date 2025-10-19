@@ -8,6 +8,7 @@ import { UserService } from '../../servicios/user';
 import { NovedadesService } from '../../servicios/novedades.service';
 
 import Swal from 'sweetalert2';
+import * as bcrypt from 'bcryptjs';
 
 /**
  * ============================================================================
@@ -108,6 +109,22 @@ interface ResultadoPrueba {
                     [disabled]="ejecutandoPruebas()">
                     <i class="bi bi-compass me-1"></i>
                     Navegación
+                  </button>
+
+                  <button 
+                    class="btn btn-outline-success btn-sm"
+                    (click)="crearUsuariosPrueba()"
+                    [disabled]="ejecutandoPruebas()">
+                    <i class="bi bi-person-plus me-1"></i>
+                    Crear Usuarios de Prueba
+                  </button>
+
+                  <button 
+                    class="btn btn-outline-warning btn-sm"
+                    (click)="crearUsuariosSimple()"
+                    [disabled]="ejecutandoPruebas()">
+                    <i class="bi bi-person-check me-1"></i>
+                    Crear Usuarios (Simple)
                   </button>
                 </div>
               </div>
@@ -383,6 +400,244 @@ export class PanelPruebasComponent {
     } catch (error: any) {
       const tiempo = Date.now() - inicio;
       this.actualizarResultado('Navegación', 'error', 
+        `Error: ${error.message || error}`, tiempo);
+    }
+  }
+
+  /**
+   * Método de test simple para verificar que los botones funcionan
+   */
+  testBoton(): void {
+    console.log('🧪 Test botón funcionando');
+    Swal.fire({
+      title: '✅ Botón funciona',
+      text: 'Los botones están funcionando correctamente',
+      icon: 'success',
+      timer: 2000
+    });
+  }
+
+  /**
+   * Versión simplificada para crear usuarios
+   */
+  async crearUsuariosSimple(): Promise<void> {
+    try {
+      console.log('🚀 Iniciando creación simple de usuarios');
+      
+      const confirmacion = await Swal.fire({
+        title: 'Crear Usuarios de Prueba',
+        text: '¿Crear 4 usuarios para la presentación?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, crear',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (!confirmacion.isConfirmed) return;
+
+      // Crear usuarios directamente sin hash complejo
+      const usuarios = [
+        { nombre: 'Admin', apellido: 'Sistema', email: 'admin@aled2025.com', password: '123456', dni: '12345678', rol: 'admin' as const, novedades: true, terminos: true },
+        { nombre: 'Julian', apellido: 'Cancelo', email: 'julian@test.com', password: '123456', dni: '87654321', rol: 'usuario' as const, novedades: true, terminos: true },
+        { nombre: 'Nicolas', apellido: 'Otero', email: 'nicolas@test.com', password: '123456', dni: '11223344', rol: 'usuario' as const, novedades: true, terminos: true },
+        { nombre: 'Cliente', apellido: 'Demo', email: 'cliente@demo.com', password: '123456', dni: '55667788', rol: 'usuario' as const, novedades: true, terminos: true }
+      ];
+
+      let creados = 0;
+      for (const usuario of usuarios) {
+        try {
+          // Hash simple
+          const passwordHash = await bcrypt.hash(usuario.password, 10);
+          await this.userService.addUser({ ...usuario, password: passwordHash });
+          creados++;
+          console.log(`✅ Usuario creado: ${usuario.email}`);
+        } catch (error) {
+          console.warn(`⚠️ Usuario ${usuario.email} ya existe`);
+        }
+      }
+
+      await Swal.fire({
+        title: creados > 0 ? '✅ Usuarios Creados' : '⚠️ Usuarios ya existen',
+        text: creados > 0 ? `${creados} usuarios creados exitosamente` : 'Los usuarios ya existían en el sistema',
+        icon: creados > 0 ? 'success' : 'info',
+        confirmButtonText: 'Entendido'
+      });
+
+    } catch (error: any) {
+      console.error('❌ Error:', error);
+      await Swal.fire({
+        title: 'Error',
+        text: error.message || 'Error desconocido',
+        icon: 'error'
+      });
+    }
+  }
+
+  /**
+   * Crea usuarios de prueba para la presentación
+   */
+  async crearUsuariosPrueba(): Promise<void> {
+    console.log('🔧 Botón crear usuarios presionado');
+    
+    try {
+      // Primero mostrar un alert simple para verificar que funciona
+      await Swal.fire({
+        title: 'Función funcionando',
+        text: 'El botón está funcionando. Procediendo a crear usuarios...',
+        icon: 'info',
+        timer: 2000
+      });
+
+      const inicio = Date.now();
+      this.agregarResultado('Usuarios de Prueba', 'ejecutando', 'Creando usuarios de prueba...');
+
+      // Confirmar con el usuario
+      const confirmacion = await Swal.fire({
+        title: '👥 Crear Usuarios de Prueba',
+        html: `
+          <div class="text-start">
+            <p>Se crearán los siguientes usuarios para la presentación:</p>
+            <ul>
+              <li><strong>Admin:</strong> admin@aled2025.com (Administrador)</li>
+              <li><strong>Usuario 1:</strong> julian@test.com (Cliente)</li>
+              <li><strong>Usuario 2:</strong> nicolas@test.com (Cliente)</li>
+              <li><strong>Usuario 3:</strong> cliente@demo.com (Cliente)</li>
+            </ul>
+            <p><small class="text-muted">Contraseña para todos: <strong>123456</strong></small></p>
+          </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Crear Usuarios',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#28a745'
+      });
+
+      if (!confirmacion.isConfirmed) {
+        const tiempo = Date.now() - inicio;
+        this.actualizarResultado('Usuarios de Prueba', 'error', 'Operación cancelada por el usuario', tiempo);
+        return;
+      }
+
+      console.log('🔐 Hasheando contraseña...');
+      // Hash de la contraseña común
+      const passwordHash = await bcrypt.hash('123456', 10);
+      console.log('✅ Contraseña hasheada');
+
+      // Usuarios de prueba
+      const usuariosPrueba = [
+        {
+          nombre: 'Administrador',
+          apellido: 'Sistema',
+          email: 'admin@aled2025.com',
+          password: passwordHash,
+          dni: '12345678',
+          rol: 'admin' as const,
+          novedades: true,
+          terminos: true,
+          direccion: 'Av. Principal 123',
+          ciudad: 'Buenos Aires',
+          codigoPostal: '1000',
+          telefono: '+54 11 1234-5678'
+        },
+        {
+          nombre: 'Julian',
+          apellido: 'Cancelo',
+          email: 'julian@test.com',
+          password: passwordHash,
+          dni: '87654321',
+          rol: 'usuario' as const,
+          novedades: true,
+          terminos: true,
+          direccion: 'Calle Falsa 456',
+          ciudad: 'Córdoba',
+          codigoPostal: '5000',
+          telefono: '+54 351 987-6543'
+        },
+        {
+          nombre: 'Nicolas',
+          apellido: 'Otero',
+          email: 'nicolas@test.com',
+          password: passwordHash,
+          dni: '11223344',
+          rol: 'usuario' as const,
+          novedades: false,
+          terminos: true,
+          direccion: 'Av. Libertador 789',
+          ciudad: 'Rosario',
+          codigoPostal: '2000',
+          telefono: '+54 341 555-0123'
+        },
+        {
+          nombre: 'Cliente',
+          apellido: 'Demo',
+          email: 'cliente@demo.com',
+          password: passwordHash,
+          dni: '55667788',
+          rol: 'usuario' as const,
+          novedades: true,
+          terminos: true,
+          direccion: 'Paseo Colón 321',
+          ciudad: 'La Plata',
+          codigoPostal: '1900',
+          telefono: '+54 221 444-9876'
+        }
+      ];
+
+      console.log('👥 Creando usuarios:', usuariosPrueba.length);
+
+      // Crear usuarios uno por uno
+      let usuariosCreados = 0;
+      for (const usuario of usuariosPrueba) {
+        try {
+          console.log(`📝 Creando usuario: ${usuario.email}`);
+          await this.userService.addUser(usuario);
+          usuariosCreados++;
+          console.log(`✅ Usuario creado: ${usuario.email}`);
+        } catch (error) {
+          console.warn(`⚠️ Usuario ${usuario.email} ya existe o error:`, error);
+        }
+      }
+
+      const tiempo = Date.now() - inicio;
+      
+      if (usuariosCreados > 0) {
+        this.actualizarResultado('Usuarios de Prueba', 'exitoso', 
+          `${usuariosCreados} usuarios creados exitosamente`, tiempo);
+
+        // Mostrar resumen
+        await Swal.fire({
+          title: '✅ Usuarios Creados',
+          html: `
+            <div class="text-start">
+              <p><strong>${usuariosCreados} usuarios creados exitosamente:</strong></p>
+              <div class="alert alert-info">
+                <strong>Credenciales de acceso:</strong><br>
+                <small>Contraseña para todos: <strong>123456</strong></small>
+              </div>
+              <p><small class="text-muted">Los usuarios están listos para la presentación.</small></p>
+            </div>
+          `,
+          icon: 'success',
+          confirmButtonText: 'Perfecto'
+        });
+      } else {
+        this.actualizarResultado('Usuarios de Prueba', 'error', 
+          'No se pudieron crear usuarios (posiblemente ya existen)', tiempo);
+      }
+
+    } catch (error: any) {
+      console.error('❌ Error creando usuarios de prueba:', error);
+      
+      await Swal.fire({
+        title: 'Error',
+        text: `Error: ${error.message || error}`,
+        icon: 'error',
+        confirmButtonText: 'Entendido'
+      });
+      
+      const tiempo = Date.now() - Date.now();
+      this.actualizarResultado('Usuarios de Prueba', 'error', 
         `Error: ${error.message || error}`, tiempo);
     }
   }
