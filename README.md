@@ -20,20 +20,20 @@
 
 ## Descripción del Proyecto
 
-Desarrollamos un **sistema completo de e-commerce** desde cero, aplicando todo lo aprendido en la materia. La aplicación permite a los usuarios navegar por un catálogo de productos, agregarlos al carrito y realizar pagos reales mediante **Mercado Pago**.
+Desarrollamos un **sistema completo de e-commerce** desde cero, aplicando todo lo aprendido en la materia. La aplicación permite a los usuarios navegar por un catálogo de productos, agregarlos al carrito y realizar pagos reales mediante integración con plataforma de pagos.
 
 ### Características Principales
 
 - **Catálogo de productos** con búsqueda y filtros
 - **Carrito de compras** con estado reactivo (Angular Signals)
 - **Sistema de tarjeta virtual** - Simulador de tarjeta de crédito integrado
-- **Integración real con Mercado Pago** (pagos en sandbox)
+- **Integración real con plataforma de pagos** (sandbox)
 - **Checkout dedicado** con selección de método de pago
 - **Autenticación personalizada** con bcrypt
 - **Panel de administración** completo (CRUD productos, usuarios)
 - **Perfil de usuario mejorado** con múltiples secciones
-- **Historial de compras** con diseño estilo Mercado Pago
-- **Diseño UI/UX moderno** inspirado en Mercado Libre
+- **Historial de compras** con diseño moderno
+- **Diseño UI/UX profesional** siguiendo mejores prácticas
 - **Base de datos en tiempo real** con Firebase Firestore
 
 ---
@@ -55,7 +55,7 @@ Desarrollamos un **sistema completo de e-commerce** desde cero, aplicando todo l
 - **Node.js** - Runtime de JavaScript
 
 ### Integración de Pagos
-- **Mercado Pago SDK** - Procesamiento de pagos reales
+- **SDK de pagos** - Procesamiento de pagos reales
 
 ### Seguridad
 - **bcryptjs** - Hash de contraseñas (10 rondas)
@@ -71,10 +71,10 @@ Desarrollamos un **sistema completo de e-commerce** desde cero, aplicando todo l
 - **Navegación por catálogo de productos**
 - **Carrito inteligente** con sugerencias de compra para usuarios no autenticados
 - **Simulador de tarjeta virtual** con interfaz realista
-- **Proceso de pago completo** con Mercado Pago y tarjeta virtual
+- **Proceso de pago completo** con plataforma de pagos y tarjeta virtual
 - **Checkout dedicado** con selección de método de pago
 - **Perfil completo** con 5 secciones: Datos personales, Entrega, Tarjeta virtual, Seguridad e Historial
-- **Historial de compras** con estadísticas y diseño estilo ML
+- **Historial de compras** con estadísticas y diseño moderno
 - **Historial de transacciones** de tarjeta virtual
 
 ### Para Administradores
@@ -89,7 +89,7 @@ Desarrollamos un **sistema completo de e-commerce** desde cero, aplicando todo l
 
 ## Diseño UI/UX Moderno
 
-Implementamos un diseño inspirado en **Mercado Libre** y **Mercado Pago**, siguiendo las mejores prácticas de UX:
+Implementamos un diseño profesional siguiendo las mejores prácticas de UX:
 
 ### Características del Diseño
 - **Formularios limpios** - Header celeste + formulario blanco
@@ -100,7 +100,7 @@ Implementamos un diseño inspirado en **Mercado Libre** y **Mercado Pago**, sigu
 - **Animaciones suaves** - Transiciones CSS para mejor experiencia
 
 ### Componentes Rediseñados
-- **Formulario de registro** - Estética Mercado Libre
+- **Formulario de registro** - Diseño limpio y moderno
 - **Historial de compras** - Cards con badges de estado
 - **Perfil de usuario** - Info-grid con iconos circulares
 - **Sección de seguridad** - Opciones con estado de desarrollo
@@ -134,7 +134,7 @@ Una de las funcionalidades más innovadoras del proyecto:
 - Node.js (v18 o superior)
 - npm
 - Cuenta de Firebase
-- Cuenta de Mercado Pago (para pagos)
+- Cuenta en plataforma de pagos (para procesamiento)
 
 ### Pasos de Instalación
 
@@ -228,13 +228,12 @@ Durante el desarrollo aplicamos:
 
 1. **Arquitectura moderna** - Separación frontend/backend
 2. **Programación reactiva** - RxJS y Signals
-3. **Integración de APIs** - Mercado Pago
-4. **Diseño UI/UX** - Inspirado en líderes de la industria (ML/MP)
-5. **Seguridad** - Hash, validación, Guards
-6. **Base de datos NoSQL** - Firestore en tiempo real
-7. **TypeScript** - Type safety y mejores prácticas
-8. **Componentización** - Reutilización y modularidad
-9. **Trabajo en equipo** - Git y control de versiones
+3. **Integración de APIs** - Plataforma de pagos
+4. **Diseño UI/UX** - Inspirado en mejores prácticas de la industria
+5. **Base de datos NoSQL** - Base de datos en tiempo real
+6. **TypeScript** - Type safety y mejores prácticas
+7. **Componentización** - Reutilización y modularidad
+8. **Trabajo en equipo** - Git y control de versiones
 
 ---
 
