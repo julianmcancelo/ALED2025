@@ -34,12 +34,14 @@ export class CheckoutComponent implements OnInit {
   protected configuracion = this.configuracionService.configuracionSignal;
   protected currentUser = this.authService.currentUserSignal;
   
-  tarjetaVirtual = signal<any>(null);
-  cargandoTarjetaVirtual = signal(false);
-  metodoPagoSeleccionado = signal<'tarjeta_virtual' | 'mercadopago' | null>(null);
-  procesandoPago = signal(false);
+  protected tarjetaVirtual = signal<any>(null);
+  protected cargandoTarjetaVirtual = signal(false);
+  protected metodoPagoSeleccionado = signal<'tarjeta_virtual' | 'mercadopago' | null>(null);
+  protected metodoEnvioSeleccionado = signal<'domicilio' | 'retiro' | null>(null);
+  protected procesandoPago = signal(false);
 
-  readonly MONTO_ENVIO_GRATIS = 5000;
+  protected readonly MONTO_ENVIO_GRATIS = 5000;
+  protected readonly COSTO_ENVIO_DOMICILIO = 1000;
 
   ngOnInit() {
     // Verificar autenticación
@@ -84,26 +86,56 @@ export class CheckoutComponent implements OnInit {
     }
   }
 
-  tieneEnvioGratis = computed(() => {
+  protected tieneEnvioGratis = computed(() => {
     return this.carritoService.totalPrecio() >= this.MONTO_ENVIO_GRATIS;
   });
 
-  costoEnvio = computed(() => {
-    return this.tieneEnvioGratis() ? 0 : 1000;
+  protected costoEnvio = computed(() => {
+    const metodoEnvio = this.metodoEnvioSeleccionado();
+    
+    // Retiro en local = gratis
+    if (metodoEnvio === 'retiro') {
+      return 0;
+    }
+    
+    // Envío a domicilio
+    if (metodoEnvio === 'domicilio') {
+      return this.tieneEnvioGratis() ? 0 : this.COSTO_ENVIO_DOMICILIO;
+    }
+    
+    // Si no seleccionó método, mostrar costo estimado
+    return this.tieneEnvioGratis() ? 0 : this.COSTO_ENVIO_DOMICILIO;
   });
 
-  totalFinal = computed(() => {
+  protected totalFinal = computed(() => {
     return this.carritoService.totalPrecio() + this.costoEnvio();
   });
 
-  seleccionarMetodoPago(metodo: 'tarjeta_virtual' | 'mercadopago') {
+  protected seleccionarMetodoPago(metodo: 'tarjeta_virtual' | 'mercadopago') {
     this.metodoPagoSeleccionado.set(metodo);
   }
 
-  async confirmarCompra() {
-    const metodo = this.metodoPagoSeleccionado();
+  protected seleccionarMetodoEnvio(metodo: 'domicilio' | 'retiro') {
+    this.metodoEnvioSeleccionado.set(metodo);
+  }
+
+  protected async confirmarCompra() {
+    const metodoPago = this.metodoPagoSeleccionado();
+    const metodoEnvio = this.metodoEnvioSeleccionado();
+    const user = this.currentUser();
     
-    if (!metodo) {
+    // Validar método de envío
+    if (!metodoEnvio) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Selecciona método de envío',
+        text: 'Debes elegir cómo deseas recibir tu pedido'
+      });
+      return;
+    }
+
+    // Validar método de pago
+    if (!metodoPago) {
       Swal.fire({
         icon: 'warning',
         title: 'Selecciona un método de pago',
@@ -112,7 +144,34 @@ export class CheckoutComponent implements OnInit {
       return;
     }
 
-    if (metodo === 'tarjeta_virtual') {
+    // Validar datos de envío si es a domicilio
+    if (metodoEnvio === 'domicilio') {
+      if (!user?.direccion || !user?.ciudad || !user?.codigoPostal) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Datos de envío incompletos',
+          html: `
+            <p>Para envío a domicilio necesitas completar:</p>
+            <ul class="text-start">
+              ${!user?.direccion ? '<li>Dirección</li>' : ''}
+              ${!user?.ciudad ? '<li>Ciudad</li>' : ''}
+              ${!user?.codigoPostal ? '<li>Código Postal</li>' : ''}
+            </ul>
+            <p class="text-muted small mt-2">Ve a tu perfil para completar los datos</p>
+          `,
+          confirmButtonText: 'Ir a mi perfil',
+          showCancelButton: true,
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            this.router.navigate(['/perfil-usuario']);
+          }
+        });
+        return;
+      }
+    }
+
+    if (metodoPago === 'tarjeta_virtual') {
       await this.pagarConTarjetaVirtual();
     } else {
       await this.pagarConMercadoPago();
@@ -318,7 +377,7 @@ export class CheckoutComponent implements OnInit {
       });
   }
 
-  volverAlCarrito() {
+  protected volverAlCarrito() {
     this.router.navigate(['/']);
   }
 
@@ -339,12 +398,12 @@ export class CheckoutComponent implements OnInit {
           cantidad: item.cantidad
         })),
         envio: {
-          direccion: usuario.direccion || 'Dirección no especificada',
-          ciudad: usuario.ciudad || 'Ciudad no especificada',
+          direccion: this.metodoEnvioSeleccionado() === 'retiro' ? 'Retiro en local' : (usuario.direccion || 'Dirección no especificada'),
+          ciudad: this.metodoEnvioSeleccionado() === 'retiro' ? 'Local comercial' : (usuario.ciudad || 'Ciudad no especificada'),
           codigoPostal: usuario.codigoPostal || '0000',
           provincia: 'Buenos Aires',
           pais: 'Argentina',
-          metodoEnvio: 'Envío estándar'
+          metodoEnvio: this.metodoEnvioSeleccionado() === 'retiro' ? 'Retiro en local' : 'Envío a domicilio'
         },
         metodoPago: 'tarjeta_virtual',
         notas: `Pedido creado desde checkout - Pago ID: ${pagoId}`

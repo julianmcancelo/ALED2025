@@ -88,6 +88,72 @@
             </div>
           }
 
+          <!-- Método de envío -->
+          <div class="checkout-section">
+            <h5 class="section-title">
+              <i class="bi bi-truck me-2"></i>
+              Método de envío
+            </h5>
+            <div class="metodos-pago-grid">
+              
+              <!-- Envío a domicilio -->
+              <div class="metodo-pago-card" 
+                   [class.selected]="metodoEnvioSeleccionado() === 'domicilio'"
+                   (click)="seleccionarMetodoEnvio('domicilio')">
+                <div class="metodo-header">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-house-door text-primary fs-3"></i>
+                    <div>
+                      <h6 class="mb-0">Envío a domicilio</h6>
+                      <small class="text-muted">Recibí tu pedido en casa</small>
+                    </div>
+                  </div>
+                  <div class="form-check">
+                    <input 
+                      class="form-check-input" 
+                      type="radio" 
+                      name="metodoEnvio"
+                      [checked]="metodoEnvioSeleccionado() === 'domicilio'"
+                      (change)="seleccionarMetodoEnvio('domicilio')">
+                  </div>
+                </div>
+                <div class="metodo-body">
+                  @if (tieneEnvioGratis()) {
+                    <span class="badge bg-success">¡Envío gratis!</span>
+                  } @else {
+                    <p class="mb-0 text-muted small">Costo: ${{ COSTO_ENVIO_DOMICILIO | number:'1.0-0' }}</p>
+                  }
+                </div>
+              </div>
+
+              <!-- Retiro en local -->
+              <div class="metodo-pago-card"
+                   [class.selected]="metodoEnvioSeleccionado() === 'retiro'"
+                   (click)="seleccionarMetodoEnvio('retiro')">
+                <div class="metodo-header">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shop text-success fs-3"></i>
+                    <div>
+                      <h6 class="mb-0">Retiro en local</h6>
+                      <small class="text-muted">Sin costo de envío</small>
+                    </div>
+                  </div>
+                  <div class="form-check">
+                    <input 
+                      class="form-check-input" 
+                      type="radio" 
+                      name="metodoEnvio"
+                      [checked]="metodoEnvioSeleccionado() === 'retiro'"
+                      (change)="seleccionarMetodoEnvio('retiro')">
+                  </div>
+                </div>
+                <div class="metodo-body">
+                  <span class="badge bg-success">Gratis</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Métodos de pago -->
           <div class="checkout-section">
             <h5 class="section-title">
@@ -171,16 +237,37 @@
                   <span>${{ carritoService.totalPrecio() | number:'1.2-2' }}</span>
                 </div>
                 <div class="resumen-item">
-                  <span>Envío</span>
-                  <span [class.text-success]="tieneEnvioGratis()">
-                    {{ tieneEnvioGratis() ? 'Gratis' : ('$' + (costoEnvio() | number:'1.2-2')) }}
+                  <div>
+                    <span>Envío</span>
+                    @if (metodoEnvioSeleccionado()) {
+                      <br>
+                      <small class="text-muted">
+                        @if (metodoEnvioSeleccionado() === 'domicilio') {
+                          A domicilio
+                        } @else {
+                          Retiro en local
+                        }
+                      </small>
+                    }
+                  </div>
+                  <span [class.text-success]="costoEnvio() === 0">
+                    @if (costoEnvio() === 0) {
+                      Gratis
+                    } @else {
+                      ${{ costoEnvio() | number:'1.2-2' }}
+                    }
                   </span>
                 </div>
                 
-                @if (tieneEnvioGratis()) {
+                @if (costoEnvio() === 0 && metodoEnvioSeleccionado()) {
                   <div class="envio-gratis-badge">
-                    <i class="bi bi-truck me-2"></i>
-                    ¡Envío gratis!
+                    @if (metodoEnvioSeleccionado() === 'retiro') {
+                      <i class="bi bi-shop me-2"></i>
+                      ¡Retiro sin costo!
+                    } @else {
+                      <i class="bi bi-truck me-2"></i>
+                      ¡Envío gratis!
+                    }
                   </div>
                 }
 
@@ -195,7 +282,7 @@
               <button 
                 class="btn btn-primary btn-lg w-100 mt-3"
                 (click)="confirmarCompra()"
-                [disabled]="procesandoPago() || !metodoPagoSeleccionado()">
+                [disabled]="procesandoPago() || !metodoPagoSeleccionado() || !metodoEnvioSeleccionado()">
                 @if (procesandoPago()) {
                   <span class="spinner-border spinner-border-sm me-2"></span>
                   Procesando...
@@ -204,6 +291,16 @@
                   Confirmar compra
                 }
               </button>
+              
+              @if (!metodoEnvioSeleccionado() || !metodoPagoSeleccionado()) {
+                <small class="text-muted d-block text-center mt-2">
+                  @if (!metodoEnvioSeleccionado()) {
+                    Selecciona método de envío
+                  } @else if (!metodoPagoSeleccionado()) {
+                    Selecciona método de pago
+                  }
+                </small>
+              }
 
               <div class="seguridad-info mt-3">
                 <i class="bi bi-shield-check text-success me-2"></i>

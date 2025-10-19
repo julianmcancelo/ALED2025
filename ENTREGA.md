@@ -8,7 +8,7 @@ https://github.com/julianmcancelo/ALED2025
 https://aled2025-5be25.web.app 
   
 • Commit de entrega:  
-[Completar después del push con: git log -1 --format="%h"]
+1f2f9fa
   
 • Usuario/contraseña de prueba: 
 ADMIN: admin@aled2025.com / 123456 
