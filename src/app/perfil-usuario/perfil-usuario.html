@@ -1,114 +1,267 @@
-<!-- Contenedor principal de la página de perfil -->
-<div class="profile-container container mt-4">
-
-  <!-- Encabezado de la página -->
-  <header class="mb-4">
-    <h1 class="h2">Mi Perfil</h1>
-    <p class="text-muted">Aquí puedes ver y gestionar tu información personal y de entrega.</p>
-  </header>
-
-  <!-- Usamos @if para asegurarnos de que los datos del usuario se han cargado -->
-  @if (currentUser(); as user) {
-  <div class="row">
-
-    <!-- Tarjeta de Datos Personales -->
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="card-title mb-0"><i class="bi bi-person-badge-fill me-2"></i>Datos Personales</h5>
-        </div>
-        <div class="card-body">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item"><strong>Nombre:</strong> {{ user.nombre }}</li>
-            <li class="list-group-item"><strong>Apellido:</strong> {{ user.apellido }}</li>
-            <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
-            <li class="list-group-item"><strong>Rol:</strong> <span class="badge bg-secondary">{{ user.rol | uppercase }}</span></li>
-          </ul>
-        </div>
-      </div>
+<!-- Layout estilo Mercado Libre -->
+<div class="profile-layout">
+  <!-- Sidebar lateral fijo -->
+  <aside class="profile-sidebar">
+    <div class="sidebar-header">
+      <h3 class="sidebar-title">
+        <i class="bi bi-person-circle me-2"></i>
+        Mi cuenta
+      </h3>
     </div>
 
-    <!-- Tarjeta de Datos de Entrega -->
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header bg-gradient-to-r from-[#0077b6] to-[#2c3e50] text-white">
-          <h5 class="card-title mb-0"><i class="bi bi-truck me-2"></i>Datos de Entrega</h5>
+    @if (currentUser(); as user) {
+      <div class="user-info">
+        <div class="user-avatar">
+          <i class="bi bi-person-circle"></i>
         </div>
-        <div class="card-body">
+        <div class="user-details">
+          <p class="user-name mb-0">{{ user.nombre }} {{ user.apellido }}</p>
+          <p class="user-email mb-0 text-muted small">{{ user.email }}</p>
+          <span class="badge bg-success mt-2">
+            <i class="bi bi-check-circle me-1"></i>Activo
+          </span>
+        </div>
+      </div>
+    }
+
+    <nav class="sidebar-nav">
+      <button 
+        (click)="cambiarSeccion('datos-personales')" 
+        [class.active]="seccionActiva() === 'datos-personales'"
+        class="nav-item">
+        <i class="bi bi-person-badge"></i>
+        <span>Datos Personales</span>
+      </button>
+      <button 
+        (click)="cambiarSeccion('datos-entrega')" 
+        [class.active]="seccionActiva() === 'datos-entrega'"
+        class="nav-item">
+        <i class="bi bi-truck"></i>
+        <span>Datos de Entrega</span>
+      </button>
+      <button 
+        (click)="cambiarSeccion('tarjeta-virtual')" 
+        [class.active]="seccionActiva() === 'tarjeta-virtual'"
+        class="nav-item">
+        <i class="bi bi-credit-card"></i>
+        <span>Tarjeta Virtual</span>
+      </button>
+      <button 
+        (click)="cambiarSeccion('seguridad')" 
+        [class.active]="seccionActiva() === 'seguridad'"
+        class="nav-item">
+        <i class="bi bi-shield-lock"></i>
+        <span>Seguridad</span>
+      </button>
+      <button 
+        (click)="cambiarSeccion('historial')" 
+        [class.active]="seccionActiva() === 'historial'"
+        class="nav-item">
+        <i class="bi bi-bag-check"></i>
+        <span>Historial de Compras</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Contenido principal -->
+  <main class="profile-main-content">
+    @if (currentUser(); as user) {
+      <div class="content-wrapper">
+        
+        <!-- Sección: Datos Personales -->
+        @if (seccionActiva() === 'datos-personales') {
+        <section id="datos-personales" class="content-section section-animated">
+          <!-- Header simple -->
+          <div class="section-header-title mb-4">
+            <h5>Datos personales</h5>
+          </div>
+
+          <!-- Info cards limpias -->
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="bi bi-person"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Nombre completo</span>
+                <span class="info-value">{{ user.nombre }} {{ user.apellido }}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="bi bi-envelope"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Email</span>
+                <span class="info-value">{{ user.email }}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="bi bi-shield-check"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Rol</span>
+                <span class="info-value">{{ user.rol | uppercase }}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="bi bi-calendar-check"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Miembro desde</span>
+                <span class="info-value">Octubre 2025</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="bi bi-star-fill"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Nivel de cliente</span>
+                <span class="info-value">Regular</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <i class="bi bi-check-circle"></i>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Estado de cuenta</span>
+                <span class="info-value text-success">Activa</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        }
+
+        <!-- Sección: Datos de Entrega -->
+        @if (seccionActiva() === 'datos-entrega') {
+        <section id="datos-entrega" class="content-section section-animated">
+          <!-- Header simple -->
+          <div class="section-header-title mb-4">
+            <h5>Datos de entrega</h5>
+          </div>
+
           @if (user.direccion || user.ciudad || user.codigoPostal || user.telefono) {
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item d-flex align-items-start">
-                <i class="bi bi-house-door text-[#0077b6] me-2 mt-1"></i>
-                <div>
-                  <strong>Dirección:</strong><br>
-                  <span class="text-muted">{{ user.direccion || 'No especificado' }}</span>
+            <!-- Info grid -->
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-icon">
+                  <i class="bi bi-house-door"></i>
                 </div>
-              </li>
-              <li class="list-group-item d-flex align-items-start">
-                <i class="bi bi-geo-alt text-[#0077b6] me-2 mt-1"></i>
-                <div>
-                  <strong>Ciudad:</strong><br>
-                  <span class="text-muted">{{ user.ciudad || 'No especificado' }}</span>
+                <div class="info-content">
+                  <span class="info-label">Dirección</span>
+                  <span class="info-value">{{ user.direccion || 'No especificado' }}</span>
                 </div>
-              </li>
-              <li class="list-group-item d-flex align-items-start">
-                <i class="bi bi-mailbox text-[#0077b6] me-2 mt-1"></i>
-                <div>
-                  <strong>Código Postal:</strong><br>
-                  <span class="text-muted">{{ user.codigoPostal || 'No especificado' }}</span>
+              </div>
+
+              <div class="info-item">
+                <div class="info-icon">
+                  <i class="bi bi-geo-alt"></i>
                 </div>
-              </li>
-              <li class="list-group-item d-flex align-items-start">
-                <i class="bi bi-telephone text-[#0077b6] me-2 mt-1"></i>
-                <div>
-                  <strong>Teléfono:</strong><br>
-                  <span class="text-muted">{{ user.telefono || 'No especificado' }}</span>
+                <div class="info-content">
+                  <span class="info-label">Ciudad</span>
+                  <span class="info-value">{{ user.ciudad || 'No especificado' }}</span>
                 </div>
-              </li>
-            </ul>
-            <div class="mt-3">
-              <button class="btn btn-sm btn-primary" (click)="editarDatosEnvio()">
-                <i class="bi bi-pencil-square me-1"></i> Editar Datos de Envío
+              </div>
+
+              <div class="info-item">
+                <div class="info-icon">
+                  <i class="bi bi-mailbox"></i>
+                </div>
+                <div class="info-content">
+                  <span class="info-label">Código Postal</span>
+                  <span class="info-value">{{ user.codigoPostal || 'No especificado' }}</span>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <div class="info-icon">
+                  <i class="bi bi-telephone"></i>
+                </div>
+                <div class="info-content">
+                  <span class="info-label">Teléfono</span>
+                  <span class="info-value">{{ user.telefono || 'No especificado' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón editar -->
+            <div class="mt-4">
+              <button class="btn btn-sm btn-outline-primary" (click)="editarDatosEnvio()">
+                <i class="bi bi-pencil me-1"></i> Editar datos de envío
               </button>
             </div>
           } @else {
-            <div class="text-center py-4">
-              <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-              <p class="text-muted mt-3 mb-3">No has configurado tus datos de envío</p>
-              <button class="btn btn-primary" (click)="editarDatosEnvio()">
-                <i class="bi bi-plus-circle me-1"></i> Agregar Datos de Envío
+            <!-- Estado vacío -->
+            <div class="empty-state">
+              <i class="bi bi-mailbox" style="font-size: 48px; color: #ccc;"></i>
+              <h6 class="mt-3 mb-2">No tienes datos de envío</h6>
+              <p class="text-muted mb-3">Agrega tu dirección para recibir tus pedidos</p>
+              <button class="btn btn-primary btn-sm" (click)="editarDatosEnvio()">
+                <i class="bi bi-plus-circle me-1"></i> Agregar datos
               </button>
             </div>
           }
-        </div>
-      </div>
-    </div>
+        </section>
+        }
 
-    <!-- Tarjeta Virtual -->
-    <div class="col-12 mt-4">
-      <div class="card">
-        <div class="card-header bg-gradient-to-r from-[#0077b6] to-[#2c3e50] text-white">
-          <h5 class="card-title mb-0">
-            <i class="bi bi-credit-card-2-front me-2"></i>Mi Tarjeta Virtual
-          </h5>
-          <small class="text-white-50">Tarjeta de prueba para pagos dentro del sistema</small>
-        </div>
-        <div class="card-body p-0">
-          <!-- Componente de tarjeta virtual -->
-          <app-tarjeta-virtual 
-            [usuarioId]="user.id"
-            [mostrarHistorial]="false">
-          </app-tarjeta-virtual>
-          
-          <!-- Botón para crear tarjeta si no existe -->
-          <div class="p-4 border-top">
-            <div class="text-center">
-              <p class="text-muted mb-3">
-                <i class="bi bi-info-circle me-1"></i>
-                ¿No ves tu tarjeta virtual arriba?
-              </p>
+        <!-- Sección: Tarjeta Virtual -->
+        @if (seccionActiva() === 'tarjeta-virtual') {
+        <section id="tarjeta-virtual" class="content-section section-animated">
+          <!-- Header estilo MP -->
+          <div class="payment-section-header">
+            <h5 class="section-header-title">
+              <i class="bi bi-wallet2 me-2"></i>
+              Mis Medios de Pago
+            </h5>
+          </div>
+
+          <!-- Card clickeable estilo MP -->
+          <div class="payment-method-card" (click)="toggleTarjetaVirtual()">
+            <div class="payment-card-content">
+              <div class="payment-card-icon">
+                <i class="bi bi-credit-card-fill"></i>
+              </div>
+              <div class="payment-card-info">
+                <span class="payment-card-title">Tarjeta virtual prepaga</span>
+              </div>
+              <div class="payment-card-arrow">
+                <i class="bi" [class.bi-chevron-right]="!mostrarTarjeta()" [class.bi-chevron-down]="mostrarTarjeta()"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Componente de tarjeta virtual (desplegable) -->
+          @if (mostrarTarjeta()) {
+            <div class="tarjeta-virtual-container mt-3">
+              <app-tarjeta-virtual 
+                [usuarioId]="user.id"
+                [mostrarHistorial]="false">
+              </app-tarjeta-virtual>
+            </div>
+          }
+
+          <!-- Info adicional -->
+          <div class="payment-info-box mt-3">
+            <small class="text-muted">
+              <i class="bi bi-info-circle me-1"></i>
+              Tarjeta de prueba para realizar pagos dentro del sistema
+            </small>
+          </div>
+
+          <!-- Botón para crear si no existe (oculto por defecto) -->
+          @if (!tieneTarjeta()) {
+            <div class="mt-3">
               <button 
-                class="btn btn-success"
+                class="btn btn-primary btn-sm"
                 (click)="crearTarjetaVirtual()"
                 [disabled]="creandoTarjeta()">
                 @if (creandoTarjeta()) {
@@ -119,72 +272,259 @@
                   Crear Mi Tarjeta Virtual
                 }
               </button>
-              <div class="mt-2">
-                <small class="text-muted">
-                  Crea una tarjeta virtual de prueba para realizar pagos dentro del sistema
-                </small>
+            </div>
+          }
+        </section>
+        }
+
+        <!-- Sección: Seguridad -->
+        @if (seccionActiva() === 'seguridad') {
+        <section id="seguridad" class="content-section section-animated">
+          <!-- Header simple -->
+          <div class="section-header-title mb-4">
+            <h5>Seguridad</h5>
+          </div>
+
+          <!-- Opciones de seguridad -->
+          <div class="security-options">
+            <!-- Cambiar contraseña -->
+            <div class="security-option-card">
+              <div class="security-option-content">
+                <div class="security-option-icon">
+                  <i class="bi bi-key-fill"></i>
+                </div>
+                <div class="security-option-info">
+                  <span class="security-option-title">Cambiar contraseña</span>
+                  <span class="security-option-desc">Actualiza tu contraseña regularmente</span>
+                </div>
               </div>
+              <button class="btn btn-sm btn-outline-secondary" disabled>
+                Próximamente
+              </button>
+            </div>
+
+            <!-- Autenticación de dos factores -->
+            <div class="security-option-card">
+              <div class="security-option-content">
+                <div class="security-option-icon">
+                  <i class="bi bi-shield-check"></i>
+                </div>
+                <div class="security-option-info">
+                  <span class="security-option-title">Autenticación de dos factores (2FA)</span>
+                  <span class="security-option-desc">Agrega una capa extra de seguridad</span>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-outline-secondary" disabled>
+                Próximamente
+              </button>
+            </div>
+
+            <!-- Sesiones activas -->
+            <div class="security-option-card">
+              <div class="security-option-content">
+                <div class="security-option-icon">
+                  <i class="bi bi-pc-display"></i>
+                </div>
+                <div class="security-option-info">
+                  <span class="security-option-title">Sesiones activas</span>
+                  <span class="security-option-desc">Administra tus dispositivos conectados</span>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-outline-secondary" disabled>
+                Próximamente
+              </button>
+            </div>
+
+            <!-- Historial de accesos -->
+            <div class="security-option-card">
+              <div class="security-option-content">
+                <div class="security-option-icon">
+                  <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="security-option-info">
+                  <span class="security-option-title">Historial de accesos</span>
+                  <span class="security-option-desc">Revisa la actividad de tu cuenta</span>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-outline-secondary" disabled>
+                Próximamente
+              </button>
+            </div>
+
+            <!-- Verificación de email -->
+            <div class="security-option-card">
+              <div class="security-option-content">
+                <div class="security-option-icon">
+                  <i class="bi bi-envelope-check-fill"></i>
+                </div>
+                <div class="security-option-info">
+                  <span class="security-option-title">Verificación de email</span>
+                  <span class="security-option-desc">Email verificado</span>
+                </div>
+              </div>
+              <span class="badge bg-success">Activo</span>
+            </div>
+          </div>
+
+          <!-- Info box -->
+          <div class="security-info-box mt-4">
+            <i class="bi bi-info-circle me-2"></i>
+            <span>Estas funciones estarán disponibles en futuras actualizaciones para mejorar la seguridad de tu cuenta.</span>
+          </div>
+        </section>
+        }
+
+    <!-- Sección: Historial de Compras -->
+    @if (seccionActiva() === 'historial') {
+    <section id="historial" class="content-section section-animated">
+      <!-- Header simple -->
+      <div class="section-header-title mb-4">
+        <h5>Historial de compras</h5>
+      </div>
+
+      <!-- Estadísticas mejoradas -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-3">
+          <div class="stat-card stat-success">
+            <div class="stat-icon">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Completados</span>
+              <span class="stat-value">{{ estadisticasPedidos().completados }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card stat-warning">
+            <div class="stat-icon">
+              <i class="bi bi-clock-fill"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Pendientes</span>
+              <span class="stat-value">{{ estadisticasPedidos().pendientes }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card stat-primary">
+            <div class="stat-icon">
+              <i class="bi bi-bag-fill"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total</span>
+              <span class="stat-value">{{ estadisticasPedidos().total }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card stat-info">
+            <div class="stat-icon">
+              <i class="bi bi-cash"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Gastado</span>
+              <span class="stat-value">{{ estadisticasPedidos().totalGastado | currency:'ARS':'symbol-narrow':'1.0-0' }}</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Tarjeta para Historial de Compras -->
-    <div class="col-12 mt-4">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="card-title mb-0"><i class="fas fa-shopping-bag me-2"></i>Historial de Compras</h5>
-          <a routerLink="/mis-pedidos" class="btn btn-outline-primary btn-sm">
-            <i class="fas fa-list me-1"></i>Ver Todo
-          </a>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-4">
-              <div class="text-center p-3 bg-light rounded">
-                <i class="fas fa-check-circle text-success" style="font-size: 2rem;"></i>
-                <h6 class="mt-2 mb-0">Compras Exitosas</h6>
-                <small class="text-muted">Ver pedidos completados</small>
+      <!-- Lista de Pedidos -->
+      <div class="pedidos-header mb-3 d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 text-muted">Tus pedidos recientes</h6>
+        <button 
+          class="btn btn-sm btn-outline-secondary"
+          (click)="cargarPedidos()">
+          <i class="bi bi-arrow-clockwise me-1"></i>
+          Actualizar
+        </button>
+      </div>
+
+      <div class="pedidos-lista">
+          <!-- Loading -->
+          @if (cargandoPedidos()) {
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
               </div>
+              <p class="text-muted mt-3">Cargando pedidos...</p>
             </div>
-            <div class="col-md-4">
-              <div class="text-center p-3 bg-light rounded">
-                <i class="fas fa-clock text-warning" style="font-size: 2rem;"></i>
-                <h6 class="mt-2 mb-0">Pagos Pendientes</h6>
-                <small class="text-muted">Verificar estado</small>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="text-center p-3 bg-light rounded">
-                <i class="fas fa-undo text-info" style="font-size: 2rem;"></i>
-                <h6 class="mt-2 mb-0">Reembolsos</h6>
-                <small class="text-muted">Gestionar devoluciones</small>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mt-4 text-center">
-            <p class="text-muted mb-3">
-              <i class="fas fa-info-circle me-2"></i>
-              Aquí puedes revisar el estado de todas tus compras y pagos
-            </p>
-            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-              <a routerLink="/mis-pedidos" class="btn btn-primary">
-                <i class="fas fa-history me-2"></i>Ver Historial Completo
-              </a>
-              <a routerLink="/productos" class="btn btn-outline-secondary">
-                <i class="fas fa-shopping-cart me-2"></i>Seguir Comprando
+          }
+
+          <!-- Sin pedidos -->
+          @if (!cargandoPedidos() && pedidos().length === 0) {
+            <div class="text-center py-5">
+              <i class="bi bi-bag-x display-3 text-muted"></i>
+              <h5 class="mt-3">No tienes pedidos</h5>
+              <p class="text-muted">Aún no has realizado ninguna compra</p>
+              <a routerLink="/tienda" class="btn btn-primary">
+                <i class="bi bi-shop me-1"></i>
+                Ir a la Tienda
               </a>
             </div>
+          }
+
+          <!-- Lista de pedidos -->
+          @if (!cargandoPedidos() && pedidos().length > 0) {
+            @for (pedido of pedidos(); track pedido.id) {
+              <div class="pedido-item-card mb-3">
+                <div class="pedido-item-header">
+                  <div class="pedido-number">
+                    <span class="fw-bold">Pedido #{{ pedido.numeroPedido }}</span>
+                    <span [class]="'pedido-estado ' + obtenerClaseEstadoML(pedido.estado)">{{ obtenerTextoEstado(pedido.estado) }}</span>
+                  </div>
+                  <div class="pedido-fecha">
+                    <small class="text-muted">{{ pedido.fechaCreacion | date:'dd/MM/yyyy' }}</small>
+                  </div>
+                </div>
+                <div class="pedido-item-body">
+                  <div class="pedido-details">
+                    <div class="pedido-detail-item">
+                      <span class="detail-label">Total:</span>
+                      <span class="detail-value text-success fw-bold">{{ pedido.total | currency:'ARS':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                    <div class="pedido-detail-item">
+                      <span class="detail-label">Productos:</span>
+                      <span class="detail-value">{{ pedido.items.length }} item(s)</span>
+                    </div>
+                    <div class="pedido-detail-item">
+                      <span class="detail-label">Pago:</span>
+                      <span class="detail-value">{{ pedido.pago.metodoPago }}</span>
+                    </div>
+                  </div>
+                  <div class="pedido-actions">
+                    <a routerLink="/mis-pedidos" class="btn btn-sm btn-outline-primary">
+                      Ver detalles
+                    </a>
+                  </div>
+                </div>
+              </div>
+            }
+            
+            <!-- Link para ver todo -->
+            @if (pedidos().length > 3) {
+              <div class="text-center mt-4">
+                <a routerLink="/mis-pedidos" class="btn btn-primary btn-sm">
+                  Ver todos los pedidos
+                </a>
+              </div>
+            }
+          }
+      </div>
+    </section>
+    }
+
+    </div>
+    } @else {
+      <div class="content-wrapper">
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
           </div>
+          <p class="text-muted mt-3">Cargando información del perfil...</p>
         </div>
       </div>
-    </div>
-
-  </div>
-  } @else {
-  <!-- Mensaje que se muestra mientras se cargan los datos del usuario -->
-  <p>Cargando información del perfil...</p>
-  }
+    }
+  </main>
 </div>

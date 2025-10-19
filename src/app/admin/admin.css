@@ -1,16 +1,65 @@
+/* Layout principal estilo Mercado Libre */
 .admin-layout {
-  display: grid;
-  grid-template-columns: 250px 1fr; /* Columna fija para el sidebar, el resto para el contenido */
-  min-height: calc(100vh - 70px);
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f5f5;
 }
 
+/* Sidebar lateral fijo */
+.admin-sidebar {
+  width: 260px;
+  background-color: #ffffff;
+  border-right: 1px solid #e5e5e5;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+/* Contenido principal */
 .admin-main-content {
-  padding: 2rem;
+  flex: 1;
+  background-color: #f5f5f5;
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+/* Scrollbar personalizado para el sidebar */
+.admin-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 /* --- Estilos Responsivos para Móviles --- */
+@media (max-width: 992px) {
+  .admin-sidebar {
+    width: 220px;
+  }
+}
+
 @media (max-width: 768px) {
   .admin-layout {
-    grid-template-columns: 1fr; /* Una sola columna en móviles */
+    flex-direction: column;
+  }
+  
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid #e5e5e5;
   }
 }

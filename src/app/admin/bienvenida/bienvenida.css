@@ -1,13 +1,146 @@
-.welcome-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%; /* Ocupa toda la altura del contenedor padre */
+/* Dashboard Container */
+.dashboard-container {
+  background-color: transparent;
+  min-height: 100vh;
   padding: 2rem;
 }
 
-.welcome-icon {
-  font-size: 4rem;
-  color: #3f51b5; /* Color primario de Material */
-  margin-bottom: 1.5rem;
+/* Ajuste para contenedores internos */
+.dashboard-container .container {
+  max-width: 100%;
+  padding: 0;
+}
+
+/* Welcome Section */
+.welcome-section h2 {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Stat Cards */
+.stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.stat-card .card-body {
+  padding: 1.5rem;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon i {
+  font-size: 1.5rem;
+}
+
+/* Quick Action Cards */
+.quick-action-card {
+  display: block;
+  transition: all 0.2s ease;
+}
+
+.quick-action-card .card {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.quick-action-card:hover .card {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #0d6efd !important;
+}
+
+.action-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.action-icon i {
+  font-size: 1.75rem;
+}
+
+.quick-action-card h6 {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Hover Shadow Effect */
+.hover-shadow {
+  transition: box-shadow 0.2s ease;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Cards */
+.card {
+  border-radius: 8px;
+}
+
+.card-header {
+  border-radius: 8px 8px 0 0;
+}
+
+/* Bootstrap Subtle Backgrounds */
+.bg-primary-subtle {
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+.bg-success-subtle {
+  background-color: rgba(25, 135, 84, 0.1);
+}
+
+.bg-info-subtle {
+  background-color: rgba(13, 202, 240, 0.1);
+}
+
+.bg-warning-subtle {
+  background-color: rgba(255, 193, 7, 0.1);
+}
+
+.bg-danger-subtle {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.bg-secondary-subtle {
+  background-color: rgba(108, 117, 125, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem !important;
+  }
+  
+  .stat-card .card-body {
+    padding: 1rem;
+  }
+  
+  .action-icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .action-icon i {
+    font-size: 1.5rem;
+  }
 }

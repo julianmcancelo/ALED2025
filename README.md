@@ -28,10 +28,12 @@ Desarrollamos un **sistema completo de e-commerce** desde cero, aplicando todo l
 - **Carrito de compras** con estado reactivo (Angular Signals)
 - **Sistema de tarjeta virtual** - Simulador de tarjeta de crédito integrado
 - **Integración real con Mercado Pago** (pagos en sandbox)
+- **Checkout dedicado** con selección de método de pago
 - **Autenticación personalizada** con bcrypt
 - **Panel de administración** completo (CRUD productos, usuarios)
-- **Gestión de perfiles** con datos de envío
-- **Diseño responsive** que funciona en móviles y desktop
+- **Perfil de usuario mejorado** con múltiples secciones
+- **Historial de compras** con diseño estilo Mercado Pago
+- **Diseño UI/UX moderno** inspirado en Mercado Libre
 - **Base de datos en tiempo real** con Firebase Firestore
 
 ---
@@ -65,13 +67,15 @@ Desarrollamos un **sistema completo de e-commerce** desde cero, aplicando todo l
 ## Funcionalidades Implementadas
 
 ### Para Usuarios
-- **Registro e inicio de sesión**
+- **Registro e inicio de sesión** con diseño moderno
 - **Navegación por catálogo de productos**
-- **Agregar/eliminar productos del carrito**
+- **Carrito inteligente** con sugerencias de compra para usuarios no autenticados
 - **Simulador de tarjeta virtual** con interfaz realista
-- **Proceso de pago completo** con Mercado Pago
-- **Selección de método de entrega** (envío o retiro)
-- **Gestión de perfil** y datos personales
+- **Proceso de pago completo** con Mercado Pago y tarjeta virtual
+- **Checkout dedicado** con selección de método de pago
+- **Perfil completo** con 5 secciones: Datos personales, Entrega, Tarjeta virtual, Seguridad e Historial
+- **Historial de compras** con estadísticas y diseño estilo ML
+- **Historial de transacciones** de tarjeta virtual
 
 ### Para Administradores
 - **CRUD completo de productos**
@@ -80,6 +84,28 @@ Desarrollamos un **sistema completo de e-commerce** desde cero, aplicando todo l
 - **Personalización de tarjetas** (logos, colores, tipos)
 - **Gestión de categorías**
 - **Configuración del sitio**
+
+---
+
+## Diseño UI/UX Moderno
+
+Implementamos un diseño inspirado en **Mercado Libre** y **Mercado Pago**, siguiendo las mejores prácticas de UX:
+
+### Características del Diseño
+- **Formularios limpios** - Header celeste + formulario blanco
+- **Cards minimalistas** - Bordes sutiles, iconos circulares, hover effects
+- **Estadísticas visuales** - Iconos de colores con información clara
+- **Estados de pedidos** - Badges con colores específicos por estado
+- **Layout responsive** - Grid adaptable a todos los dispositivos
+- **Animaciones suaves** - Transiciones CSS para mejor experiencia
+
+### Componentes Rediseñados
+- **Formulario de registro** - Estética Mercado Libre
+- **Historial de compras** - Cards con badges de estado
+- **Perfil de usuario** - Info-grid con iconos circulares
+- **Sección de seguridad** - Opciones con estado de desarrollo
+- **Historial de transacciones** - Lista con iconos de colores
+- **Carrito vacío** - Sugerencias según autenticación
 
 ---
 
@@ -203,10 +229,12 @@ Durante el desarrollo aplicamos:
 1. **Arquitectura moderna** - Separación frontend/backend
 2. **Programación reactiva** - RxJS y Signals
 3. **Integración de APIs** - Mercado Pago
-4. **Seguridad** - Hash, validación, Guards
-5. **Base de datos NoSQL** - Firestore en tiempo real
-6. **TypeScript** - Type safety y mejores prácticas
-7. **Trabajo en equipo** - Git y control de versiones
+4. **Diseño UI/UX** - Inspirado en líderes de la industria (ML/MP)
+5. **Seguridad** - Hash, validación, Guards
+6. **Base de datos NoSQL** - Firestore en tiempo real
+7. **TypeScript** - Type safety y mejores prácticas
+8. **Componentización** - Reutilización y modularidad
+9. **Trabajo en equipo** - Git y control de versiones
 
 ---
 

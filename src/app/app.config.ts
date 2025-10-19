@@ -36,7 +36,6 @@ import { GestionNovedadesComponent } from './admin/gestion-novedades/gestion-nov
 import { GestionProductos } from './admin/gestion-productos/gestion-productos'; // Nombre Correcto
 import { GestionPedidosComponent } from './admin/gestion-pedidos/gestion-pedidos.component';
 import { GestionCategoriasComponent } from './admin/gestion-categorias/gestion-categorias';
-import { PanelPruebasComponent } from './admin/panel-pruebas/panel-pruebas-simple';
 import { PerfilUsuarioComponent } from './perfil-usuario/perfil-usuario';
 import { authGuard } from './auth/auth.guard';
 import { PagoExitoso } from './pago-exitoso/pago-exitoso';
@@ -46,6 +45,7 @@ import { MisPedidosComponent } from './mis-pedidos/mis-pedidos.component';
 import { CategoriasComponent } from './categorias/categorias';
 import { OfertasComponent } from './ofertas/ofertas';
 import { Carrito } from './carrito/carrito';
+import { CheckoutComponent } from './checkout/checkout.component';
 
 // Configuración de la aplicación
 
@@ -165,6 +165,7 @@ export const appConfig: ApplicationConfig = {
       { path: 'productos/:id', component: DetalleProductoComponent },
       { path: 'producto/:id', component: DetalleProductoComponent },
       { path: 'carrito', component: Carrito },
+      { path: 'checkout', component: CheckoutComponent, canActivate: [authGuard] },
       { path: 'primer-usuario', component: PrimerUsuario },
       { path: 'perfil', component: PerfilUsuarioComponent, canActivate: [authGuard] },
       { path: 'pago-exitoso', component: PagoExitoso },

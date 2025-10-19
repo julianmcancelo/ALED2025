@@ -499,9 +499,9 @@ import { GestionProductosService, Producto } from '../../servicios/gestion-produ
                           <br>
                           <small class="text-muted">{{ (producto.descripcion || 'Sin descripción') | slice:0:50 }}...</small>
                           <br>
-                          <small class="text-info">
-                            <i class="bi bi-clock me-1"></i>
-                            {{ (producto.fechaCreacion || obtenerFechaActual()) | fechaRelativa }}
+                          <small class="text-success">
+                            <i class="bi bi-calendar-plus me-1"></i>
+                            Creado {{ (producto.fechaCreacion || obtenerFechaActual()) | fechaRelativa }}
                           </small>
                         </div>
                       </td>
@@ -985,12 +985,26 @@ export class GestionProductos implements OnInit {
     this.guardandoProducto.set(true);
 
     try {
-      const datosProducto = this.formularioProducto.value;
+      // Obtener datos del formulario y limpiar valores vacíos
+      const formValue = this.formularioProducto.value;
+      const datosProducto = {
+        nombre: formValue.nombre?.trim() || '',
+        descripcion: formValue.descripcion?.trim() || '',
+        precio: Number(formValue.precio) || 0,
+        categoria: formValue.categoria || '',
+        stock: Number(formValue.stock) || 0,
+        imagen: formValue.imagen?.trim() || '',
+        activo: formValue.activo === true,
+        esDestacado: formValue.esDestacado === true
+      };
+      
       const productoEditando = this.productoEditando();
 
       if (productoEditando && productoEditando.id) {
         // Actualizar producto existente
         console.log('🔄 Actualizando producto:', datosProducto.nombre);
+        console.log('🔄 ID del producto:', productoEditando.id);
+        console.log('🔄 Datos a enviar:', datosProducto);
         
         this.productosService.actualizarProducto(productoEditando.id, datosProducto).subscribe({
           next: () => {
@@ -1008,7 +1022,17 @@ export class GestionProductos implements OnInit {
           },
           error: (error) => {
             console.error('❌ Error actualizando producto:', error);
-            Swal.fire('Error', 'No se pudo actualizar el producto', 'error');
+            console.error('❌ Tipo de error:', typeof error);
+            console.error('❌ Error completo:', JSON.stringify(error, null, 2));
+            
+            const mensajeError = error?.message || 'No se pudo actualizar el producto. Verifica tu conexión e intenta nuevamente.';
+            
+            Swal.fire({
+              icon: 'error',
+              title: 'Error al actualizar',
+              text: mensajeError,
+              footer: 'Si el problema persiste, contacta al administrador del sistema'
+            });
           },
           complete: () => {
             this.guardandoProducto.set(false);

@@ -31,121 +31,71 @@ export interface HistorialTransaccionesDialogData {
   ],
   template: `
     <div class="historial-dialog">
+      <!-- Header simple -->
       <div mat-dialog-title class="dialog-header">
-        <div class="header-content">
-          <mat-icon class="header-icon">history</mat-icon>
-          <div class="header-text">
-            <h2>Historial de Transacciones</h2>
-            <p class="tarjeta-info">
-              Tarjeta: ****{{ data.tarjeta.numero.slice(-4) }} | 
-              Saldo: {{ data.tarjeta.saldo | currency:'ARS':'symbol':'1.2-2' }}
-            </p>
-          </div>
-        </div>
+        <h3 class="dialog-title">Historial de movimientos</h3>
         <button mat-icon-button mat-dialog-close class="close-button">
           <mat-icon>close</mat-icon>
         </button>
+      </div>
+
+      <!-- Info de tarjeta -->
+      <div class="tarjeta-info-box">
+        <div class="saldo-display">
+          <span class="saldo-label">Saldo disponible</span>
+          <span class="saldo-monto">{{ data.tarjeta.saldo | currency:'ARS':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <div class="tarjeta-numero">
+          <mat-icon class="card-icon">credit_card</mat-icon>
+          <span>****{{ data.tarjeta.numero.slice(-4) }}</span>
+        </div>
       </div>
 
       <div mat-dialog-content class="dialog-content">
         @if (cargando()) {
           <div class="loading-container">
             <mat-spinner diameter="40"></mat-spinner>
-            <p>Cargando transacciones...</p>
+            <p>Cargando movimientos...</p>
           </div>
         } @else if (error()) {
           <div class="error-container">
             <mat-icon class="error-icon">error</mat-icon>
             <p>{{ error() }}</p>
             <button mat-button color="primary" (click)="cargarTransacciones()">
-              <mat-icon>refresh</mat-icon>
               Reintentar
             </button>
           </div>
         } @else if (transacciones().length === 0) {
           <div class="empty-container">
             <mat-icon class="empty-icon">receipt_long</mat-icon>
-            <h3>Sin transacciones</h3>
-            <p>Aún no hay movimientos registrados en esta tarjeta.</p>
+            <h4>Sin movimientos</h4>
+            <p>Aún no hay transacciones registradas.</p>
           </div>
         } @else {
-          <div class="transacciones-container">
-            <div class="estadisticas">
-              <mat-card class="stat-card">
-                <mat-card-content>
-                  <div class="stat-content">
-                    <mat-icon class="stat-icon">receipt</mat-icon>
-                    <div>
-                      <div class="stat-number">{{ transacciones().length }}</div>
-                      <div class="stat-label">Transacciones</div>
-                    </div>
+          <!-- Lista de transacciones estilo ML -->
+          <div class="transacciones-lista">
+            @for (transaccion of transacciones(); track transaccion.id) {
+              <div class="transaccion-item">
+                <div class="transaccion-row">
+                  <!-- Icono -->
+                  <div class="transaccion-icono" [class]="getTipoClass(transaccion.tipo)">
+                    <mat-icon>{{ getTipoIcon(transaccion.tipo) }}</mat-icon>
                   </div>
-                </mat-card-content>
-              </mat-card>
-              
-              <mat-card class="stat-card">
-                <mat-card-content>
-                  <div class="stat-content">
-                    <mat-icon class="stat-icon ingresos">trending_up</mat-icon>
-                    <div>
-                      <div class="stat-number ingresos">{{ totalIngresos() | currency:'ARS':'symbol':'1.2-2' }}</div>
-                      <div class="stat-label">Ingresos</div>
-                    </div>
-                  </div>
-                </mat-card-content>
-              </mat-card>
-              
-              <mat-card class="stat-card">
-                <mat-card-content>
-                  <div class="stat-content">
-                    <mat-icon class="stat-icon egresos">trending_down</mat-icon>
-                    <div>
-                      <div class="stat-number egresos">{{ totalEgresos() | currency:'ARS':'symbol':'1.2-2' }}</div>
-                      <div class="stat-label">Egresos</div>
-                    </div>
-                  </div>
-                </mat-card-content>
-              </mat-card>
-            </div>
 
-            <div class="transacciones-lista">
-              @for (transaccion of transacciones(); track transaccion.id) {
-                <mat-card class="transaccion-card">
-                  <mat-card-content>
-                    <div class="transaccion-header">
-                      <div class="transaccion-info">
-                        <div class="transaccion-tipo">
-                          <mat-chip [class]="getTipoClass(transaccion.tipo)">
-                            <mat-icon>{{ getTipoIcon(transaccion.tipo) }}</mat-icon>
-                            {{ getTipoLabel(transaccion.tipo) }}
-                          </mat-chip>
-                        </div>
-                        <div class="transaccion-fecha">
-                          {{ transaccion.fecha | date:'dd/MM/yyyy HH:mm' }}
-                        </div>
-                      </div>
-                      <div class="transaccion-monto" [class]="getMontoClass(transaccion.monto)">
-                        {{ transaccion.monto > 0 ? '+' : '' }}{{ transaccion.monto | currency:'ARS':'symbol':'1.2-2' }}
-                      </div>
-                    </div>
-                    
-                    <div class="transaccion-descripcion">
-                      {{ transaccion.descripcion }}
-                    </div>
-                    
-                    <div class="transaccion-saldos">
-                      <span class="saldo-anterior">
-                        Saldo anterior: {{ transaccion.saldoAnterior | currency:'ARS':'symbol':'1.2-2' }}
-                      </span>
-                      <mat-icon class="arrow-icon">arrow_forward</mat-icon>
-                      <span class="saldo-nuevo">
-                        Saldo nuevo: {{ transaccion.saldoNuevo | currency:'ARS':'symbol':'1.2-2' }}
-                      </span>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
-              }
-            </div>
+                  <!-- Info -->
+                  <div class="transaccion-info">
+                    <div class="transaccion-tipo-label">{{ getTipoLabel(transaccion.tipo) }}</div>
+                    <div class="transaccion-descripcion">{{ transaccion.descripcion }}</div>
+                    <div class="transaccion-fecha">{{ transaccion.fecha | date:'dd/MM/yyyy HH:mm' }}</div>
+                  </div>
+
+                  <!-- Monto -->
+                  <div class="transaccion-monto" [class]="getMontoClass(transaccion.monto)">
+                    {{ transaccion.monto > 0 ? '+' : '' }}{{ transaccion.monto | currency:'ARS':'symbol-narrow':'1.0-0' }}
+                  </div>
+                </div>
+              </div>
+            }
           </div>
         }
       </div>
@@ -165,51 +115,80 @@ export interface HistorialTransaccionesDialogData {
   styles: [`
     .historial-dialog {
       width: 100%;
-      max-width: 800px;
+      max-width: 700px;
       max-height: 90vh;
+      background: #f5f5f5;
     }
 
+    /* Header */
     .dialog-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      padding: 24px 24px 0 24px;
+      align-items: center;
+      padding: 20px 24px;
       margin: 0;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
     }
 
-    .header-content {
+    .dialog-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .close-button {
+      color: #666;
+    }
+
+    /* Info de tarjeta */
+    .tarjeta-info-box {
+      background: white;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .saldo-display {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .saldo-label {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .saldo-monto {
+      font-size: 28px;
+      font-weight: 700;
+      color: #00a650;
+    }
+
+    .tarjeta-numero {
       display: flex;
       align-items: center;
-      gap: 16px;
-    }
-
-    .header-icon {
-      font-size: 32px;
-      width: 32px;
-      height: 32px;
-      color: #1976d2;
-    }
-
-    .header-text h2 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 500;
-    }
-
-    .tarjeta-info {
-      margin: 4px 0 0 0;
+      gap: 8px;
       color: #666;
       font-size: 14px;
     }
 
-    .close-button {
-      margin-top: -8px;
+    .card-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
     }
 
+    /* Content */
     .dialog-content {
       padding: 16px 24px;
-      max-height: 60vh;
+      max-height: 50vh;
       overflow-y: auto;
+      background: #f5f5f5;
     }
 
     .loading-container, .error-container, .empty-container {
@@ -219,145 +198,127 @@ export interface HistorialTransaccionesDialogData {
       justify-content: center;
       padding: 40px 20px;
       text-align: center;
+      background: white;
+      border-radius: 6px;
+      margin: 8px 0;
     }
 
     .error-icon, .empty-icon {
       font-size: 48px;
       width: 48px;
       height: 48px;
-      color: #666;
-      margin-bottom: 16px;
+      color: #999;
+      margin-bottom: 12px;
     }
 
     .error-icon {
-      color: #f44336;
+      color: #f04449;
     }
 
-    .estadisticas {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .stat-card {
-      background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
-    }
-
-    .stat-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .stat-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-      color: #1976d2;
-    }
-
-    .stat-icon.ingresos {
-      color: #4caf50;
-    }
-
-    .stat-icon.egresos {
-      color: #f44336;
-    }
-
-    .stat-number {
-      font-size: 18px;
-      font-weight: 600;
-      color: #333;
-    }
-
-    .stat-number.ingresos {
-      color: #4caf50;
-    }
-
-    .stat-number.egresos {
-      color: #f44336;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: #666;
-      text-transform: uppercase;
-    }
-
+    /* Lista de transacciones */
     .transacciones-lista {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
     }
 
-    .transaccion-card {
-      border-left: 4px solid #e0e0e0;
-      transition: all 0.2s ease;
+    .transaccion-item {
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      transition: box-shadow 0.2s;
     }
 
-    .transaccion-card:hover {
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      transform: translateY(-1px);
+    .transaccion-item:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
-    .transaccion-header {
+    .transaccion-row {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8px;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
     }
 
+    /* Icono de transacción */
+    .transaccion-icono {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .transaccion-icono mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+
+    .transaccion-icono.recarga {
+      background: #00a650;
+    }
+
+    .transaccion-icono.pago {
+      background: #3483fa;
+    }
+
+    .transaccion-icono.reembolso {
+      background: #9c27b0;
+    }
+
+    .transaccion-icono.descuento {
+      background: #f04449;
+    }
+
+    .transaccion-icono.bloqueo,
+    .transaccion-icono.desbloqueo {
+      background: #666;
+    }
+
+    /* Info de transacción */
     .transaccion-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .transaccion-tipo-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 2px;
+    }
+
+    .transaccion-descripcion {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .transaccion-fecha {
       font-size: 12px;
-      color: #666;
+      color: #999;
     }
 
+    /* Monto */
     .transaccion-monto {
       font-size: 18px;
-      font-weight: 600;
+      font-weight: 700;
+      white-space: nowrap;
     }
 
     .transaccion-monto.positivo {
-      color: #4caf50;
+      color: #00a650;
     }
 
     .transaccion-monto.negativo {
-      color: #f44336;
-    }
-
-    .transaccion-descripcion {
-      font-size: 14px;
       color: #333;
-      margin-bottom: 12px;
-      line-height: 1.4;
-    }
-
-    .transaccion-saldos {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: #666;
-      background: #f5f5f5;
-      padding: 8px 12px;
-      border-radius: 4px;
-    }
-
-    .arrow-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
-    }
-
-    .saldo-nuevo {
-      font-weight: 500;
     }
 
     .dialog-actions {
@@ -365,32 +326,8 @@ export interface HistorialTransaccionesDialogData {
       display: flex;
       gap: 12px;
       justify-content: flex-end;
-    }
-
-    /* Chips de tipo de transacción */
-    .mat-mdc-chip.recarga {
-      background-color: #e8f5e8;
-      color: #2e7d32;
-    }
-
-    .mat-mdc-chip.pago {
-      background-color: #fff3e0;
-      color: #f57c00;
-    }
-
-    .mat-mdc-chip.reembolso {
-      background-color: #e3f2fd;
-      color: #1976d2;
-    }
-
-    .mat-mdc-chip.descuento {
-      background-color: #ffebee;
-      color: #d32f2f;
-    }
-
-    .mat-mdc-chip.bloqueo, .mat-mdc-chip.desbloqueo {
-      background-color: #f3e5f5;
-      color: #7b1fa2;
+      background: white;
+      border-top: 1px solid #e0e0e0;
     }
 
     /* Responsive */
@@ -400,23 +337,55 @@ export interface HistorialTransaccionesDialogData {
         max-height: 100vh;
       }
 
-      .estadisticas {
-        grid-template-columns: 1fr;
+      .dialog-header {
+        padding: 16px;
       }
 
-      .transaccion-header {
+      .dialog-title {
+        font-size: 18px;
+      }
+
+      .tarjeta-info-box {
         flex-direction: column;
-        gap: 8px;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
       }
 
-      .transaccion-saldos {
-        flex-direction: column;
-        gap: 4px;
-        text-align: center;
+      .saldo-monto {
+        font-size: 24px;
       }
 
-      .arrow-icon {
-        transform: rotate(90deg);
+      .dialog-content {
+        padding: 12px 16px;
+      }
+
+      .transaccion-row {
+        padding: 12px;
+        gap: 12px;
+      }
+
+      .transaccion-icono {
+        width: 40px;
+        height: 40px;
+      }
+
+      .transaccion-icono mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      .transaccion-tipo-label {
+        font-size: 14px;
+      }
+
+      .transaccion-monto {
+        font-size: 16px;
+      }
+
+      .dialog-actions {
+        padding: 12px 16px;
       }
     }
   `]

@@ -1,23 +1,12 @@
-<div class="container mt-5">
-  <div class="card">
-    <div class="card-header">
-      <h1>Panel de Administración</h1>
-    </div>
-    <div class="card-body">
-      <!--
-  Contenedor principal del panel de administración.
-  Usamos 'd-flex' de Bootstrap para crear un layout flexible.
--->
-      <div class="admin-layout">
-        <app-sidebar></app-sidebar>
+<!-- Layout estilo Mercado Libre -->
+<div class="admin-layout">
+  <!-- Sidebar lateral fijo -->
+  <aside class="admin-sidebar">
+    <app-sidebar></app-sidebar>
+  </aside>
 
-        <main class="admin-main-content">
-          <router-outlet></router-outlet>
-        </main>
-      </div>
-      <p>
-        Esta es una vista protegida y solo los usuarios con el rol de 'admin' pueden acceder a ella.
-      </p>
-    </div>
-  </div>
+  <!-- Contenido principal -->
+  <main class="admin-main-content">
+    <router-outlet></router-outlet>
+  </main>
 </div>

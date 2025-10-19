@@ -1,0 +1,218 @@
+<div class="checkout-container">
+  <!-- Header -->
+  <div class="checkout-header">
+    <div class="container">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn-volver" (click)="volverAlCarrito()">
+            <i class="bi bi-arrow-left"></i>
+          </button>
+          <h1 class="checkout-title mb-0">
+            <i class="bi bi-bag-check me-2"></i>
+            Finalizar compra
+          </h1>
+        </div>
+        <div class="logo-checkout">
+          <i class="bi bi-gem me-2"></i>
+          {{ configuracion().titulo || 'ALED' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="checkout-body">
+    <div class="container">
+      <div class="row g-4">
+        
+        <!-- Columna izquierda: Datos y métodos de pago -->
+        <div class="col-lg-8">
+          
+          <!-- Resumen de productos -->
+          <div class="checkout-section">
+            <h5 class="section-title">
+              <i class="bi bi-cart3 me-2"></i>
+              Productos ({{ carritoService.items().length }})
+            </h5>
+            <div class="productos-list">
+              @for (item of carritoService.items(); track item.producto.id) {
+                <div class="producto-checkout-item">
+                  <div class="producto-imagen">
+                    @if (item.producto.imagen) {
+                      <img [src]="item.producto.imagen" [alt]="item.producto.nombre">
+                    } @else {
+                      <div class="placeholder-img">
+                        <i class="bi bi-box-seam"></i>
+                      </div>
+                    }
+                  </div>
+                  <div class="producto-info">
+                    <h6 class="producto-nombre">{{ item.producto.nombre }}</h6>
+                    <p class="producto-cantidad">Cantidad: {{ item.cantidad }}</p>
+                  </div>
+                  <div class="producto-precio">
+                    <span class="precio">${{ item.producto.precio * item.cantidad | number:'1.0-0' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Datos del comprador -->
+          @if (currentUser(); as user) {
+            <div class="checkout-section">
+              <h5 class="section-title">
+                <i class="bi bi-person me-2"></i>
+                Datos del comprador
+              </h5>
+              <div class="datos-comprador">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Nombre completo</label>
+                    <input type="text" class="form-control" [value]="user.nombre + ' ' + user.apellido" readonly>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" [value]="user.email" readonly>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Dirección</label>
+                    <input type="text" class="form-control" [value]="user.direccion || 'No especificado'" readonly>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Ciudad</label>
+                    <input type="text" class="form-control" [value]="user.ciudad || 'No especificado'" readonly>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Métodos de pago -->
+          <div class="checkout-section">
+            <h5 class="section-title">
+              <i class="bi bi-credit-card me-2"></i>
+              Método de pago
+            </h5>
+            <div class="metodos-pago-grid">
+              
+              <!-- Tarjeta Virtual -->
+              @if (tarjetaVirtual()) {
+                <div class="metodo-pago-card" 
+                     [class.selected]="metodoPagoSeleccionado() === 'tarjeta_virtual'"
+                     (click)="seleccionarMetodoPago('tarjeta_virtual')">
+                  <div class="metodo-header">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="bi bi-credit-card-2-front text-success fs-3"></i>
+                      <div>
+                        <h6 class="mb-0">Tarjeta Virtual</h6>
+                        <small class="text-muted">**** {{ tarjetaVirtual().numero.slice(-4) }}</small>
+                      </div>
+                    </div>
+                    <div class="form-check">
+                      <input 
+                        class="form-check-input" 
+                        type="radio" 
+                        name="metodoPago"
+                        [checked]="metodoPagoSeleccionado() === 'tarjeta_virtual'"
+                        (change)="seleccionarMetodoPago('tarjeta_virtual')">
+                    </div>
+                  </div>
+                  <div class="metodo-body">
+                    <p class="mb-1"><strong>Saldo disponible:</strong> ${{ tarjetaVirtual().saldo | number:'1.2-2' }}</p>
+                    <span class="badge" [class.bg-success]="tarjetaVirtual().estado === 'activa'" [class.bg-danger]="tarjetaVirtual().estado !== 'activa'">
+                      {{ tarjetaVirtual().estado | titlecase }}
+                    </span>
+                  </div>
+                </div>
+              }
+
+              <!-- Mercado Pago -->
+              <div class="metodo-pago-card"
+                   [class.selected]="metodoPagoSeleccionado() === 'mercadopago'"
+                   (click)="seleccionarMetodoPago('mercadopago')">
+                <div class="metodo-header">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-wallet2 text-primary fs-3"></i>
+                    <div>
+                      <h6 class="mb-0">Mercado Pago</h6>
+                      <small class="text-muted">Tarjetas, efectivo y más</small>
+                    </div>
+                  </div>
+                  <div class="form-check">
+                    <input 
+                      class="form-check-input" 
+                      type="radio" 
+                      name="metodoPago"
+                      [checked]="metodoPagoSeleccionado() === 'mercadopago'"
+                      (change)="seleccionarMetodoPago('mercadopago')">
+                  </div>
+                </div>
+                <div class="metodo-body">
+                  <p class="mb-0 text-muted small">Todas las tarjetas de crédito y débito</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna derecha: Resumen de compra -->
+        <div class="col-lg-4">
+          <div class="resumen-sticky">
+            <div class="checkout-section resumen-final">
+              <h5 class="section-title">
+                <i class="bi bi-receipt me-2"></i>
+                Resumen de compra
+              </h5>
+              
+              <div class="resumen-detalle">
+                <div class="resumen-item">
+                  <span>Productos ({{ carritoService.items().length }})</span>
+                  <span>${{ carritoService.totalPrecio() | number:'1.2-2' }}</span>
+                </div>
+                <div class="resumen-item">
+                  <span>Envío</span>
+                  <span [class.text-success]="tieneEnvioGratis()">
+                    {{ tieneEnvioGratis() ? 'Gratis' : ('$' + (costoEnvio() | number:'1.2-2')) }}
+                  </span>
+                </div>
+                
+                @if (tieneEnvioGratis()) {
+                  <div class="envio-gratis-badge">
+                    <i class="bi bi-truck me-2"></i>
+                    ¡Envío gratis!
+                  </div>
+                }
+
+                <hr>
+                
+                <div class="resumen-total">
+                  <span class="fw-bold">Total</span>
+                  <span class="precio-total">${{ totalFinal() | number:'1.0-0' }}</span>
+                </div>
+              </div>
+
+              <button 
+                class="btn btn-primary btn-lg w-100 mt-3"
+                (click)="confirmarCompra()"
+                [disabled]="procesandoPago() || !metodoPagoSeleccionado()">
+                @if (procesandoPago()) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Procesando...
+                } @else {
+                  <i class="bi bi-check-circle me-2"></i>
+                  Confirmar compra
+                }
+              </button>
+
+              <div class="seguridad-info mt-3">
+                <i class="bi bi-shield-check text-success me-2"></i>
+                <small class="text-muted">Compra 100% segura y protegida</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

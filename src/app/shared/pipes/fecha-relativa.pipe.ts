@@ -24,10 +24,10 @@ export class FechaRelativaPipe implements PipeTransform {
 
   /**
    * Transforma una fecha a formato relativo en español
-   * @param value - La fecha a transformar (Date, string o timestamp)
+   * @param value - La fecha a transformar (Date, string, timestamp o Firebase Timestamp)
    * @returns String con el tiempo relativo
    */
-  transform(value: Date | string | number | null | undefined): string {
+  transform(value: any): string {
     if (!value) {
       return 'Fecha no disponible';
     }
@@ -41,6 +41,17 @@ export class FechaRelativaPipe implements PipeTransform {
       fecha = new Date(value);
     } else if (typeof value === 'number') {
       fecha = new Date(value);
+    } else if (value && typeof value === 'object') {
+      // Manejar Firebase Timestamp
+      if (value.toDate && typeof value.toDate === 'function') {
+        // Es un Timestamp de Firebase
+        fecha = value.toDate();
+      } else if (value.seconds !== undefined) {
+        // Timestamp con propiedad seconds
+        fecha = new Date(value.seconds * 1000);
+      } else {
+        return 'Fecha inválida';
+      }
     } else {
       return 'Fecha inválida';
     }

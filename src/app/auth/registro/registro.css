@@ -1,108 +1,164 @@
-/* Header con el color azul */
-.bg-gradient {
-  background: linear-gradient(135deg, #0077b6 0%, #2c3e50 100%) !important;
-  padding: 2rem !important;
-}
-
-/* Modal styling */
-.modal-content {
-  border-radius: 12px !important;
-  overflow: hidden;
+/* Container principal */
+.registro-container {
+  width: 100%;
   max-width: 600px;
   margin: 0 auto;
+  background: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.12);
 }
 
-.modal-header {
-  padding-bottom: 1.5rem !important;
+/* Header celeste estilo ML */
+.header-yellow {
+  background: #3483fa;
+  padding: 32px 24px;
+  position: relative;
 }
 
-.modal-title {
-  font-size: 1.5rem;
-  letter-spacing: -0.5px;
+.header-content {
+  max-width: 100%;
+  position: relative;
 }
 
-/* Form controls mejorados */
+.header-title {
+  font-size: 24px;
+  font-weight: 400;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+  padding-right: 40px;
+}
+
+.btn-close-custom {
+  position: absolute;
+  top: -8px;
+  right: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #ffffff;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close-custom:hover {
+  opacity: 0.7;
+}
+
+.btn-close-custom mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+/* Form body */
+.form-body {
+  padding: 32px 24px;
+  background: white;
+}
+
+/* Labels estilo ML */
+.form-label {
+  font-weight: 400;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Inputs estilo ML */
 .form-control-lg {
-  border-radius: 8px;
-  border: 2px solid #e0e0e0;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  transition: all 0.2s ease;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 16px;
+  width: 100%;
+  transition: border-color 0.2s;
+  background: white;
 }
 
 .form-control-lg:focus {
-  border-color: #0077b6;
-  box-shadow: 0 0 0 0.2rem rgba(0, 119, 182, 0.15);
+  outline: none;
+  border-color: #3483fa;
+  box-shadow: none;
+}
+
+.form-control-lg::placeholder {
+  color: #999;
 }
 
 .form-control-lg.is-invalid {
-  border-color: #dc3545;
+  border-color: #f04449;
 }
 
 .form-control-lg.is-invalid:focus {
-  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
+  border-color: #f04449;
 }
 
-/* Labels */
-.form-label {
-  color: #495057;
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
-}
-
-/* Checkbox styling */
+/* Checkbox styling ML */
 .form-check-input {
-  width: 1.25rem;
-  height: 1.25rem;
-  margin-top: 0.125rem;
-  border: 2px solid #e0e0e0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  border: 1px solid #d9d9d9;
   cursor: pointer;
+  border-radius: 3px;
 }
 
 .form-check-input:checked {
-  background-color: #0077b6;
-  border-color: #0077b6;
+  background-color: #3483fa;
+  border-color: #3483fa;
 }
 
 .form-check-input:focus {
-  border-color: #0077b6;
-  box-shadow: 0 0 0 0.2rem rgba(0, 119, 182, 0.15);
+  border-color: #3483fa;
+  box-shadow: none;
 }
 
 .form-check-label {
-  margin-left: 0.5rem;
+  margin-left: 8px;
   cursor: pointer;
   user-select: none;
+  color: #666;
+  font-size: 14px;
 }
 
-/* Botones */
-.btn {
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+.form-check-label a {
+  text-decoration: none;
 }
 
-.btn-primary {
-  background: #0077b6;
+.form-check-label a:hover {
+  text-decoration: underline;
+}
+
+/* Botón submit estilo ML */
+.btn-submit {
+  width: 100%;
+  background: #3483fa;
+  color: white;
   border: none;
+  border-radius: 6px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: #005a8d;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.3) !important;
+.btn-submit:hover:not(:disabled) {
+  background: #2968c8;
 }
 
-.btn-outline-secondary {
-  border: 2px solid #6c757d;
+.btn-submit:disabled {
+  background: #bfbfbf;
+  cursor: not-allowed;
 }
 
-.btn-outline-secondary:hover:not(:disabled) {
-  background-color: #6c757d;
-  transform: translateY(-1px);
-}
-
-/* Material Icons alignment */
+/* Material Icons */
 mat-icon {
   vertical-align: middle;
   font-size: 18px;
@@ -110,18 +166,56 @@ mat-icon {
   height: 18px;
 }
 
-/* Feedback messages */
+/* Mensajes de error */
 .invalid-feedback {
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+  font-size: 12px;
+  color: #f04449;
+  margin-top: 4px;
+  display: block;
 }
 
-/* Close button */
-.btn-close-white {
-  filter: brightness(0) invert(1);
-  opacity: 0.8;
+/* Spinner */
+.spinner-border-sm {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
 }
 
-.btn-close-white:hover {
-  opacity: 1;
+/* Responsive */
+@media (max-width: 768px) {
+  .header-yellow {
+    padding: 24px 16px;
+  }
+
+  .header-title {
+    font-size: 20px;
+  }
+
+  .form-body {
+    padding: 24px 16px;
+  }
+
+  .form-control-lg {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .btn-submit {
+    padding: 12px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 576px) {
+  .header-yellow {
+    padding: 20px 12px;
+  }
+
+  .header-title {
+    font-size: 18px;
+  }
+
+  .form-body {
+    padding: 20px 12px;
+  }
 }

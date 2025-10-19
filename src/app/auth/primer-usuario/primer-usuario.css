@@ -1,26 +1,45 @@
+/* Container principal */
 .primer-usuario-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #efefef;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  flex-direction: column;
 }
 
-.primer-usuario-card {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  width: 100%;
+/* Header celeste estilo Mercado Libre */
+.header-yellow {
+  background: #3483fa;
+  padding: 40px 20px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.header-content {
   max-width: 600px;
-  animation: slideIn 0.6s ease-out;
+  margin: 0 auto;
 }
 
-@keyframes slideIn {
+.header-title {
+  font-size: 26px;
+  font-weight: 400;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Contenedor del formulario */
+.form-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 32px 20px;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -28,177 +47,178 @@
   }
 }
 
-.card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 2rem;
-  text-align: center;
-  border: none;
+/* Card del formulario */
+.form-card {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+  padding: 32px;
+  width: 100%;
+  max-width: 480px;
 }
 
-.card-header i {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  opacity: 0.9;
-}
-
-.card-header h2 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.8rem;
-  font-weight: 600;
-}
-
-.card-header p {
-  margin: 0;
-  opacity: 0.9;
-  font-size: 1rem;
-}
-
-.card-body {
-  padding: 2rem;
-}
-
-.alert {
-  border-radius: 12px;
-  border: none;
-  padding: 1rem;
-  margin-bottom: 2rem;
+/* Info box */
+.info-box {
+  background: #e6f7ff;
+  border-left: 4px solid #1890ff;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  border-radius: 4px;
   display: flex;
+  gap: 12px;
   align-items: flex-start;
-  gap: 0.75rem;
 }
 
-.alert-info {
-  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-  color: #1565c0;
+.info-box i {
+  color: #1890ff;
+  font-size: 20px;
+  margin-top: 2px;
 }
 
-.alert i {
-  font-size: 1.25rem;
-  margin-top: 0.1rem;
-  color: #667eea;
+.info-text {
+  flex: 1;
 }
 
-.alert strong {
+.info-text strong {
   display: block;
-  margin-bottom: 0.25rem;
-}
-
-.alert p {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-.form-label {
-  font-weight: 600;
   color: #333;
-  margin-bottom: 0.5rem;
+  font-size: 14px;
+  margin-bottom: 4px;
 }
 
+.info-text p {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Etiquetas de formulario */
+.form-label {
+  font-weight: 400;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Inputs estilo Mercado Libre */
 .form-control {
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  transition: all 0.3s ease;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 16px;
+  width: 100%;
+  transition: border-color 0.2s;
+  background: white;
 }
 
 .form-control:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-}
-
-.form-control.is-invalid {
-  border-color: #dc3545;
-}
-
-.form-control.is-invalid:focus {
-  border-color: #dc3545;
-  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-}
-
-.invalid-feedback {
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.form-text {
-  font-size: 0.875rem;
-  color: #6c757d;
-  margin-top: 0.25rem;
-}
-
-.btn {
-  border-radius: 12px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  border: none;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  transform: none;
+  outline: none;
+  border-color: #3483fa;
   box-shadow: none;
 }
 
+.form-control::placeholder {
+  color: #999;
+}
+
+.form-control.is-invalid {
+  border-color: #f04449;
+}
+
+.form-control.is-invalid:focus {
+  border-color: #f04449;
+}
+
+/* Mensajes de error */
+.invalid-feedback {
+  font-size: 12px;
+  color: #f04449;
+  margin-top: 4px;
+  display: block;
+}
+
+.form-text {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+  display: block;
+}
+
+/* Botón submit estilo Mercado Libre */
+.btn-submit {
+  width: 100%;
+  background: #3483fa;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #2968c8;
+}
+
+.btn-submit:disabled {
+  background: #bfbfbf;
+  cursor: not-allowed;
+}
+
 .spinner-border-sm {
-  width: 1rem;
-  height: 1rem;
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .primer-usuario-container {
-    padding: 10px;
+  .header-yellow {
+    padding: 32px 16px;
   }
-  
-  .primer-usuario-card {
-    max-width: 100%;
+
+  .header-title {
+    font-size: 22px;
   }
-  
-  .card-header {
-    padding: 1.5rem;
+
+  .form-container {
+    padding: 24px 16px;
   }
-  
-  .card-header h2 {
-    font-size: 1.5rem;
-  }
-  
-  .card-body {
-    padding: 1.5rem;
-  }
-  
-  .btn-primary {
-    min-width: 200px;
+
+  .form-card {
+    padding: 24px;
   }
 }
 
 @media (max-width: 576px) {
-  .card-header {
-    padding: 1rem;
+  .header-yellow {
+    padding: 24px 12px;
   }
-  
-  .card-header h2 {
-    font-size: 1.3rem;
+
+  .header-title {
+    font-size: 20px;
   }
-  
-  .card-body {
-    padding: 1rem;
+
+  .form-container {
+    padding: 16px 12px;
   }
-  
-  .btn-primary {
-    min-width: 100%;
+
+  .form-card {
+    padding: 20px;
+  }
+
+  .form-control {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .btn-submit {
+    padding: 12px;
+    font-size: 15px;
   }
 }

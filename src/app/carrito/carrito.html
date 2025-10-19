@@ -1,204 +1,254 @@
-<!-- Cabecera del Panel Lateral -->
-<div class="flex items-center justify-between p-4 border-b border-gray-200">
-  <h5 class="text-lg font-semibold text-gray-900 flex items-center">
-    <i class="bi bi-cart3 mr-2"></i>Carrito de Compras
-  </h5>
-  <button type="button" 
-          class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 rounded-md p-1" 
-          aria-label="Close" 
-          (click)="cerrar()">
-    <i class="bi bi-x-lg text-xl"></i>
-  </button>
+<!-- Cabecera estilo ML -->
+<div class="carrito-header">
+  <div class="d-flex align-items-center justify-content-between">
+    <h5 class="mb-0 fw-semibold">
+      <i class="bi bi-cart3 me-2"></i>Carrito
+    </h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="cerrar()"></button>
+  </div>
 </div>
 
-<!-- Cuerpo del Panel Lateral -->
-<div class="flex-1 overflow-hidden">
+<!-- Cuerpo del carrito -->
+<div class="carrito-body">
   @if (carritoService.items().length === 0) {
-  <!-- Mensaje de Carrito Vacío -->
-  <div class="flex flex-col items-center justify-center h-full text-gray-500 py-8">
-    <i class="bi bi-cart-x text-5xl mb-4"></i>
-    <p class="text-center mb-4">Tu carrito de compras está vacío.</p>
-    <!-- Botón de prueba temporal -->
-    <button 
-      class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors"
-      (click)="probarCarrito()">
-      🧪 Agregar Productos de Prueba
-    </button>
-  </div>
-  } @else {
-  <!-- Contenedor con scroll para la lista y el pie de página -->
-  <div class="flex flex-col h-full">
-    <!-- Lista de Productos (ocupa el espacio disponible) -->
-    <div class="flex-1 overflow-y-auto p-4">
-      <div class="space-y-4">
-        @for (item of carritoService.items(); track item.producto.id) {
-        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-          <div class="flex items-center space-x-3">
-            @if (item.producto.imagen) {
-              <img
-                [src]="item.producto.imagen"
-                [alt]="item.producto.nombre"
-                class="w-16 h-16 object-cover rounded-md"
-                (error)="onImageError($event)"
-              />
-            } @else {
-              <div class="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 rounded-md">
-                <i class="bi bi-box-seam text-2xl text-[#0077b6] opacity-40"></i>
-              </div>
-            }
-            <div>
-              <h6 class="font-medium text-gray-900">{{ item.producto.nombre }}</h6>
-              <p class="text-sm text-gray-500">
-                Cantidad: {{ item.cantidad }} × ${{ item.producto.precio }}
-              </p>
-            </div>
-          </div>
-          <div class="flex items-center space-x-3">
-            <span class="font-bold text-gray-900"> ${{ item.producto.precio * item.cantidad }} </span>
-            <button
-              class="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded-md p-1"
-              (click)="manejarEliminar(item.producto.id)"
-            >
-              <i class="bi bi-trash"></i>
-            </button>
-          </div>
-        </div>
-        }
-      </div>
-    </div>
-
-    <!-- 📦 BARRA DE PROGRESO ENVÍO GRATIS (Estilo Mercado Libre) -->
-    <div class="border-t border-gray-200 px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50">
-      @if (!tieneEnvioGratis()) {
-        <!-- Aún no alcanza el monto -->
-        <div class="space-y-2">
-          <div class="flex items-center justify-between text-sm">
-            <div class="flex items-center gap-2">
-              <i class="bi bi-truck text-green-600"></i>
-              <span class="font-medium text-gray-700">
-                ¡Te faltan <span class="text-green-600 font-bold">${{ cantidadFaltaEnvioGratis() }}</span> para envío gratis!
-              </span>
-            </div>
-            <span class="text-xs text-gray-500">{{ porcentajeEnvioGratis().toFixed(0) }}%</span>
-          </div>
-          <!-- Barra de progreso -->
-          <div class="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              class="absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500 ease-out"
-              [style.width.%]="porcentajeEnvioGratis()">
-              <!-- Animación de brillo -->
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-shimmer"></div>
-            </div>
-          </div>
+    <!-- Carrito vacío -->
+    <div class="carrito-empty">
+      <i class="bi bi-cart-x"></i>
+      <p class="mb-3">Tu carrito está vacío</p>
+      
+      @if (!estaAutenticado()) {
+        <!-- Usuario no autenticado -->
+        <div class="d-flex flex-column gap-2" style="max-width: 160px;">
+          <button class="btn btn-primary btn-sm" style="font-size: 12px; padding: 6px 10px;" (click)="abrirLogin()">
+            <i class="bi bi-box-arrow-in-right me-1" style="font-size: 14px;"></i>
+            Iniciar sesión
+          </button>
+          <button class="btn btn-outline-primary btn-sm" style="font-size: 12px; padding: 6px 10px;" (click)="abrirRegistro()">
+            <i class="bi bi-person-plus me-1" style="font-size: 14px;"></i>
+            Crear cuenta
+          </button>
         </div>
       } @else {
-        <!-- Ya alcanzó el monto! -->
-        <div class="flex items-center justify-center gap-2 text-green-600 animate-bounce-slow">
-          <i class="bi bi-check-circle-fill text-xl"></i>
-          <span class="font-bold">¡Conseguiste envío gratis! 🎉</span>
+        <!-- Usuario autenticado -->
+        <button class="btn btn-primary btn-sm" style="font-size: 12px; padding: 6px 12px;" (click)="empezarAComprar()">
+          <i class="bi bi-shop me-1" style="font-size: 14px;"></i>
+          Empezar a comprar
+        </button>
+      }
+    </div>
+  } @else {
+    <!-- Lista de productos con checkboxes -->
+    <div class="carrito-lista">
+      <!-- Header con checkbox "Todos" -->
+      <div class="carrito-header-checkbox">
+        <div class="form-check">
+          <input 
+            class="form-check-input" 
+            type="checkbox" 
+            [checked]="todosSeleccionados()"
+            (change)="toggleTodos($event)"
+            id="checkTodos">
+          <label class="form-check-label" for="checkTodos">
+            Todos los productos
+          </label>
+        </div>
+      </div>
+
+      <!-- Items del carrito -->
+      @for (item of carritoService.items(); track item.producto.id) {
+        <div class="carrito-item" [class.seleccionado]="item.seleccionado">
+          <!-- Checkbox -->
+          <div class="item-checkbox">
+            <input 
+              class="form-check-input" 
+              type="checkbox" 
+              [(ngModel)]="item.seleccionado"
+              [id]="'check-' + item.producto.id">
+          </div>
+
+          <!-- Imagen -->
+          <div class="item-imagen">
+            @if (item.producto.imagen) {
+              <img [src]="item.producto.imagen" [alt]="item.producto.nombre">
+            } @else {
+              <div class="placeholder-img">
+                <i class="bi bi-box-seam"></i>
+              </div>
+            }
+          </div>
+
+          <!-- Info del producto -->
+          <div class="item-info">
+            <h6 class="item-nombre">{{ item.producto.nombre }}</h6>
+            
+            <!-- Controles de cantidad -->
+            <div class="cantidad-control">
+              <button 
+                class="btn-cantidad"
+                (click)="disminuirCantidad(item)"
+                [disabled]="item.cantidad <= 1">
+                <i class="bi bi-dash"></i>
+              </button>
+              <input 
+                type="number" 
+                class="cantidad-input"
+                [(ngModel)]="item.cantidad"
+                min="1"
+                max="99">
+              <button 
+                class="btn-cantidad"
+                (click)="aumentarCantidad(item)">
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+
+            <!-- Precio -->
+            <div class="item-precio">
+              <span class="precio-actual">${{ item.producto.precio * item.cantidad | number:'1.0-0' }}</span>
+              @if (item.producto.precioAnterior) {
+                <span class="precio-anterior">${{ item.producto.precioAnterior * item.cantidad | number:'1.0-0' }}</span>
+                <span class="descuento-badge">-{{ calcularDescuento(item.producto.precio, item.producto.precioAnterior) }}%</span>
+              }
+            </div>
+
+            <!-- Botón eliminar -->
+            <button class="btn-eliminar" (click)="manejarEliminar(item.producto.id)">
+              Eliminar
+            </button>
+
+            <!-- Info de disponibilidad -->
+            <div class="item-disponibilidad">
+              <small class="text-success">
+                <i class="bi bi-check-circle me-1"></i>
+                5 disponibles
+              </small>
+            </div>
+          </div>
         </div>
       }
     </div>
 
-    <!-- Pie de página (siempre abajo) -->
-    <div class="border-t border-gray-200 p-4 bg-white">
-      <!-- Resumen Total -->
-      <div class="flex justify-between items-center mb-4">
-        <span class="text-gray-600">Total:</span>
-        <span class="text-xl font-bold text-blue-600"> ${{ carritoService.totalPrecio() }} </span>
+    <!-- Sección de Envío -->
+    <div class="carrito-envio">
+      <h6 class="envio-titulo">Envío</h6>
+      @if (!tieneEnvioGratis()) {
+        <div class="envio-progreso">
+          <p class="envio-texto">
+            Agrega <strong>${{ cantidadFaltaEnvioGratis() | number:'1.2-2' }}</strong> para tener envío gratis en productos de <strong>{{ configuracion().titulo || 'nuestra tienda' }}</strong>.
+            <a href="#" class="text-primary">Ver productos</a>
+          </p>
+          <div class="progress-bar-container">
+            <div class="progress" style="height: 6px;">
+              <div 
+                class="progress-bar bg-success"
+                role="progressbar"
+                [style.width.%]="porcentajeEnvioGratis()"
+                [attr.aria-valuenow]="porcentajeEnvioGratis()"
+                aria-valuemin="0"
+                aria-valuemax="100">
+              </div>
+            </div>
+          </div>
+          <small class="text-muted">Envío gratis</small>
+        </div>
+      } @else {
+        <div class="envio-gratis">
+          <i class="bi bi-truck text-success"></i>
+          <span class="text-success fw-bold">¡Envío gratis!</span>
+        </div>
+      }
+    </div>
+
+    <!-- Resumen de compra -->
+    <div class="carrito-resumen">
+      <h6 class="resumen-titulo">Resumen de compra</h6>
+      
+      <div class="resumen-item">
+        <span>Productos ({{ carritoService.items().length }})</span>
+        <span>${{ carritoService.totalPrecio() | number:'1.2-2' }}</span>
       </div>
-      <!-- Botones de Acción -->
-      <div class="space-y-3">
+      
+      <div class="resumen-item">
+        <span>Envíos ({{ cantidadEnvios() }})</span>
+        <span>{{ tieneEnvioGratis() ? 'Gratis' : (costoEnvio() | currency:'ARS':'symbol-narrow':'1.0-0') }}</span>
+      </div>
+
+      <div class="resumen-total">
+        <span class="fw-bold">Total</span>
+        <span class="total-precio">${{ carritoService.totalPrecio() + (tieneEnvioGratis() ? 0 : costoEnvio()) | number:'1.0-0' }}<sup>85</sup></span>
+      </div>
+
+      <div class="d-grid gap-2">
         @if (!mostrandoMetodosPago()) {
-          <!-- Botón principal de pago -->
-          <button class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center justify-center" 
-                  (click)="mostrarOpcionesPago()">
-            <i class="bi bi-credit-card-fill mr-2"></i>
-            Proceder al Pago
+          <button class="btn btn-primary btn-lg w-100" (click)="irACheckout()">
+            Continuar compra
           </button>
-          <button class="w-full bg-white text-red-600 py-3 px-4 rounded-md border border-red-300 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors flex items-center justify-center" 
-                  (click)="manejarVaciar()">
-            <i class="bi bi-trash3-fill mr-2"></i>
-            Vaciar Carrito
+          <button class="btn btn-outline-danger btn-sm w-100" (click)="manejarVaciar()">
+            <i class="bi bi-trash me-1"></i>
+            Vaciar carrito
           </button>
         } @else {
-          <!-- Opciones de método de pago -->
-          <div class="space-y-3">
-            <h6 class="text-sm font-semibold text-gray-700 mb-3">Selecciona tu método de pago:</h6>
+          <div class="metodos-pago">
+            <h6 class="mb-3">Método de pago</h6>
             
-            <!-- Pago con Tarjeta Virtual -->
             @if (tarjetaVirtual()) {
-              <div class="border border-green-200 rounded-lg p-3 bg-green-50">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="flex items-center">
-                    <i class="bi bi-credit-card text-green-600 mr-2"></i>
-                    <span class="text-sm font-medium text-green-800">Tarjeta Virtual</span>
+              <div class="metodo-pago-card activa">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div>
+                    <i class="bi bi-credit-card text-success me-2"></i>
+                    <strong>Tarjeta Virtual</strong>
                   </div>
-                  <span class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">{{ tarjetaVirtual().estado | titlecase }}</span>
+                  <span class="badge bg-success">{{ tarjetaVirtual().estado | titlecase }}</span>
                 </div>
-                <div class="text-xs text-green-700 mb-3">
-                  <div>**** **** **** {{ tarjetaVirtual().numero.slice(-4) }}</div>
-                  <div>Saldo: ${{ tarjetaVirtual().saldo.toLocaleString('es-AR') }}</div>
-                </div>
+                <p class="small mb-2">
+                  **** **** **** {{ tarjetaVirtual().numero.slice(-4) }}<br>
+                  Saldo: ${{ tarjetaVirtual().saldo | number:'1.2-2' }}
+                </p>
                 <button 
-                  class="w-full bg-green-600 text-white py-2 px-3 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm"
+                  class="btn btn-success w-100"
                   (click)="pagarConTarjetaVirtual()"
                   [disabled]="cargandoTarjetaVirtual() || tarjetaVirtual().estado !== 'activa' || tarjetaVirtual().saldo < carritoService.totalPrecio()">
                   @if (cargandoTarjetaVirtual()) {
-                    <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
-                    <span>Procesando...</span>
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Procesando...
                   } @else {
-                    <i class="bi bi-check-circle mr-2"></i>
                     Pagar con Tarjeta Virtual
                   }
                 </button>
                 @if (tarjetaVirtual().saldo < carritoService.totalPrecio()) {
-                  <p class="text-xs text-red-600 mt-1">Saldo insuficiente</p>
+                  <small class="text-danger d-block mt-1">Saldo insuficiente</small>
                 }
-              </div>
-            } @else {
-              <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                <div class="flex items-center text-gray-500">
-                  <i class="bi bi-credit-card mr-2"></i>
-                  <span class="text-sm">Tarjeta Virtual no disponible</span>
-                </div>
               </div>
             }
 
-            <!-- Pago con Mercado Pago -->
-            <div class="border border-blue-200 rounded-lg p-3 bg-blue-50">
-              <div class="flex items-center mb-2">
-                <i class="bi bi-credit-card-fill text-blue-600 mr-2"></i>
-                <span class="text-sm font-medium text-blue-800">Mercado Pago</span>
+            <div class="metodo-pago-card">
+              <div class="mb-2">
+                <i class="bi bi-credit-card-fill text-primary me-2"></i>
+                <strong>Mercado Pago</strong>
               </div>
-              <div class="text-xs text-blue-700 mb-3">
-                Paga con tarjeta de crédito, débito o efectivo
-              </div>
+              <p class="small mb-3 text-muted">
+                Tarjeta de crédito, débito o efectivo
+              </p>
               <button 
-                class="w-full bg-blue-600 text-white py-2 px-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm"
+                class="btn btn-primary w-100"
                 (click)="pagarConMercadoPago()"
                 [disabled]="cargandoMP()">
                 @if (cargandoMP()) {
-                  <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
-                  <span>Procesando...</span>
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Procesando...
                 } @else {
-                  <i class="bi bi-arrow-right-circle mr-2"></i>
                   Pagar con Mercado Pago
                 }
               </button>
             </div>
 
-            <!-- Botón cancelar -->
-            <button 
-              class="w-full bg-gray-100 text-gray-600 py-2 px-3 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors flex items-center justify-center text-sm"
-              (click)="cancelarPago()">
-              <i class="bi bi-arrow-left mr-2"></i>
+            <button class="btn btn-outline-secondary w-100" (click)="cancelarPago()">
+              <i class="bi bi-arrow-left me-1"></i>
               Volver
             </button>
           </div>
         }
       </div>
     </div>
-  </div>
   }
 </div>

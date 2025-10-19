@@ -34,6 +34,7 @@ export interface Producto {
   nombre: string;     // Nombre del producto
   precio: number;     // Precio en pesos argentinos
   imagen?: string;    // URL de la imagen (opcional)
+  precioAnterior?: number; // Precio anterior para mostrar descuentos (opcional)
 }
 
 /**
@@ -46,6 +47,7 @@ export interface Producto {
 export interface ElementoCarrito {
   producto: Producto;  // El producto completo
   cantidad: number;    // Cuántas unidades quiere el usuario
+  seleccionado?: boolean; // Si el item está seleccionado (para checkboxes)
 }
 
 /**
@@ -111,21 +113,24 @@ export class CarritoService {
     const productosPrueba: Producto[] = [
       {
         id: 'test-1',
-        nombre: 'Mate de Calabaza Premium',
-        precio: 15000,
-        imagen: 'https://via.placeholder.com/150x150/0077b6/ffffff?text=Mate'
+        nombre: 'Soporte Celular Auto Espejo Para Samsung Moto',
+        precio: 6025,
+        precioAnterior: 12549,
+        imagen: 'https://via.placeholder.com/150x150/0077b6/ffffff?text=Soporte'
       },
       {
         id: 'test-2', 
-        nombre: 'Bombilla de Alpaca',
-        precio: 8500,
-        imagen: 'https://via.placeholder.com/150x150/28a745/ffffff?text=Bombilla'
+        nombre: 'Soporte Celular Auto Cam Espejo Retrovisor Hol',
+        precio: 6649,
+        precioAnterior: 8999,
+        imagen: 'https://via.placeholder.com/150x150/28a745/ffffff?text=Soporte+2'
       },
       {
         id: 'test-3',
-        nombre: 'Yerba Mate Orgánica 1kg',
-        precio: 3200,
-        imagen: 'https://via.placeholder.com/150x150/dc3545/ffffff?text=Yerba'
+        nombre: 'Cable USB-C Premium 2 metros',
+        precio: 2500,
+        precioAnterior: 4000,
+        imagen: 'https://via.placeholder.com/150x150/dc3545/ffffff?text=Cable'
       }
     ];
     
@@ -223,8 +228,8 @@ export class CarritoService {
       // Lo agregamos como nuevo elemento con cantidad 1
       
       this.items.update((items) => [
-        ...items,                          // Items existentes
-        { producto, cantidad: 1 }          // Nuevo item
+        ...items,                                    // Items existentes
+        { producto, cantidad: 1, seleccionado: true }  // Nuevo item (seleccionado por defecto)
       ]);
     }
     

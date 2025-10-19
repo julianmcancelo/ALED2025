@@ -542,18 +542,32 @@ export class GestionProductosService {
       switchMap(() => {
         return runInInjectionContext(this.injector, () => {
           const productoRef = doc(this.firestore, 'productos', id);
+          
+          // Crear una copia limpia de los datos sin el campo 'id' ni campos de fecha existentes
+          const { id: _, fechaCreacion, ...datosSinId } = datosActualizacion;
+          
           const datosConFecha = {
-            ...datosActualizacion,
+            ...datosSinId,
             fechaActualizacion: new Date(),
           };
           
+          console.log('🔄 Actualizando producto con ID:', id);
+          console.log('📦 Datos a actualizar:', datosConFecha);
+          
           return from(updateDoc(productoRef, datosConFecha)).pipe(
-            map(() => {})
+            map(() => {
+              console.log('✅ Producto actualizado exitosamente');
+            })
           );
         });
       }),
       catchError((error: any) => {
         console.error('❌ Error al actualizar producto:', error);
+        console.error('❌ Detalles del error:', {
+          code: error?.code,
+          message: error?.message,
+          id: id
+        });
         throw error;
       })
     );

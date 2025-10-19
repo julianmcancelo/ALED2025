@@ -90,13 +90,27 @@ export class Registro implements OnInit {
     this.registrationError = null;
     const { dni, email } = this.registerForm.value;
 
-    const esUnico = await this.userService.verificarUsuarioUnico(dni, email);
-    if (!esUnico) {
+    // Verificar si el email ya existe
+    const emailExiste = await this.userService.verificarEmailExiste(email);
+    if (emailExiste) {
       this.isLoading = false;
       await Swal.fire({
         icon: 'error',
-        title: 'Usuario ya existe',
-        text: 'El DNI o el correo electrónico ya están registrados.',
+        title: 'Correo electrónico en uso',
+        text: 'Ya existe una cuenta registrada con este correo electrónico. Por favor, utiliza otro correo o inicia sesión.',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
+
+    // Verificar si el DNI ya existe
+    const dniExiste = await this.userService.verificarDniExiste(dni);
+    if (dniExiste) {
+      this.isLoading = false;
+      await Swal.fire({
+        icon: 'error',
+        title: 'DNI ya registrado',
+        text: 'Ya existe una cuenta registrada con este DNI.',
         confirmButtonText: 'Entendido'
       });
       return;

@@ -206,6 +206,34 @@ export class UserService {
   }
 
   /**
+   * Verifica si un correo electrónico ya existe en la base de datos.
+   * @param email - El correo electrónico a verificar.
+   * @returns Una promesa que se resuelve a 'true' si el email ya existe, 'false' si es único.
+   */
+  async verificarEmailExiste(email: string): Promise<boolean> {
+    return runInInjectionContext(this.injector, async () => {
+      const userCollectionRef = collection(this.firestore, 'users');
+      const qEmail = query(userCollectionRef, where('email', '==', email));
+      const emailSnapshot = await getDocs(qEmail);
+      return !emailSnapshot.empty; // Retorna true si el email ya existe
+    });
+  }
+
+  /**
+   * Verifica si un DNI ya existe en la base de datos.
+   * @param dni - El DNI a verificar.
+   * @returns Una promesa que se resuelve a 'true' si el DNI ya existe, 'false' si es único.
+   */
+  async verificarDniExiste(dni: string): Promise<boolean> {
+    return runInInjectionContext(this.injector, async () => {
+      const userCollectionRef = collection(this.firestore, 'users');
+      const qDni = query(userCollectionRef, where('dni', '==', dni));
+      const dniSnapshot = await getDocs(qDni);
+      return !dniSnapshot.empty; // Retorna true si el DNI ya existe
+    });
+  }
+
+  /**
    * Método de prueba para verificar la conexión con Firestore
    * Intenta listar todas las colecciones disponibles
    */

@@ -55,10 +55,6 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'tarjetas-virtuales',
         loadComponent: () => import('../../admin/gestion-tarjetas-virtuales').then(m => m.GestionTarjetasVirtualesComponent)
-      },
-      {
-        path: 'pruebas',
-        loadComponent: () => import('../../admin/panel-pruebas/panel-pruebas-simple').then(m => m.PanelPruebasComponent)
       }
     ]
   }

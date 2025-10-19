@@ -29,7 +29,7 @@ export const MERCADOPAGO_CONFIG = {
   SETTINGS: {
     // ⚠️ IMPORTANTE: Cambiar a false para PAGOS REALES
     // true = Sandbox (pruebas) | false = Producción (pagos reales)
-    USE_SANDBOX: false,  // 🚀 MODO PRODUCCIÓN - PAGOS REALES ACTIVADOS
+    USE_SANDBOX: true,  // 🧪 MODO SANDBOX - AMBIENTE DE PRUEBAS ACTIVADO
     
     // URLs de retorno
     RETURN_URLS: {

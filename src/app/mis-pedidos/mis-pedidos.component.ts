@@ -8,6 +8,7 @@ import Swal from 'sweetalert2'; // Librería para alertas elegantes y modernas
 // Importaciones de servicios del proyecto
 import { AuthService } from '../auth/auth';
 import { PedidosService } from '../servicios/pedidos.service';
+import { ConfiguracionService } from '../servicios/configuracion';
 
 // Importaciones de modelos
 import { Pedido, EstadoPedido } from '../shared/models/pedido.model';
@@ -48,253 +49,246 @@ import { Pedido, EstadoPedido } from '../shared/models/pedido.model';
     FormsModule              // Para formularios template-driven y ngModel
   ],
   template: `
-    <div class="container mt-4">
-      <!-- Header del componente -->
-      <div class="row mb-4">
-        <div class="col-12">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h2 class="mb-1">
-                <i class="bi bi-bag-check me-2"></i>
-                Mis Pedidos
-              </h2>
-              <p class="text-muted mb-0">
-                Historial completo de tus compras
-              </p>
-            </div>
-            <div>
-              <button 
-                class="btn btn-outline-primary"
-                (click)="cargarPedidos()">
-                <i class="bi bi-arrow-clockwise me-1"></i>
-                Actualizar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Estadísticas de pedidos -->
-      <div class="row mb-4">
-        <div class="col-md-3">
-          <div class="card bg-success text-white">
-            <div class="card-body">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <h6 class="card-title">Completados</h6>
-                  <h3 class="mb-0">{{ estadisticas().completados }}</h3>
-                </div>
-                <div class="align-self-center">
-                  <i class="bi bi-check-circle fs-1"></i>
-                </div>
+    <div class="container-fluid" style="background-color: #f5f5f5; min-height: 100vh; padding: 20px 0;">
+      <div class="container">
+        <!-- Header del componente -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h3 class="mb-0 fw-bold">
+                  Mis compras
+                </h3>
+              </div>
+              <div>
+                <button 
+                  class="btn btn-sm btn-outline-secondary"
+                  (click)="cargarPedidos()">
+                  <i class="bi bi-arrow-clockwise me-1"></i>
+                  Actualizar
+                </button>
               </div>
             </div>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card bg-warning text-dark">
-            <div class="card-body">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <h6 class="card-title">Pendientes</h6>
-                  <h3 class="mb-0">{{ estadisticas().pendientes }}</h3>
-                </div>
-                <div class="align-self-center">
-                  <i class="bi bi-clock fs-1"></i>
-                </div>
+
+        <!-- Filtros -->
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <select 
+              class="form-select"
+              [(ngModel)]="filtroEstado"
+              (ngModelChange)="aplicarFiltros()">
+              <option value="todos">Todos</option>
+              <option value="entregado">Entregados</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="rechazado">Rechazados</option>
+              <option value="cancelado">Cancelados</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Sin pedidos -->
+        <div *ngIf="pedidosFiltrados().length === 0" class="text-center py-5">
+          <div class="card shadow-sm">
+            <div class="card-body py-5">
+              <i class="bi bi-bag-x display-1 text-muted"></i>
+              <h4 class="mt-3">No tienes compras</h4>
+              <p class="text-muted">Aún no has realizado ninguna compra.</p>
+              <div class="d-flex gap-2 justify-content-center">
+                <button class="btn btn-primary" (click)="irATienda()">
+                  <i class="bi bi-shop me-1"></i>
+                  Ir a la Tienda
+                </button>
+                <button class="btn btn-outline-secondary" (click)="generarDatosDemo()">
+                  <i class="bi bi-gear me-1"></i>
+                  Datos Demo
+                </button>
               </div>
             </div>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card bg-primary text-white">
-            <div class="card-body">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <h6 class="card-title">Total Pedidos</h6>
-                  <h3 class="mb-0">{{ estadisticas().total }}</h3>
-                </div>
-                <div class="align-self-center">
-                  <i class="bi bi-bag fs-1"></i>
-                </div>
-              </div>
+
+        <!-- Lista de pedidos -->
+        <div *ngIf="pedidosFiltrados().length > 0">
+          <!-- Agrupar por fecha -->
+          <ng-container *ngFor="let grupo of pedidosAgrupadosPorFecha()">
+            <!-- Fecha separadora -->
+            <div class="fecha-separador mb-3">
+              <small class="text-muted">{{ grupo.fecha }}</small>
             </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card bg-info text-white">
-            <div class="card-body">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <h6 class="card-title">Total Gastado</h6>
-                  <h3 class="mb-0">{{ estadisticas().totalGastado | currency:'ARS':'symbol':'1.0-0' }}</h3>
-                </div>
-                <div class="align-self-center">
-                  <i class="bi bi-cash fs-1"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Filtros -->
-      <div class="row mb-4">
-        <div class="col-md-6">
-          <label class="form-label">Filtrar por estado:</label>
-          <select 
-            class="form-select"
-            [(ngModel)]="filtroEstado"
-            (ngModelChange)="aplicarFiltros()">
-            <option value="todos">Todos los estados</option>
-            <option value="completado">Completados</option>
-            <option value="pendiente">Pendientes</option>
-            <option value="rechazado">Rechazados</option>
-            <option value="reembolsado">Reembolsados</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Lista de pedidos -->
-      <div class="row">
-        <div class="col-12">
-          <!-- Sin pedidos -->
-          <div *ngIf="pedidosFiltrados().length === 0" class="text-center py-5">
-            <i class="bi bi-bag-x display-1 text-muted"></i>
-            <h4 class="mt-3">No tienes pedidos</h4>
-            <p class="text-muted">
-              Aún no has realizado ninguna compra.
-            </p>
-            <div class="d-flex gap-2 justify-content-center">
-              <button 
-                class="btn btn-primary"
-                (click)="irATienda()">
-                <i class="bi bi-shop me-1"></i>
-                Ir a la Tienda
-              </button>
-              <button 
-                class="btn btn-outline-secondary"
-                (click)="generarDatosDemo()"
-                title="Generar pedidos de demostración para probar la funcionalidad">
-                <i class="bi bi-gear me-1"></i>
-                Datos Demo
-              </button>
-            </div>
-          </div>
-
-          <!-- Tarjetas de pedidos -->
-          <div *ngIf="pedidosFiltrados().length > 0" class="row">
-            <div class="col-md-6 mb-4" *ngFor="let pedido of pedidosFiltrados()">
-              <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 class="mb-0">Pedido #{{ pedido.numeroPedido }}</h6>
-                    <small class="text-muted">{{ pedido.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</small>
-                  </div>
-                  <span [class]="'badge ' + obtenerClaseEstado(pedido.estado)">
-                    {{ obtenerTextoEstado(pedido.estado) }}
-                  </span>
-                </div>
-                <div class="card-body">
-                  <!-- Información del pedido -->
-                  <div class="mb-3">
-                    <h6>Total: <span class="text-success">{{ pedido.total | currency:'ARS':'symbol':'1.0-0' }}</span></h6>
-                    <p class="mb-1"><strong>Método de pago:</strong> {{ pedido.pago.metodoPago }}</p>
-                    <p class="mb-1"><strong>Transaction ID:</strong> <code>{{ pedido.pago.transaccionId || 'N/A' }}</code></p>
-                  </div>
-
-                  <!-- Productos del pedido -->
-                  <div class="mb-3">
-                    <h6>Productos ({{ pedido.items.length }}):</h6>
-                    <div class="list-group list-group-flush">
-                      <div 
-                        class="list-group-item px-0 py-2" 
-                        *ngFor="let item of pedido.items">
-                        <div class="d-flex justify-content-between">
-                          <div>
-                            <strong>{{ item.nombre }}</strong>
-                            <br>
-                            <small class="text-muted">Cantidad: {{ item.cantidad }}</small>
+            <!-- Pedidos de esa fecha -->
+            <ng-container *ngFor="let pedido of grupo.pedidos">
+              <!-- Card por cada item del pedido -->
+              <div class="pedido-card mb-3" *ngFor="let item of pedido.items">
+                <div class="card shadow-sm">
+                  <div class="card-body p-3">
+                    <div class="row align-items-center">
+                      <!-- Imagen del producto -->
+                      <div class="col-auto">
+                        <div class="producto-imagen-thumbnail">
+                          <img *ngIf="item.imagen" [src]="item.imagen" [alt]="item.nombre">
+                          <div *ngIf="!item.imagen" class="placeholder-thumbnail">
+                            <i class="bi bi-box-seam"></i>
                           </div>
-                          <div class="text-end">
-                            <strong>{{ item.subtotal | currency:'ARS':'symbol':'1.0-0' }}</strong>
-                            <br>
-                            <small class="text-muted">{{ item.precioUnitario | currency:'ARS':'symbol':'1.0-0' }} c/u</small>
-                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Info del producto -->
+                      <div class="col">
+                        <!-- Estado -->
+                        <div class="mb-2">
+                          <span [class]="'estado-badge ' + obtenerClaseEstadoML(pedido.estado)">
+                            {{ obtenerTextoEstadoML(pedido.estado) }}
+                          </span>
+                        </div>
+
+                        <!-- Título -->
+                        <h6 class="mb-1 fw-bold">{{ obtenerTituloPedido(pedido) }}</h6>
+
+                        <!-- Descripción del producto -->
+                        <p class="text-muted mb-1 small">{{ item.nombre }}</p>
+                        <p class="text-muted mb-1 small">{{ item.cantidad }} unidad<span *ngIf="item.cantidad > 1">es</span></p>
+
+                        <!-- Info tienda -->
+                        <div class="tienda-info">
+                          <small class="text-muted">
+                            <i class="bi bi-shop me-1"></i>
+                            Tienda {{ configuracion().titulo || 'ALED' }}
+                            <i class="bi bi-patch-check-fill text-primary ms-1"></i>
+                          </small>
+                        </div>
+
+                        <!-- Mensajes adicionales -->
+                        <div *ngIf="pedido.pago.motivoRechazo" class="mt-2">
+                          <small class="text-danger">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            {{ pedido.pago.motivoRechazo }}
+                          </small>
+                        </div>
+                      </div>
+
+                      <!-- Botones de acción -->
+                      <div class="col-auto">
+                        <div class="d-flex flex-column gap-2">
+                          <button class="btn btn-primary btn-sm" (click)="verDetalles(pedido)">
+                            Ver compra
+                          </button>
+                          <button class="btn btn-outline-primary btn-sm" (click)="volverAComprar(item)">
+                            Volver a comprar
+                          </button>
+                          <button *ngIf="pedido.estado === 'rechazado' || pedido.estado === 'cancelado'" 
+                                  class="btn btn-link btn-sm text-primary p-0"
+                                  (click)="verDetalles(pedido)">
+                            <small>Enviar mensaje</small>
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  <!-- Información adicional según estado -->
-                  <div *ngIf="pedido.pago.motivoRechazo" class="alert alert-danger">
-                    <strong>Motivo de rechazo:</strong> {{ pedido.pago.motivoRechazo }}
-                  </div>
-
-                  <div *ngIf="pedido.pago.fechaPago" class="text-success">
-                    <i class="bi bi-check-circle me-1"></i>
-                    Pagado el {{ pedido.pago.fechaPago | date:'dd/MM/yyyy HH:mm' }}
-                  </div>
-                </div>
-                <div class="card-footer">
-                  <div class="d-flex gap-2">
-                    <button 
-                      class="btn btn-outline-primary btn-sm"
-                      (click)="verDetalles(pedido)">
-                      <i class="bi bi-eye me-1"></i>
-                      Ver Detalles
-                    </button>
-                    <button 
-                      *ngIf="pedido.estado === 'entregado'"
-                      class="btn btn-outline-success btn-sm"
-                      (click)="descargarFactura(pedido)">
-                      <i class="bi bi-download me-1"></i>
-                      Factura
-                    </button>
-                    <button 
-                      *ngIf="pedido.estado === 'pendiente' || pedido.estado === 'preparando' || pedido.estado === 'enviado'"
-                      class="btn btn-outline-warning btn-sm"
-                      (click)="consultarEstado(pedido)">
-                      <i class="bi bi-question-circle me-1"></i>
-                      Consultar Estado
-                    </button>
-                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </ng-container>
+          </ng-container>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .card {
-      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-      border: 1px solid rgba(0, 0, 0, 0.125);
-      transition: transform 0.2s;
+    .fecha-separador {
+      padding: 8px 0;
+      font-weight: 500;
     }
 
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    .pedido-card .card {
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      transition: box-shadow 0.2s;
+      background: white;
     }
 
-    .card-header {
-      background-color: #f8f9fa;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    .pedido-card .card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .list-group-item {
-      border: none;
-      border-bottom: 1px solid #dee2e6;
+    .producto-imagen-thumbnail {
+      width: 80px;
+      height: 80px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .list-group-item:last-child {
-      border-bottom: none;
+    .producto-imagen-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
-    .badge {
-      font-size: 0.75em;
+    .placeholder-thumbnail {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 2rem;
+    }
+
+    .estado-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .estado-badge.estado-cancelado {
+      background-color: #fff4e6;
+      color: #d97706;
+    }
+
+    .estado-badge.estado-rechazado {
+      background-color: #fee;
+      color: #dc2626;
+    }
+
+    .estado-badge.estado-reembolso {
+      background-color: #e6f7ff;
+      color: #1890ff;
+    }
+
+    .estado-badge.estado-entregado {
+      background-color: #f0fdf4;
+      color: #16a34a;
+    }
+
+    .estado-badge.estado-pendiente {
+      background-color: #fff4e6;
+      color: #d97706;
+    }
+
+    .tienda-info {
+      margin-top: 8px;
+    }
+
+    .btn-sm {
+      font-size: 0.875rem;
+      padding: 0.375rem 0.75rem;
+      white-space: nowrap;
+    }
+
+    .btn-link {
+      text-decoration: none;
+    }
+
+    .btn-link:hover {
+      text-decoration: underline;
     }
   `]
 })
@@ -318,6 +312,16 @@ export class MisPedidosComponent implements OnInit {
    * PedidosService: Servicio para gestionar operaciones con pedidos
    */
   private pedidosService = inject(PedidosService);
+
+  /**
+   * ConfiguracionService: Servicio para obtener configuración de la aplicación
+   */
+  private configuracionService = inject(ConfiguracionService);
+
+  /**
+   * Signal de configuración
+   */
+  protected configuracion = this.configuracionService.configuracionSignal;
 
   // --- PROPIEDADES DEL COMPONENTE ---
 
@@ -365,6 +369,28 @@ export class MisPedidosComponent implements OnInit {
         .filter(p => p.estado === 'entregado' || p.estado === 'pagado')
         .reduce((sum, p) => sum + p.total, 0)
     };
+  });
+
+  /**
+   * Computed Signal que agrupa pedidos por fecha
+   */
+  pedidosAgrupadosPorFecha = computed(() => {
+    const pedidos = this.pedidosFiltrados();
+    const grupos: { fecha: string, pedidos: Pedido[] }[] = [];
+    
+    pedidos.forEach(pedido => {
+      const fecha = this.formatearFechaGrupo(pedido.fechaCreacion);
+      let grupo = grupos.find(g => g.fecha === fecha);
+      
+      if (!grupo) {
+        grupo = { fecha, pedidos: [] };
+        grupos.push(grupo);
+      }
+      
+      grupo.pedidos.push(pedido);
+    });
+    
+    return grupos;
   });
 
   // --- MÉTODOS DEL CICLO DE VIDA DEL COMPONENTE ---
@@ -649,42 +675,126 @@ export class MisPedidosComponent implements OnInit {
    */
   verDetalles(pedido: Pedido): void {
     const productosHtml = pedido.items.map(item => `
-      <div class="d-flex justify-content-between mb-2">
-        <span>${item.nombre} (x${item.cantidad})</span>
-        <strong>$${item.subtotal.toLocaleString()}</strong>
+      <div style="display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
+        <div style="flex: 1;">
+          <div style="font-weight: 500; color: #333; margin-bottom: 4px;">${item.nombre}</div>
+          <div style="color: #666; font-size: 14px;">Cantidad: ${item.cantidad}</div>
+        </div>
+        <div style="text-align: right; font-weight: 600; color: #333;">
+          $${item.subtotal.toLocaleString('es-AR')}
+        </div>
       </div>
     `).join('');
 
+    const estadoBadge = this.obtenerClaseEstadoML(pedido.estado);
+    let estadoColor = '#ffc107';
+    if (estadoBadge.includes('entregado')) estadoColor = '#4caf50';
+    if (estadoBadge.includes('rechazado')) estadoColor = '#f44336';
+    if (estadoBadge.includes('cancelado')) estadoColor = '#ff9800';
+
     Swal.fire({
-      title: `Detalles del Pedido #${pedido.numeroPedido}`,
+      title: '',
       html: `
-        <div class="text-start">
-          <h6><strong>Estado:</strong></h6>
-          <p><span class="badge ${this.obtenerClaseEstado(pedido.estado)}">${this.obtenerTextoEstado(pedido.estado)}</span></p>
-          
-          <h6><strong>Total:</strong></h6>
-          <p class="text-success fs-5"><strong>$${pedido.total.toLocaleString()}</strong></p>
-          
-          <h6><strong>Método de Pago:</strong></h6>
-          <p>${pedido.pago.metodoPago}</p>
-          
-          <h6><strong>Transaction ID:</strong></h6>
-          <p><code>${pedido.pago.transaccionId || 'N/A'}</code></p>
-          
-          <h6><strong>Fecha de Creación:</strong></h6>
-          <p>${pedido.fechaCreacion.toLocaleDateString()}</p>
-          
-          <h6><strong>Dirección de Envío:</strong></h6>
-          <p>${pedido.envio.direccion}, ${pedido.envio.ciudad}</p>
-          
-          <h6><strong>Productos:</strong></h6>
-          <div class="border rounded p-2">
-            ${productosHtml}
+        <div style="text-align: left;">
+          <!-- Header con estado -->
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                      padding: 24px; 
+                      margin: -16px -16px 24px -16px; 
+                      border-radius: 8px 8px 0 0;
+                      color: white;">
+            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Pedido #${pedido.numeroPedido}</div>
+            <h3 style="margin: 0; font-size: 24px; font-weight: 600;">${this.obtenerTituloPedido(pedido)}</h3>
+            <div style="margin-top: 12px; display: inline-block; 
+                        background: rgba(255,255,255,0.2); 
+                        padding: 4px 12px; 
+                        border-radius: 12px;
+                        font-size: 13px;">
+              ${this.obtenerTextoEstadoML(pedido.estado)}
+            </div>
           </div>
+
+          <!-- Total destacado -->
+          <div style="background: #f8f9fa; 
+                      padding: 16px; 
+                      border-radius: 8px; 
+                      margin-bottom: 24px;
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;">
+            <span style="color: #666; font-size: 14px;">Total pagado</span>
+            <span style="color: #00a650; font-size: 28px; font-weight: 700;">
+              $${pedido.total.toLocaleString('es-AR')}
+            </span>
+          </div>
+
+          <!-- Productos -->
+          <div style="margin-bottom: 24px;">
+            <h6 style="color: #666; font-size: 14px; font-weight: 600; margin-bottom: 12px; text-transform: uppercase;">
+              Productos comprados
+            </h6>
+            <div style="background: white; border-radius: 8px;">
+              ${productosHtml}
+            </div>
+          </div>
+
+          <!-- Información de pago -->
+          <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: #666; font-size: 14px;">Método de pago</span>
+              <span style="color: #333; font-weight: 500; font-size: 14px;">${pedido.pago.metodoPago}</span>
+            </div>
+            ${pedido.pago.fechaPago ? `
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: #666; font-size: 14px;">Fecha de pago</span>
+                <span style="color: #333; font-size: 14px;">${new Date(pedido.pago.fechaPago).toLocaleDateString('es-AR')}</span>
+              </div>
+            ` : ''}
+            ${pedido.pago.transaccionId ? `
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: #666; font-size: 14px;">ID de transacción</span>
+                <span style="color: #333; font-size: 14px; font-family: monospace;">${pedido.pago.transaccionId}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Información de envío -->
+          <div style="background: #f8f9fa; padding: 16px; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: #666; font-size: 14px;">Dirección de entrega</span>
+            </div>
+            <div style="color: #333; font-size: 14px; line-height: 1.5;">
+              ${pedido.envio.direccion}<br>
+              ${pedido.envio.ciudad}, ${pedido.envio.provincia}<br>
+              CP: ${pedido.envio.codigoPostal}
+            </div>
+          </div>
+
+          ${pedido.pago.motivoRechazo ? `
+            <div style="background: #fff3cd; 
+                        border-left: 4px solid #ffc107; 
+                        padding: 12px 16px; 
+                        margin-top: 16px;
+                        border-radius: 4px;">
+              <div style="font-weight: 600; color: #856404; margin-bottom: 4px;">
+                <i class="bi bi-exclamation-triangle me-2"></i>Motivo del rechazo
+              </div>
+              <div style="color: #856404; font-size: 14px;">
+                ${pedido.pago.motivoRechazo}
+              </div>
+            </div>
+          ` : ''}
         </div>
       `,
       width: 600,
-      confirmButtonText: 'Cerrar'
+      padding: '16px',
+      showCloseButton: true,
+      showConfirmButton: true,
+      confirmButtonText: 'Cerrar',
+      confirmButtonColor: '#3085d6',
+      customClass: {
+        popup: 'swal-popup-custom',
+        htmlContainer: 'swal-html-custom'
+      }
     });
   }
 
@@ -819,5 +929,100 @@ export class MisPedidosComponent implements OnInit {
     
     // Si no se puede convertir, retorna una fecha muy antigua para que vaya al final
     return new Date(0);
+  }
+
+  /**
+   * Formatea la fecha para agrupar pedidos
+   */
+  formatearFechaGrupo(fecha: any): string {
+    const date = fecha instanceof Date ? fecha : new Date(fecha);
+    const hoy = new Date();
+    const ayer = new Date(hoy);
+    ayer.setDate(ayer.getDate() - 1);
+
+    if (date.toDateString() === hoy.toDateString()) {
+      return 'Hoy';
+    }
+    if (date.toDateString() === ayer.toDateString()) {
+      return 'Ayer';
+    }
+
+    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                   'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    return `${date.getDate()} de ${meses[date.getMonth()]}`;
+  }
+
+  /**
+   * Obtiene la clase CSS para el estado estilo Mercado Libre
+   */
+  obtenerClaseEstadoML(estado: EstadoPedido): string {
+    const clases = {
+      'cancelado': 'estado-cancelado',
+      'rechazado': 'estado-rechazado',
+      'reembolsado': 'estado-reembolso',
+      'entregado': 'estado-entregado',
+      'pendiente': 'estado-pendiente',
+      'pagado': 'estado-entregado',
+      'preparando': 'estado-pendiente',
+      'enviado': 'estado-pendiente',
+      'creado': 'estado-pendiente'
+    };
+    return clases[estado] || 'estado-pendiente';
+  }
+
+  /**
+   * Obtiene el texto del estado estilo Mercado Libre
+   */
+  obtenerTextoEstadoML(estado: EstadoPedido): string {
+    const textos = {
+      'cancelado': 'Cancelaste la compra',
+      'rechazado': 'Pago rechazado',
+      'reembolsado': 'Te reembolsamos el dinero en Mercado Pago',
+      'entregado': 'Entregado',
+      'pendiente': 'Pendiente de pago',
+      'pagado': 'Pago aprobado',
+      'preparando': 'Preparando envío',
+      'enviado': 'En camino',
+      'creado': 'Pendiente'
+    };
+    return textos[estado] || 'En proceso';
+  }
+
+  /**
+   * Obtiene el título del pedido
+   */
+  obtenerTituloPedido(pedido: Pedido): string {
+    if (pedido.estado === 'cancelado') {
+      return 'Cancelaste la compra';
+    }
+    if (pedido.estado === 'rechazado') {
+      return 'Tu tarjeta rechazó el pago';
+    }
+    if (pedido.estado === 'reembolsado') {
+      return 'Te reembolsamos el dinero en Mercado Pago';
+    }
+    if (pedido.estado === 'entregado') {
+      return 'Entregado';
+    }
+    return 'En proceso';
+  }
+
+  /**
+   * Acción para volver a comprar un producto
+   */
+  volverAComprar(item: any): void {
+    Swal.fire({
+      icon: 'info',
+      title: 'Volver a comprar',
+      text: `¿Deseas agregar "${item.nombre}" al carrito?`,
+      showCancelButton: true,
+      confirmButtonText: 'Sí, agregar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Aquí irías a la página del producto o lo agregarías al carrito
+        this.router.navigate(['/productos']);
+      }
+    });
   }
 }

@@ -1,16 +1,17 @@
-<div class="modal-content border-0 shadow-lg">
-  <!-- Header con gradiente -->
-  <div class="modal-header bg-gradient text-white border-0">
-    <div>
-      <h4 class="modal-title mb-1 fw-bold">Crear una cuenta nueva</h4>
-      <p class="mb-0 small opacity-90">Completa tus datos para registrarte</p>
+<div class="registro-container">
+  <!-- Header amarillo estilo ML -->
+  <div class="header-yellow">
+    <div class="header-content">
+      <h1 class="header-title">Crea tu cuenta y comprá con envíos gratis</h1>
+      <button type="button" class="btn-close-custom" mat-dialog-close aria-label="Close">
+        <mat-icon>close</mat-icon>
+      </button>
     </div>
-    <button type="button" class="btn-close btn-close-white" mat-dialog-close aria-label="Close"></button>
   </div>
 
-  <!-- Body del formulario -->
+  <!-- Formulario blanco -->
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-    <div class="modal-body p-4">
+    <div class="form-body">
       <!-- Nombre y Apellido -->
       <div class="row">
         <div class="col-md-6 mb-3">
@@ -129,7 +130,7 @@
       </div>
 
       <!-- Términos y condiciones -->
-      <div class="form-check mb-3">
+      <div class="form-check mb-4">
         <input 
           class="form-check-input" 
           type="checkbox" 
@@ -137,37 +138,35 @@
           id="terminos"
           [class.is-invalid]="registerForm.get('terminos')?.invalid && registerForm.get('terminos')?.touched"
         />
-        <label class="form-check-label" for="terminos">
-          Acepto los términos y condiciones
+        <label class="form-check-label small" for="terminos">
+          Acepto los <a href="#" class="text-primary">términos y condiciones</a>
         </label>
         <div class="invalid-feedback" *ngIf="registerForm.get('terminos')?.hasError('required')">
           Debe aceptar los términos
         </div>
       </div>
-    </div>
 
-    <!-- Footer con botones -->
-    <div class="modal-footer border-0 pt-0 pb-4 px-4">
-      <button 
-        type="button" 
-        class="btn btn-outline-secondary px-4 py-2"
-        [disabled]="isLoading" 
-        mat-dialog-close
-      >
-        Cancelar
-      </button>
+      <!-- Botón submit -->
       <button 
         type="submit" 
-        class="btn btn-primary px-4 py-2 shadow-sm"
+        class="btn-submit"
         [disabled]="registerForm.invalid || isLoading"
       >
         @if (isLoading) {
           <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-          Cargando...
+          Creando cuenta...
         } @else {
-          Registrarse
+          Continuar
         }
       </button>
+
+      <!-- Link a login -->
+      <div class="text-center mt-3">
+        <small class="text-muted">
+          ¿Ya tenés cuenta? 
+          <a href="#" class="text-primary fw-semibold" mat-dialog-close>Iniciá sesión</a>
+        </small>
+      </div>
     </div>
   </form>
 </div>

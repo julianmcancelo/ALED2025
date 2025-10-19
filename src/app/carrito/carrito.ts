@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/auth';
-import { CarritoService } from '../servicios/carrito';
+import { CarritoService, Producto, ElementoCarrito } from '../servicios/carrito';
 import { TarjetaVirtualService } from '../servicios/tarjeta-virtual.service';
 import { PagoVirtualService } from '../servicios/pago-virtual.service';
 import { PedidosService } from '../servicios/pedidos.service';
+import { ConfiguracionService } from '../servicios/configuracion';
 import { getMercadoPagoCredentials, getMercadoPagoSettings } from '../config/mercadopago.config';
 import { SolicitudCrearPago } from '../shared/models/tarjeta-virtual.model';
 import { SolicitudCrearPedido } from '../shared/models/pedido.model';
@@ -17,7 +18,8 @@ import Swal from 'sweetalert2';
   selector: 'app-carrito',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './carrito.html'
+  templateUrl: './carrito.html',
+  styleUrls: ['./carrito-mejorado.css']
 })
 export class Carrito {
   // --- INYECCIÓN DE DEPENDENCIAS ---
@@ -28,11 +30,16 @@ export class Carrito {
   private tarjetaVirtualService = inject(TarjetaVirtualService);
   private pagoVirtualService = inject(PagoVirtualService);
   private pedidosService = inject(PedidosService);
+  protected configuracionService = inject(ConfiguracionService);
+  
+  // Exponer la señal de configuración
+  protected configuracion = this.configuracionService.configuracionSignal;
 
   cargandoMP = signal(false);
   cargandoTarjetaVirtual = signal(false);
   tarjetaVirtual = signal<any>(null);
   mostrandoMetodosPago = signal(false);
+  mostrarCupon = false;
 
   // --- ENVÍO GRATIS ---
   // Monto mínimo para envío gratis (estilo Mercado Libre)
@@ -62,6 +69,99 @@ export class Carrito {
   tieneEnvioGratis = computed(() => {
     return this.carritoService.totalPrecio() >= this.MONTO_ENVIO_GRATIS;
   });
+
+  /**
+   * Verifica si el usuario está autenticado
+   */
+  estaAutenticado = computed(() => {
+    const user = this.authService.currentUserSignal();
+    return user !== null && user !== undefined;
+  });
+
+  /**
+   * Verifica si todos los items están seleccionados
+   */
+  todosSeleccionados(): boolean {
+    const items = this.carritoService.items();
+    return items.length > 0 && items.every(item => (item as any).seleccionado);
+  }
+
+  /**
+   * Selecciona o deselecciona todos los items
+   */
+  toggleTodos(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.carritoService.items().forEach(item => {
+      (item as any).seleccionado = checked;
+    });
+  }
+
+  /**
+   * Disminuye la cantidad de un item
+   */
+  disminuirCantidad(item: any): void {
+    if (item.cantidad > 1) {
+      item.cantidad--;
+    }
+  }
+
+  /**
+   * Aumenta la cantidad de un item
+   */
+  aumentarCantidad(item: any): void {
+    if (item.cantidad < 99) {
+      item.cantidad++;
+    }
+  }
+
+  /**
+   * Calcula el porcentaje de descuento
+   */
+  calcularDescuento(precioActual: number, precioAnterior: number): number {
+    if (!precioAnterior || precioAnterior <= precioActual) return 0;
+    return Math.round(((precioAnterior - precioActual) / precioAnterior) * 100);
+  }
+
+  /**
+   * Cuenta la cantidad de envíos
+   */
+  cantidadEnvios(): number {
+    return this.carritoService.items().length > 0 ? 1 : 0;
+  }
+
+  /**
+   * Calcula el costo de envío
+   */
+  costoEnvio(): number {
+    return this.tieneEnvioGratis() ? 0 : 1000;
+  }
+
+  /**
+   * Navega a la página de checkout
+   */
+  irACheckout(): void {
+    const currentUser = this.authService.currentUserSignal();
+    
+    if (!currentUser) {
+      // Si no ha iniciado sesión, mostrar alerta
+      Swal.fire({
+        title: 'Iniciar Sesión Requerido',
+        text: '¿Deseas iniciar sesión para continuar con la compra?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Iniciar Sesión',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.router.navigate(['/auth']);
+        }
+      });
+      return;
+    }
+
+    // Navegar a checkout
+    this.router.navigate(['/checkout']);
+  }
 
   /**
    * Muestra las opciones de pago disponibles
@@ -539,6 +639,30 @@ export class Carrito {
   cerrar(): void {
     // Método para cerrar el carrito (si se usa en modal)
     console.log('Cerrando carrito');
+  }
+
+  /**
+   * Abre el modal de login
+   */
+  abrirLogin(): void {
+    this.cerrar();
+    this.router.navigate(['/']);
+  }
+
+  /**
+   * Abre el modal de registro
+   */
+  abrirRegistro(): void {
+    this.cerrar();
+    this.router.navigate(['/']);
+  }
+
+  /**
+   * Redirige a la tienda para empezar a comprar
+   */
+  empezarAComprar(): void {
+    this.cerrar();
+    this.router.navigate(['/productos']);
   }
   
   // --- Método de prueba temporal ---

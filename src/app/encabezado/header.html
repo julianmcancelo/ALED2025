@@ -1,255 +1,209 @@
-<!-- Navbar con Tailwind CSS -->
-<nav class="bg-white shadow-sm border-b border-gray-200">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center h-16">
-      <!-- Título/Branding de la aplicación -->
-      <a class="flex items-center text-xl font-bold text-gray-900 hover:text-[#0077b6] transition-colors" routerLink="/">
-        <i class="bi bi-gem mr-2 text-[#0077b6]"></i>
-        {{ configuracion().titulo || 'Proyecto Final' }}
-      </a>
-
-      <!-- Navegación principal (desktop) -->
-      <div class="hidden md:flex items-center space-x-6">
-        <!-- Barra de búsqueda -->
-        <div class="relative">
-          <input 
-            type="text" 
-            placeholder="Buscar productos..." 
-            class="w-64 px-4 py-2 pl-10 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:border-transparent"
-            #searchInput
-            (keyup.enter)="buscarProductos(searchInput.value)"
-          >
-          <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+<!-- Header estilo Mercado Libre con colores personalizados -->
+<header class="header-ml">
+  <!-- Barra Superior (amarilla/azul) -->
+  <div class="header-top">
+    <div class="container-fluid">
+      <div class="row align-items-center py-2">
+        <!-- Logo -->
+        <div class="col-auto">
+          <a class="logo-link" routerLink="/">
+            <i class="bi bi-gem me-2"></i>
+            <span class="logo-text">{{ configuracion().titulo || 'ALED' }}</span>
+          </a>
         </div>
-        
-        <!-- Enlaces de navegación -->
-        <a class="text-gray-700 hover:text-[#0077b6] px-3 py-2 rounded-md text-sm font-medium transition-colors" 
-           routerLink="/productos" 
-           routerLinkActive="text-[#0077b6] bg-blue-50">
-          <i class="bi bi-shop mr-1"></i>
-          Tienda
-        </a>
-        
-        <a class="text-gray-700 hover:text-[#0077b6] px-3 py-2 rounded-md text-sm font-medium transition-colors" 
-           routerLink="/ofertas" 
-           routerLinkActive="text-[#0077b6] bg-blue-50">
-          <i class="bi bi-tag mr-1"></i>
-          Ofertas
-        </a>
-        
-        <div class="relative">
-          <button class="text-gray-700 hover:text-[#0077b6] px-3 py-2 rounded-md text-sm font-medium transition-colors" 
-                  (click)="abrirModalCategorias()"
-                  #categoriasBtn>
-            <i class="bi bi-grid mr-1"></i>
-            Categorías
-          </button>
-          
-          <!-- Mini Modal justo debajo del botón -->
-          <div *ngIf="showCategoriasModal" class="absolute top-full left-0 mt-1 z-50">
-            <div class="bg-white rounded-md border border-gray-200 w-56 shadow-lg mini-modal-shadow">
-              <!-- Header ultra compacto -->
-              <div class="flex items-center justify-between px-2 py-1 bg-gray-50 border-b border-gray-100 rounded-t-md">
-                <span class="text-xs font-medium text-gray-600">
-                  <i class="bi bi-grid mr-1 text-[#0077b6]"></i>
-                  Categorías
-                </span>
-                <button 
-                  type="button" 
-                  class="text-gray-400 hover:text-gray-600 p-0.5 rounded"
-                  (click)="cerrarModalCategorias()"
-                >
-                  <i class="bi bi-x text-xs"></i>
-                </button>
-              </div>
 
-              <!-- Lista ultra compacta -->
-              <div class="max-h-48 overflow-y-auto">
-                <!-- Loading -->
-                <div *ngIf="cargandoCategorias" class="text-center py-3">
-                  <div class="inline-block animate-spin rounded-full h-3 w-3 border-b border-[#0077b6]"></div>
-                  <p class="mt-1 text-xs text-gray-400">Cargando...</p>
-                </div>
-
-                <!-- Lista de Categorías -->
-                <div *ngIf="!cargandoCategorias && categorias.length > 0">
-                  <button
-                    *ngFor="let categoria of categorias"
-                    (click)="navegarACategoria(categoria)"
-                    class="w-full flex items-center px-2 py-1.5 text-left text-gray-600 hover:bg-blue-50 hover:text-[#0077b6] transition-colors text-xs group"
-                  >
-                    <i class="bi bi-tag mr-1.5 text-xs text-gray-400 group-hover:text-[#0077b6]"></i>
-                    <span class="flex-1 truncate">{{ categoria.nombre }}</span>
-                    <i class="bi bi-chevron-right text-xs text-gray-300 group-hover:text-[#0077b6]"></i>
-                  </button>
-                </div>
-
-                <!-- Sin categorías -->
-                <div *ngIf="!cargandoCategorias && categorias.length === 0" class="text-center py-3">
-                  <i class="bi bi-inbox text-sm text-gray-300"></i>
-                  <p class="text-xs text-gray-400 mt-0.5">Sin categorías</p>
-                </div>
-              </div>
-
-              <!-- Footer ultra mini -->
-              <div class="border-t border-gray-100 px-2 py-1 bg-gray-50 rounded-b-md">
-                <button
-                  (click)="verTodasLasCategorias()"
-                  class="w-full text-xs text-[#0077b6] hover:text-[#005a8d] font-medium py-0.5 text-center"
-                >
-                  Ver todas →
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Botones de autenticación y carrito -->
-        <div class="flex items-center space-x-4">
-          <!-- Bloque que se muestra si NADIE ha iniciado sesión -->
-          @if (currentUser() === null) {
-          <div class="flex space-x-2">
-            <button class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:ring-offset-2 transition-colors" 
-                    (click)="openLoginDialog()">
-              <i class="bi bi-box-arrow-in-right mr-1"></i>
-              <span>Iniciar Sesión</span>
-            </button>
-            <button class="px-4 py-2 text-sm font-medium text-white bg-[#0077b6] border border-transparent rounded-md hover:bg-[#005a8d] focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:ring-offset-2 transition-colors" 
-                    (click)="openRegisterDialog()">
-              <i class="bi bi-person-plus-fill mr-1"></i>
-              <span>Registrarse</span>
-            </button>
-          </div>
-          }
-
-          <!-- Bloque que se muestra si un USUARIO ha iniciado sesión -->
-          @if (currentUser(); as user) {
-          <!-- Menú desplegable del usuario -->
-          <div ngbDropdown class="relative">
-            <button type="button" 
-                    class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:ring-offset-2 transition-colors" 
-                    id="dropdownBasic1" 
-                    ngbDropdownToggle>
-              <i class="bi bi-person-circle mr-2 text-lg"></i>
-              ¡Hola, {{ user.nombre }}!
-            </button>
-            <div ngbDropdownMenu aria-labelledby="dropdownBasic1" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
-              <!-- Enlace al Perfil de Usuario -->
-              <a ngbDropdownItem routerLink="/perfil" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                <i class="bi bi-person-badge mr-2"></i>
-                <span>Mi Perfil</span>
-              </a>
-              <!-- Enlace a Mis Pedidos -->
-              <a ngbDropdownItem routerLink="/mis-pedidos" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                <i class="fas fa-shopping-bag mr-2"></i>
-                <span>Mis Pedidos</span>
-              </a>
-              <!-- Botón de Administración (condicional) -->
-              @if (isAdmin()) {
-              <a ngbDropdownItem routerLink="/administracion" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                <i class="bi bi-shield-lock-fill mr-2"></i>
-                <span>Administración</span>
-              </a>
-              }
-              <div class="border-t border-gray-100"></div>
-              <button
-                ngbDropdownItem
-                (click)="logout()"
-                class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-              >
-                <i class="bi bi-box-arrow-right mr-2"></i>
-                <span>Cerrar Sesión</span>
-              </button>
-            </div>
-          </div>
-          }
-
-          <!-- Botón del Carrito de Compras -->
-          <button
-            class="relative p-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:ring-offset-2 transition-colors"
-            (click)="abrirDialogoCarrito()"
-          >
-            <i class="bi bi-cart3 text-lg"></i>
-            @if (carritoService.totalItems() > 0) {
-            <span
-              class="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full"
-            >
-              {{ carritoService.totalItems() }}
-            </span>
-            }
-          </button>
-        </div>
-      </div>
-
-      <!-- Botón menú móvil -->
-      <div class="md:hidden">
-        <button 
-          type="button" 
-          class="p-2 text-gray-700 hover:text-[#0077b6] focus:outline-none focus:ring-2 focus:ring-[#0077b6] rounded-md"
-          (click)="toggleMobileMenu()"
-        >
-          <i class="bi bi-list text-xl"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- Menú móvil -->
-    <div class="md:hidden" [class.hidden]="!showMobileMenu">
-      <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
-        <!-- Barra de búsqueda móvil -->
-        <div class="px-3 py-2">
-          <div class="relative">
+        <!-- Barra de Búsqueda Prominente -->
+        <div class="col">
+          <div class="search-bar-container">
             <input 
               type="text" 
-              placeholder="Buscar productos..." 
-              class="w-full px-4 py-2 pl-10 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0077b6] focus:border-transparent"
-              #mobileSearchInput
-              (keyup.enter)="buscarProductos(mobileSearchInput.value)"
+              placeholder="Buscar productos, marcas y más..." 
+              class="search-input"
+              #searchInput
+              (keyup.enter)="buscarProductos(searchInput.value)"
             >
-            <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <button class="search-button" (click)="buscarProductos(searchInput.value)">
+              <i class="bi bi-search"></i>
+            </button>
           </div>
         </div>
-        
-        <!-- Enlaces de navegación móvil -->
-        <a routerLink="/productos" 
-           routerLinkActive="text-[#0077b6] bg-blue-50"
-           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#0077b6] hover:bg-gray-50 rounded-md">
-          <i class="bi bi-shop mr-2"></i>
-          Tienda
-        </a>
-        
-        <a routerLink="/ofertas" 
-           routerLinkActive="text-[#0077b6] bg-blue-50"
-           class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#0077b6] hover:bg-gray-50 rounded-md">
-          <i class="bi bi-tag mr-2"></i>
-          Ofertas
-        </a>
-        
-        <button (click)="abrirModalCategorias()"
-                class="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-[#0077b6] hover:bg-gray-50 rounded-md">
-          <i class="bi bi-grid mr-2"></i>
-          Categorías
-        </button>
+        <!-- Acciones de Usuario -->
+        <div class="col-auto">
+          <div class="d-flex align-items-center gap-3">
+            <!-- Si no hay usuario -->
+            @if (currentUser() === null) {
+              <button class="header-btn header-btn-secondary" (click)="openLoginDialog()">
+                <span class="d-none d-md-inline">Iniciar sesión</span>
+                <i class="bi bi-box-arrow-in-right d-md-none"></i>
+              </button>
+              <button class="header-btn header-btn-primary" (click)="openRegisterDialog()">
+                <span class="d-none d-md-inline">Registrarse</span>
+                <i class="bi bi-person-plus d-md-none"></i>
+              </button>
+            }
 
-        <!-- Botones de autenticación móvil -->
-        @if (currentUser() === null) {
-        <div class="px-3 py-2 space-y-2">
-          <button class="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" 
-                  (click)="openLoginDialog()">
-            <i class="bi bi-box-arrow-in-right mr-2"></i>
-            Iniciar Sesión
-          </button>
-          <button class="w-full px-4 py-2 text-sm font-medium text-white bg-[#0077b6] border border-transparent rounded-md hover:bg-[#005a8d]" 
-                  (click)="openRegisterDialog()">
-            <i class="bi bi-person-plus-fill mr-2"></i>
-            Registrarse
-          </button>
+            <!-- Si hay usuario -->
+            @if (currentUser(); as user) {
+              <div ngbDropdown class="user-dropdown">
+                <button 
+                  type="button" 
+                  class="header-btn header-btn-user"
+                  id="dropdownUser" 
+                  ngbDropdownToggle>
+                  <i class="bi bi-person-circle me-1"></i>
+                  <span class="d-none d-md-inline">{{ user.nombre }}</span>
+                </button>
+                <div ngbDropdownMenu aria-labelledby="dropdownUser" class="dropdown-menu-end">
+                  <a ngbDropdownItem routerLink="/perfil" class="dropdown-item">
+                    <i class="bi bi-person-badge me-2"></i>
+                    Mi Perfil
+                  </a>
+                  <a ngbDropdownItem routerLink="/mis-pedidos" class="dropdown-item">
+                    <i class="bi bi-bag-check me-2"></i>
+                    Mis Pedidos
+                  </a>
+                  @if (isAdmin()) {
+                    <a ngbDropdownItem routerLink="/administracion" class="dropdown-item">
+                      <i class="bi bi-shield-lock-fill me-2"></i>
+                      Administración
+                    </a>
+                  }
+                  <div class="dropdown-divider"></div>
+                  <button ngbDropdownItem (click)="logout()" class="dropdown-item text-danger">
+                    <i class="bi bi-box-arrow-right me-2"></i>
+                    Cerrar Sesión
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- Carrito -->
+            <button class="cart-btn" (click)="abrirDialogoCarrito()">
+              <i class="bi bi-cart3"></i>
+              @if (carritoService.totalItems() > 0) {
+                <span class="cart-badge">{{ carritoService.totalItems() }}</span>
+              }
+            </button>
+          </div>
         </div>
-        }
       </div>
     </div>
   </div>
-</nav>
 
-<!-- Overlay para cerrar el modal al hacer clic fuera -->
-<div *ngIf="showCategoriasModal" class="fixed inset-0 z-40" (click)="cerrarModalCategorias()"></div>
+  <!-- Barra de Navegación (gris claro) -->
+  <nav class="header-nav">
+    <div class="container-fluid">
+      <div class="nav-items">
+        <button class="nav-item" (click)="abrirModalCategorias()">
+          <i class="bi bi-grid"></i>
+          <span>Categorías</span>
+        </button>
+        <a class="nav-item" routerLink="/productos" routerLinkActive="active">
+          <i class="bi bi-shop"></i>
+          <span>Tienda</span>
+        </a>
+        <a class="nav-item" routerLink="/ofertas" routerLinkActive="active">
+          <i class="bi bi-tag"></i>
+          <span>Ofertas</span>
+        </a>
+        <a class="nav-item" routerLink="/productos" [queryParams]="{destacados: true}" routerLinkActive="active">
+          <i class="bi bi-star"></i>
+          <span>Destacados</span>
+        </a>
+        
+        <!-- Botón móvil para menú -->
+        <button class="nav-item mobile-menu-btn d-md-none ms-auto" (click)="toggleMobileMenu()">
+          <i class="bi bi-list fs-4"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Menú Móvil -->
+  <div class="mobile-menu" [class.show]="showMobileMenu">
+    <div class="mobile-menu-content">
+      <!-- Búsqueda móvil -->
+      <div class="mobile-search">
+        <input 
+          type="text" 
+          placeholder="Buscar..." 
+          class="form-control"
+          #mobileSearchInput
+          (keyup.enter)="buscarProductos(mobileSearchInput.value)"
+        >
+        <button class="btn btn-primary" (click)="buscarProductos(mobileSearchInput.value)">
+          <i class="bi bi-search"></i>
+        </button>
+      </div>
+      
+      <!-- Enlaces móviles -->
+      <a routerLink="/productos" class="mobile-menu-item" (click)="toggleMobileMenu()">
+        <i class="bi bi-shop"></i>
+        Tienda
+      </a>
+      <a routerLink="/ofertas" class="mobile-menu-item" (click)="toggleMobileMenu()">
+        <i class="bi bi-tag"></i>
+        Ofertas
+      </a>
+      <button class="mobile-menu-item" (click)="abrirModalCategorias()">
+        <i class="bi bi-grid"></i>
+        Categorías
+      </button>
+      
+      <!-- Auth móvil -->
+      @if (currentUser() === null) {
+        <div class="mobile-auth">
+          <button class="btn btn-outline-primary w-100 mb-2" (click)="openLoginDialog(); toggleMobileMenu()">
+            Iniciar Sesión
+          </button>
+          <button class="btn btn-primary w-100" (click)="openRegisterDialog(); toggleMobileMenu()">
+            Registrarse
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</header>
+
+<!-- Modal de Categorías -->
+<div *ngIf="showCategoriasModal" class="categorias-modal-overlay" (click)="cerrarModalCategorias()">
+  <div class="categorias-modal" (click)="$event.stopPropagation()">
+    <div class="categorias-modal-header">
+      <h6 class="mb-0">
+        <i class="bi bi-grid me-2"></i>
+        Categorías
+      </h6>
+      <button class="btn-close" (click)="cerrarModalCategorias()"></button>
+    </div>
+    <div class="categorias-modal-body">
+      @if (cargandoCategorias) {
+        <div class="text-center py-4">
+          <div class="spinner-border spinner-border-sm text-primary"></div>
+          <p class="mt-2 small text-muted">Cargando...</p>
+        </div>
+      }
+      @if (!cargandoCategorias && categorias.length > 0) {
+        <div class="categorias-list">
+          @for (categoria of categorias; track categoria.id) {
+            <button class="categoria-item" (click)="navegarACategoria(categoria)">
+              <i class="bi bi-tag me-2"></i>
+              {{ categoria.nombre }}
+              <i class="bi bi-chevron-right ms-auto"></i>
+            </button>
+          }
+        </div>
+      }
+      @if (!cargandoCategorias && categorias.length === 0) {
+        <div class="text-center py-4">
+          <i class="bi bi-inbox fs-1 text-muted"></i>
+          <p class="mt-2 text-muted">Sin categorías</p>
+        </div>
+      }
+    </div>
+    <div class="categorias-modal-footer">
+      <button class="btn btn-sm btn-primary w-100" (click)="verTodasLasCategorias()">
+        Ver todas las categorías
+      </button>
+    </div>
+  </div>
+</div>

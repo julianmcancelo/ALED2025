@@ -1,15 +1,21 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth';
 import { UserService } from '../servicios/user';
 import { TarjetaVirtualService } from '../servicios/tarjeta-virtual.service';
 import { TarjetaVirtualComponent } from '../shared/components/tarjeta-virtual/tarjeta-virtual.component';
+import { PedidosService } from '../servicios/pedidos.service';
+import { Pedido, EstadoPedido } from '../shared/models/pedido.model';
 import Swal from 'sweetalert2';
+
+// Tipo para las secciones del perfil
+type SeccionPerfil = 'datos-personales' | 'datos-entrega' | 'tarjeta-virtual' | 'seguridad' | 'historial';
 
 /**
  * @component PerfilUsuarioComponent
  * Muestra la información del perfil del usuario que ha iniciado sesión.
+ * Sistema de navegación por pestañas para mejor organización.
  */
 @Component({
   selector: 'app-perfil-usuario',
@@ -18,17 +24,131 @@ import Swal from 'sweetalert2';
   templateUrl: './perfil-usuario.html',
   styleUrls: ['./perfil-usuario.css'],
 })
-export class PerfilUsuarioComponent {
+export class PerfilUsuarioComponent implements OnInit {
   // --- INYECCIÓN DE DEPENDENCIAS ---
   authService = inject(AuthService);
   private userService = inject(UserService);
   private tarjetaVirtualService = inject(TarjetaVirtualService);
+  private pedidosService = inject(PedidosService);
 
   // Obtenemos la señal del usuario actual directamente desde el servicio.
   currentUser = this.authService.currentUserSignal;
   
   // Signal para controlar el estado de creación de tarjeta
   creandoTarjeta = signal(false);
+
+  // Signal para controlar la sección activa
+  seccionActiva = signal<SeccionPerfil>('datos-personales');
+
+  // Signals para pedidos
+  pedidos = signal<Pedido[]>([]);
+  cargandoPedidos = signal(false);
+
+  // Computed para estadísticas de pedidos
+  estadisticasPedidos = computed(() => {
+    const todos = this.pedidos();
+    return {
+      total: todos.length,
+      completados: todos.filter(p => p.estado === 'entregado').length,
+      pendientes: todos.filter(p => p.estado === 'pendiente' || p.estado === 'preparando' || p.estado === 'enviado').length,
+      totalGastado: todos
+        .filter(p => p.estado === 'entregado' || p.estado === 'pagado')
+        .reduce((sum, p) => sum + p.total, 0)
+    };
+  });
+
+  ngOnInit(): void {
+    // Cargar pedidos cuando se inicializa el componente
+    this.cargarPedidos();
+  }
+
+  /**
+   * Cambia la sección activa del perfil
+   */
+  cambiarSeccion(seccion: SeccionPerfil): void {
+    this.seccionActiva.set(seccion);
+    // Si cambia a historial y no hay pedidos cargados, cargarlos
+    if (seccion === 'historial' && this.pedidos().length === 0) {
+      this.cargarPedidos();
+    }
+  }
+
+  /**
+   * Carga los pedidos del usuario
+   */
+  async cargarPedidos(): Promise<void> {
+    const usuario = this.currentUser();
+    if (!usuario?.id) return;
+
+    this.cargandoPedidos.set(true);
+    try {
+      const resultado = await this.pedidosService.obtenerPedidosUsuario(usuario.id);
+      if (resultado.exito && resultado.pedidos) {
+        this.pedidos.set(resultado.pedidos);
+      } else {
+        this.pedidos.set([]);
+      }
+    } catch (error) {
+      console.error('Error al cargar pedidos:', error);
+      this.pedidos.set([]);
+    } finally {
+      this.cargandoPedidos.set(false);
+    }
+  }
+
+  /**
+   * Obtiene la clase CSS para el estado del pedido
+   */
+  obtenerClaseEstado(estado: EstadoPedido): string {
+    const clases = {
+      'creado': 'bg-secondary',
+      'pendiente': 'bg-warning text-dark',
+      'pagado': 'bg-primary',
+      'preparando': 'bg-info',
+      'enviado': 'bg-warning text-dark',
+      'entregado': 'bg-success',
+      'cancelado': 'bg-secondary',
+      'rechazado': 'bg-danger',
+      'reembolsado': 'bg-info'
+    };
+    return clases[estado] || 'bg-secondary';
+  }
+
+  /**
+   * Obtiene el texto para el estado del pedido
+   */
+  obtenerTextoEstado(estado: EstadoPedido): string {
+    const textos = {
+      'creado': 'Creado',
+      'pendiente': 'Pendiente',
+      'pagado': 'Pagado',
+      'preparando': 'Preparando',
+      'enviado': 'Enviado',
+      'entregado': 'Entregado',
+      'cancelado': 'Cancelado',
+      'rechazado': 'Rechazado',
+      'reembolsado': 'Reembolsado'
+    };
+    return textos[estado] || 'Desconocido';
+  }
+
+  /**
+   * Obtiene la clase CSS para el estado estilo Mercado Libre
+   */
+  obtenerClaseEstadoML(estado: EstadoPedido): string {
+    const clases = {
+      'cancelado': 'estado-cancelado',
+      'rechazado': 'estado-rechazado',
+      'reembolsado': 'estado-reembolso',
+      'entregado': 'estado-entregado',
+      'pendiente': 'estado-pendiente',
+      'pagado': 'estado-entregado',
+      'preparando': 'estado-pendiente',
+      'enviado': 'estado-pendiente',
+      'creado': 'estado-pendiente'
+    };
+    return clases[estado] || 'estado-pendiente';
+  }
 
   /**
    * Abre un modal para editar los datos de envío del usuario.
@@ -211,4 +331,33 @@ export class PerfilUsuarioComponent {
       this.creandoTarjeta.set(false);
     }
   }
+
+  /**
+   * Abre el modal o vista de la tarjeta virtual
+   */
+  abrirTarjetaVirtual(): void {
+    // Navegar a la ruta que muestra la tarjeta virtual completa
+    // O simplemente hacer scroll al componente de tarjeta que ya está en la página
+    const tarjetaElement = document.querySelector('app-tarjeta-virtual');
+    if (tarjetaElement) {
+      tarjetaElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  /**
+   * Signal para mostrar/ocultar la tarjeta virtual
+   */
+  mostrarTarjeta = signal<boolean>(false);
+
+  /**
+   * Toggle para mostrar/ocultar la tarjeta virtual
+   */
+  toggleTarjetaVirtual(): void {
+    this.mostrarTarjeta.update(valor => !valor);
+  }
+
+  /**
+   * Verifica si el usuario tiene una tarjeta virtual
+   */
+  tieneTarjeta = signal<boolean>(false);
 }
