@@ -5,15 +5,13 @@ import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { GestionProductosService, Producto } from '../servicios/gestion-productos.service';
 import { CarritoService } from '../servicios/carrito';
-import { ResenasComponent } from '../shared/resenas/resenas.component';
 import { ConfiguracionService } from '../servicios/configuracion';
-import { ResenasService, EstadisticasVendedor } from '../servicios/resenas.service';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-detalle-producto',
   standalone: true,
-  imports: [CommonModule, RouterModule, ResenasComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './detalle-producto.html',
   styleUrls: ['./detalle-producto.css'],
 })
@@ -23,13 +21,8 @@ export class DetalleProductoComponent implements OnInit {
   private productosService = inject(GestionProductosService);
   private carritoService = inject(CarritoService);
   public configuracionService = inject(ConfiguracionService);
-  private resenasService = inject(ResenasService);
 
   producto$!: Observable<Producto | null>;
-  estadisticasVendedor: EstadisticasVendedor | null = null;
-  
-  // Exponer Math para usar en template
-  Math = Math;
 
   ngOnInit(): void {
     // Cargar producto
@@ -42,34 +35,6 @@ export class DetalleProductoComponent implements OnInit {
         return [];
       })
     );
-
-    // Cargar estadísticas reales del vendedor
-    this.cargarEstadisticasVendedor();
-  }
-
-  /**
-   * Carga las estadísticas reales del vendedor desde Firestore
-   */
-  private cargarEstadisticasVendedor(): void {
-    this.resenasService.obtenerEstadisticasVendedor().subscribe({
-      next: (estadisticas) => {
-        this.estadisticasVendedor = estadisticas;
-        console.log(' Estadísticas del vendedor cargadas:', estadisticas);
-      },
-      error: (error) => {
-        console.error(' Error cargando estadísticas del vendedor:', error);
-        // Valores por defecto en caso de error
-        this.estadisticasVendedor = {
-          nombre: 'ALED2025 Store',
-          reputacion: 'MercadoLíder',
-          calificacionPromedio: 4.8,
-          totalVentas: 2847,
-          totalResenas: 0,
-          fechaRegistro: new Date('2020-03-15'),
-          porcentajePositivas: 98.5
-        };
-      }
-    });
   }
 
   /**

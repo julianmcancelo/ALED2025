@@ -6,7 +6,6 @@ import { Router } from '@angular/router';
 // Servicios
 import { UserService } from '../../servicios/user';
 import { NovedadesService } from '../../servicios/novedades.service';
-import { GeminiIAService } from '../../servicios/gemini-ia.service';
 
 import Swal from 'sweetalert2';
 
@@ -101,14 +100,6 @@ interface ResultadoPrueba {
                     [disabled]="ejecutandoPruebas()">
                     <i class="bi bi-newspaper me-1"></i>
                     Novedades
-                  </button>
-
-                  <button 
-                    class="btn btn-outline-primary btn-sm"
-                    (click)="probarIA()"
-                    [disabled]="ejecutandoPruebas()">
-                    <i class="bi bi-robot me-1"></i>
-                    Inteligencia Artificial
                   </button>
 
                   <button 
@@ -279,7 +270,6 @@ export class PanelPruebasComponent {
   // --- INYECCIÓN DE SERVICIOS ---
   private userService = inject(UserService);
   private novedadesService = inject(NovedadesService);
-  private geminiService = inject(GeminiIAService);
   private router = inject(Router);
 
   // --- ESTADO DEL COMPONENTE ---
@@ -301,7 +291,6 @@ export class PanelPruebasComponent {
     const pruebas = [
       { nombre: 'Autenticación', funcion: () => this.probarAutenticacion() },
       { nombre: 'Novedades', funcion: () => this.probarNovedades() },
-      { nombre: 'Inteligencia Artificial', funcion: () => this.probarIA() },
       { nombre: 'Navegación', funcion: () => this.probarNavegacion() }
     ];
 
@@ -373,33 +362,6 @@ export class PanelPruebasComponent {
     } catch (error: any) {
       const tiempo = Date.now() - inicio;
       this.actualizarResultado('Novedades', 'error', 
-        `Error: ${error.message || error}`, tiempo);
-    }
-  }
-
-  /**
-   * Prueba el sistema de Inteligencia Artificial
-   */
-  async probarIA(): Promise<void> {
-    const inicio = Date.now();
-    this.agregarResultado('Inteligencia Artificial', 'ejecutando', 'Probando IA y generación de contenido...');
-
-    try {
-      const contenido = await this.geminiService.generarContenidoNovedad('Descuento 50% en tecnología');
-      
-      if (contenido) {
-        const imagen = await this.geminiService.generarImagenPromocion(contenido.promptImagen);
-        
-        const tiempo = Date.now() - inicio;
-        this.actualizarResultado('Inteligencia Artificial', 'exitoso', 
-          'IA funcionando correctamente', tiempo);
-      } else {
-        throw new Error('No se pudo generar contenido con IA');
-      }
-
-    } catch (error: any) {
-      const tiempo = Date.now() - inicio;
-      this.actualizarResultado('Inteligencia Artificial', 'error', 
         `Error: ${error.message || error}`, tiempo);
     }
   }

@@ -29,6 +29,7 @@ Implementamos autenticación personalizada, un panel de administración completo
 - **Catálogo de productos** con búsqueda y filtros
 - **Carrito de compras** con estado reactivo (Signals)
 - **Integración real con Mercado Pago** (pagos en sandbox)
+- **Sistema de tarjeta virtual** - Simulador de tarjeta de crédito integrado
 - **Autenticación personalizada** con bcrypt
 - **Gestión de perfiles** con datos de envío
 - **Selección de método de entrega** (envío o retiro)
@@ -142,7 +143,8 @@ ALED2025/
 - **Agregar/eliminar productos del carrito**
 - **Seleccionar método de entrega** (envío o retiro)
 - **Completar datos de envío** (guardados para futuras compras)
-- **Pagar con Mercado Pago**
+- **Simulador de tarjeta virtual** - Interfaz realista de tarjeta de crédito
+- **Pagar con Mercado Pago** - Integración completa de pagos
 - **Ver y editar Perfil**
 
 ### Para Administradores
@@ -151,6 +153,25 @@ ALED2025/
 - **Cambiar roles de usuarios**
 - **Personalización del sitio**
 - **Ver estadísticas** (futuro)
+
+---
+
+## Sistema de Tarjeta Virtual
+
+Una de las funcionalidades más innovadoras del proyecto es el **simulador de tarjeta de crédito virtual** que desarrollamos:
+
+### Características del Simulador
+- **Interfaz realista** - Diseño que simula una tarjeta de crédito física
+- **Validación en tiempo real** - Verificación de números de tarjeta mientras el usuario escribe
+- **Animaciones fluidas** - Transiciones suaves al voltear la tarjeta
+- **Campos interactivos** - Nombre, número, fecha de vencimiento y CVV
+- **Integración con Mercado Pago** - Los datos se envían de forma segura para el procesamiento
+
+### Tecnologías Utilizadas
+- **CSS3 Animations** - Para las transiciones y efectos visuales
+- **Angular Reactive Forms** - Validación y manejo de formularios
+- **Algoritmo de Luhn** - Validación matemática de números de tarjeta
+- **Responsive Design** - Adaptable a diferentes tamaños de pantalla
 
 ---
 
@@ -211,12 +232,18 @@ Durante el desarrollo aprendimos y aplicamos:
 
 - [ ] Historial de compras del usuario
 - [ ] Sistema de búsqueda y filtros avanzados
-- [ ] Reviews y calificaciones de productos
+- [ ] **Análisis automático con IA** (Gemini AI) - En desarrollo
+- [ ] **Sistema de reseñas y calificaciones** - Planificado
 - [ ] Notificaciones por email
 - [ ] Dashboard de Ventas para administradores
 - [ ] Múltiples imágenes por producto
 - [ ] Cupones de descuento
 - [ ] Chat de soporte en vivo
+
+### Funcionalidades de IA (En Desarrollo)
+- **Análisis automático de productos**: Generación de nombres y descripciones
+- **Reconocimiento de imágenes**: Categorización automática
+- **Asistente de contenido**: Mejora de descripciones de productos
 
 ---
 

@@ -19,7 +19,7 @@
  */
 
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { ResenasService } from './resenas.service';
+// import { ResenasService } from './resenas.service'; // REMOVIDO
 
 /**
  * Interfaz que define la estructura de un producto.
@@ -71,7 +71,7 @@ export class CarritoService {
   // INYECCIÓN DE DEPENDENCIAS
   // ========================================================================
   
-  private resenasService = inject(ResenasService);
+  // private resenasService = inject(ResenasService); // REMOVIDO
   
   // ========================================================================
   // CONSTANTES
@@ -320,8 +320,8 @@ export class CarritoService {
     try {
       const cantidadItems = this.totalItems();
       if (cantidadItems > 0) {
-        // Incrementar las ventas en las estadísticas del vendedor
-        await this.resenasService.incrementarVentas(cantidadItems);
+        // Incrementar las ventas en las estadísticas del vendedor - REMOVIDO
+        // await this.resenasService.incrementarVentas(cantidadItems);
         console.log('✅ Venta registrada exitosamente:', cantidadItems, 'items');
       }
     } catch (error) {

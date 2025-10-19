@@ -34,6 +34,35 @@ export class Carrito {
   tarjetaVirtual = signal<any>(null);
   mostrandoMetodosPago = signal(false);
 
+  // --- ENVÍO GRATIS ---
+  // Monto mínimo para envío gratis (estilo Mercado Libre)
+  readonly MONTO_ENVIO_GRATIS = 5000;
+
+  /**
+   * Calcula cuánto falta para envío gratis
+   */
+  cantidadFaltaEnvioGratis = computed(() => {
+    const total = this.carritoService.totalPrecio();
+    const falta = this.MONTO_ENVIO_GRATIS - total;
+    return falta > 0 ? falta : 0;
+  });
+
+  /**
+   * Porcentaje de progreso para envío gratis (0-100)
+   */
+  porcentajeEnvioGratis = computed(() => {
+    const total = this.carritoService.totalPrecio();
+    const porcentaje = (total / this.MONTO_ENVIO_GRATIS) * 100;
+    return Math.min(porcentaje, 100);
+  });
+
+  /**
+   * Indica si ya alcanzó el monto para envío gratis
+   */
+  tieneEnvioGratis = computed(() => {
+    return this.carritoService.totalPrecio() >= this.MONTO_ENVIO_GRATIS;
+  });
+
   /**
    * Muestra las opciones de pago disponibles
    */

@@ -7,12 +7,11 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PrecioPipe } from '../../shared/pipes/precio.pipe';
 import { FechaRelativaPipe } from '../../shared/pipes/fecha-relativa.pipe';
 import { HighlightDirective } from '../../shared/directives/highlight.directive';
-import { LoadingButtonDirective } from '../../shared/directives/loading-button.directive';
+// import { LoadingButtonDirective } from '../../shared/directives/loading-button.directive'; // REMOVIDO
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import Swal from 'sweetalert2'; // Librería para alertas elegantes y modernas
 import { CategoriaService, Categoria } from '../../servicios/categoria.service';
-import { GeminiIAService, ResultadoAnalisisGemini } from '../../servicios/gemini-ia.service';
 import { GestionProductosService, Producto } from '../../servicios/gestion-productos.service';
 
 // --- INTERFACES Y TIPOS ---
@@ -57,8 +56,8 @@ import { GestionProductosService, Producto } from '../../servicios/gestion-produ
     // Pipes y directivas personalizadas
     PrecioPipe,
     FechaRelativaPipe,
-    HighlightDirective,
-    LoadingButtonDirective
+    HighlightDirective
+    // LoadingButtonDirective // REMOVIDO
   ],
   template: `
     <div class="container-fluid py-4">
@@ -78,7 +77,8 @@ import { GestionProductosService, Producto } from '../../servicios/gestion-produ
             <div class="d-flex gap-2">
               <button 
                 class="btn btn-success"
-                (click)="mostrarFormularioNuevo()">
+                (click)="mostrarFormularioNuevo()"
+                [disabled]="guardandoProducto()">
                 <i class="bi bi-plus-circle me-1"></i>
                 Nuevo Producto
               </button>
@@ -168,17 +168,12 @@ import { GestionProductosService, Producto } from '../../servicios/gestion-produ
                     <i class="bi bi-plus-circle me-2"></i>
                     {{ productoEditando() ? 'Editar Producto' : 'Nuevo Producto' }}
                   </h5>
-                  <!-- Indicador de análisis en progreso -->
-                  <small class="text-light" *ngIf="analizandoImagen()">
-                    <i class="bi bi-stars me-1"></i>
-                    Gemini 2.0 Flash analizando imagen...
-                  </small>
+                  <!-- Indicador removido -->
                 </div>
                 <button 
                   type="button" 
                   class="btn btn-outline-light btn-sm"
-                  (click)="cancelarFormulario()"
-                  [disabled]="analizandoImagen()">
+                  (click)="cancelarFormulario()">
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
@@ -207,7 +202,7 @@ import { GestionProductosService, Producto } from '../../servicios/gestion-produ
                           type="button" 
                           class="btn btn-outline-secondary"
                           (click)="generarNombreIA()"
-                          title="Generar nombre con IA">
+                          title="Generar nombre con IA (Futura implementación)">
                           <i class="bi bi-magic"></i>
                         </button>
                       </div>
@@ -284,7 +279,7 @@ import { GestionProductosService, Producto } from '../../servicios/gestion-produ
                       <div class="mb-2">
                         <small class="text-muted">
                           <i class="bi bi-info-circle me-1"></i>
-                          Sube una imagen y la IA completará automáticamente el formulario
+                          Análisis con IA - Funcionalidad para futura implementación
                         </small>
                       </div>
 
@@ -296,81 +291,14 @@ import { GestionProductosService, Producto } from '../../servicios/gestion-produ
                           accept="image/*"
                           (change)="onImagenSeleccionada($event)"
                           #fileInput
-                          [disabled]="analizandoImagen()">
+>
                         
-                        <!-- Estado del análisis -->
-                        <div class="mt-2" *ngIf="analizandoImagen()">
-                          <div class="d-flex align-items-center text-primary">
-                            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                            <small><strong>🤖 Analizando imagen con Gemini AI...</strong></small>
-                          </div>
-                          <div class="progress mt-1" style="height: 4px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-gradient" style="width: 100%"></div>
-                          </div>
-                        </div>
+                        <!-- Estado del análisis removido -->
                         
-                        <small class="form-text text-success" *ngIf="imagenSeleccionada() && !analizandoImagen()">
+                        <small class="form-text text-success" *ngIf="imagenSeleccionada()">
                           <i class="bi bi-check-circle me-1"></i>
-                          ¡Imagen analizada! El formulario se completó automáticamente.
+                          ¡Imagen cargada correctamente!
                         </small>
-                      </div>
-
-                      
-                      <!-- Estado de configuración de Gemini -->
-                      <div class="mt-2">
-                        <div *ngIf="!geminiService.esApiConfigurada()" class="alert alert-warning alert-sm py-2">
-                          <i class="bi bi-exclamation-triangle me-1"></i>
-                          <small>Gemini AI no configurado. Usando modo simulación.</small>
-                        </div>
-                        <div *ngIf="geminiService.esApiConfigurada()" class="d-flex align-items-center gap-2 flex-wrap">
-                          <small class="text-success">
-                            <i class="bi bi-check-circle me-1"></i>
-                            Gemini AI configurado
-                          </small>
-                          
-                          <!-- Botón principal de diagnóstico -->
-                          <button 
-                            type="button" 
-                            class="btn btn-outline-info btn-sm"
-                            (click)="probarConexionGemini()"
-                            [disabled]="probandoConexion()">
-                            <span *ngIf="probandoConexion()" class="spinner-border spinner-border-sm me-1"></span>
-                            <i *ngIf="!probandoConexion()" class="bi bi-wifi me-1"></i>
-                            {{ probandoConexion() ? 'Probando...' : 'Probar IA' }}
-                          </button>
-                          
-                          <!-- Botones adicionales colapsables -->
-                          <div class="dropdown">
-                            <button 
-                              class="btn btn-outline-secondary btn-sm dropdown-toggle" 
-                              type="button" 
-                              data-bs-toggle="dropdown">
-                              <i class="bi bi-three-dots"></i>
-                            </button>
-                            <ul class="dropdown-menu">
-                              <li>
-                                <button 
-                                  class="dropdown-item" 
-                                  type="button"
-                                  (click)="listarModelosGemini()"
-                                  [disabled]="probandoConexion()">
-                                  <i class="bi bi-list me-2"></i>
-                                  Ver modelos disponibles
-                                </button>
-                              </li>
-                              <li>
-                                <button 
-                                  class="dropdown-item" 
-                                  type="button"
-                                  (click)="probarModelosSimples()"
-                                  [disabled]="probandoConexion()">
-                                  <i class="bi bi-tools me-2"></i>
-                                  Diagnóstico completo
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -397,9 +325,9 @@ import { GestionProductosService, Producto } from '../../servicios/gestion-produ
                           class="btn btn-primary btn-sm position-absolute"
                           style="top: 8px; right: 8px;"
                           (click)="generarDescripcionIA()"
-                          title="Generar descripción con IA">
+                          title="Generar descripción con IA (Futura implementación)">
                           <i class="bi bi-magic me-1"></i>
-                          IA
+                          IA*
                         </button>
                       </div>
                       <div class="form-text">
@@ -487,17 +415,27 @@ import { GestionProductosService, Producto } from '../../servicios/gestion-produ
                         </button>
                         <button 
                           type="submit" 
-                          class="btn btn-success"
-                          appLoadingButton
-                          [isLoading]="guardandoProducto() || analizandoImagen()"
-                          [loadingText]="analizandoImagen() ? 'Analizando...' : 'Guardando...'"
-                          [disabled]="formularioProducto.invalid">
-                          <i class="bi bi-check-circle me-1"></i>
-                          {{ productoEditando() ? 'Actualizar' : 'Crear' }} Producto
+                          class="btn btn-success btn-lg"
+                          style="min-width: 150px;"
+                          [disabled]="formularioProducto.invalid || guardandoProducto()">
+                          <span *ngIf="!guardandoProducto()">
+                            <i class="bi bi-check-circle me-1"></i>
+                            {{ productoEditando() ? 'Actualizar' : 'Crear' }} Producto
+                          </span>
+                          <span *ngIf="guardandoProducto()">
+                            <i class="bi bi-hourglass-split me-1"></i>
+                            Guardando...
+                          </span>
                         </button>
                       </div>
                     </div>
                   </div>
+                </div>
+
+                <!-- Nota sobre funcionalidades de IA -->
+                <div class="alert alert-info mt-3">
+                  <i class="bi bi-info-circle me-2"></i>
+                  <small><strong>Nota:</strong> Las funcionalidades marcadas con <strong>IA*</strong> están planificadas para futuras versiones del sistema.</small>
                 </div>
               </form>
             </div>
@@ -681,7 +619,6 @@ export class GestionProductos implements OnInit {
   // --- INYECCIÓN DE SERVICIOS ---
   private productosService = inject(GestionProductosService);
   private categoriasService = inject(CategoriaService);
-  public geminiService = inject(GeminiIAService); // Público para acceso desde template
   private fb = inject(FormBuilder);
 
   // --- PROPIEDADES DEL COMPONENTE ---
@@ -714,12 +651,7 @@ export class GestionProductos implements OnInit {
   productoEditando = signal<Producto | null>(null);
 
   /**
-   * Signal que indica si se está analizando una imagen con IA.
-   */
-  analizandoImagen = signal<boolean>(false);
-
-  /**
-   * Signal que contiene la imagen seleccionada para análisis.
+   * Signal que contiene la imagen seleccionada.
    */
   imagenSeleccionada = signal<File | null>(null);
 
@@ -727,11 +659,6 @@ export class GestionProductos implements OnInit {
    * Tipo de imagen seleccionado (archivo o URL).
    */
   tipoImagen: 'archivo' | 'url' = 'archivo';
-
-  /**
-   * Signal que indica si se está probando la conexión con Gemini.
-   */
-  probandoConexion = signal<boolean>(false);
 
   /**
    * Formulario reactivo para crear/editar productos.
@@ -1321,754 +1248,138 @@ export class GestionProductos implements OnInit {
   }
 
   /**
-   * Procesa el análisis de imagen con Gemini AI real.
+   * MÉTODO ELIMINADO: procesarAnalisisConGemini
+   * Funcionalidad de IA removida del sistema
    */
   private async procesarAnalisisConGemini(imagenBase64: string, tipoMime: string): Promise<void> {
-    this.analizandoImagen.set(true);
-
-    console.log('🎯 INICIANDO ANÁLISIS REAL CON GEMINI');
-    console.log('📊 Estado API configurada:', this.geminiService.esApiConfigurada());
-    console.log('🖼️ Tamaño imagen base64:', imagenBase64.length);
-    console.log('📋 Tipo MIME:', tipoMime);
-
-    // Mostrar progreso de análisis con Gemini
-    Swal.fire({
-      title: 'Analizando imagen con Gemini AI...',
-      html: `
-        <div class="text-center">
-          <div class="d-flex justify-content-center mb-3">
-            <div class="spinner-border text-primary me-2" role="status"></div>
-            <i class="bi bi-stars fs-3 text-warning"></i>
-          </div>
-          <p class="mb-2"><strong>Gemini está analizando tu imagen...</strong></p>
-          <div class="progress mb-2">
-            <div class="progress-bar progress-bar-striped progress-bar-animated bg-gradient" style="width: 50%"></div>
-          </div>
-          <small class="text-muted">Detectando objetos, categorías y generando contenido</small>
-          <br><small class="text-info">Revisa la consola (F12) para logs detallados</small>
-        </div>
-      `,
-      allowOutsideClick: false,
-      showConfirmButton: false
-    });
-
-    try {
-      // Llamar a Gemini AI para análisis real
-      this.geminiService.analizarImagenProducto(imagenBase64, tipoMime).subscribe({
-        next: (resultado: ResultadoAnalisisGemini) => {
-          console.log('🎉 RESULTADO RECIBIDO:', resultado);
-          console.log('🔍 Confianza:', resultado.confianza);
-          console.log('📝 Observaciones:', resultado.observaciones);
-          
-          this.analizandoImagen.set(false);
-          this.aplicarResultadosGemini(resultado);
-          
-          // Verificar si es resultado real o fallback
-          if (resultado.confianza < 0.5 || resultado.nombre === 'Producto Detectado por IA') {
-            console.warn('⚠️ RESULTADO ES FALLBACK - Gemini no funcionó correctamente');
-            this.mostrarErrorAnalisis(resultado);
-          } else {
-            console.log('✅ RESULTADO REAL DE GEMINI - Análisis exitoso');
-            this.mostrarResultadosAnalisis(resultado);
-          }
-        },
-        error: (error) => {
-          console.error('Error en análisis con Gemini:', error);
-          this.analizandoImagen.set(false);
-          
-          // Mostrar error pero ofrecer alternativa
-          Swal.fire({
-            icon: 'warning',
-            title: 'Error en análisis con Gemini',
-            html: `
-              <p>No se pudo conectar con Gemini AI.</p>
-              <p class="text-muted">Esto puede deberse a:</p>
-              <ul class="text-start text-muted">
-                <li>API Key no configurada</li>
-                <li>Problema de conectividad</li>
-                <li>Límite de cuota excedido</li>
-              </ul>
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'Usar modo simulación',
-            cancelButtonText: 'Cancelar'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              // Usar análisis simulado como fallback
-              const resultadoFallback = this.geminiService['generarRespuestaFallback']();
-              this.aplicarResultadosGemini(resultadoFallback);
-            }
-          });
-        }
-      });
-    } catch (error) {
-      this.analizandoImagen.set(false);
-      console.error('Error procesando imagen:', error);
-      
-      Swal.fire({
-        icon: 'error',
-        title: 'Error procesando imagen',
-        text: 'Hubo un problema al procesar la imagen. Inténtalo nuevamente.',
-        confirmButtonText: 'Entendido'
-      });
-    }
-  }
-
-  // --- MÉTODOS DE IA ---
-
-  /**
-   * Genera un nombre de producto usando IA (simulado).
-   */
-  async generarNombreIA(): Promise<void> {
-    const categoria = this.formularioProducto.get('categoria')?.value;
-    
-    if (!categoria) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Selecciona una categoría',
-        text: 'Primero selecciona una categoría para generar un nombre apropiado',
-        confirmButtonText: 'Entendido'
-      });
-      return;
-    }
-
-    // Simulación de generación con IA
-    const nombresIA = {
-      'Electrónicos': [
-        'Smartphone Ultra Pro Max 256GB',
-        'Laptop Gaming RGB Elite',
-        'Auriculares Bluetooth Premium',
-        'Tablet 10" Full HD',
-        'Smartwatch Deportivo GPS'
-      ],
-      'Ropa': [
-        'Remera Premium Cotton Soft',
-        'Jean Slim Fit Clásico',
-        'Campera Impermeable Sport',
-        'Zapatillas Running Pro',
-        'Vestido Elegante Casual'
-      ],
-      'Hogar': [
-        'Cafetera Automática Express',
-        'Aspiradora Robot Inteligente',
-        'Set Ollas Antiadherentes',
-        'Lámpara LED Regulable',
-        'Organizador Multiuso'
-      ],
-      'Deportes': [
-        'Pelota Fútbol Profesional',
-        'Mancuernas Ajustables Set',
-        'Bicicleta Mountain Bike',
-        'Colchoneta Yoga Premium',
-        'Cuerda Saltar Profesional'
-      ],
-      'Libros': [
-        'Manual Programación Avanzada',
-        'Novela Bestseller Internacional',
-        'Guía Completa Marketing Digital',
-        'Enciclopedia Visual Moderna',
-        'Libro Cocina Gourmet'
-      ],
-      'Juguetes': [
-        'Set Bloques Construcción',
-        'Muñeca Interactiva Parlante',
-        'Auto Control Remoto 4WD',
-        'Puzzle 1000 Piezas Paisaje',
-        'Juego Mesa Estrategia'
-      ],
-      'Belleza': [
-        'Crema Facial Anti-edad',
-        'Set Maquillaje Profesional',
-        'Perfume Floral Premium',
-        'Mascarilla Hidratante Natural',
-        'Kit Cuidado Capilar'
-      ],
-      'Automotriz': [
-        'Aceite Motor Sintético 5W-30',
-        'Neumático Radial 195/65R15',
-        'Batería Auto 12V 60Ah',
-        'Kit Herramientas Mecánico',
-        'Cargador USB Dual Auto'
-      ]
-    };
-
-    const opciones = nombresIA[categoria as keyof typeof nombresIA] || ['Producto Genérico'];
-    const nombreGenerado = opciones[Math.floor(Math.random() * opciones.length)];
-
-    // Mostrar loading
-    Swal.fire({
-      title: 'Generando nombre con IA...',
-      html: 'Analizando categoría y tendencias del mercado',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    // Simular delay de IA
-    setTimeout(() => {
-      this.formularioProducto.patchValue({ nombre: nombreGenerado });
-      
-      Swal.fire({
-        icon: 'success',
-        title: '¡Nombre generado!',
-        text: `Se generó: "${nombreGenerado}"`,
-        timer: 2000,
-        showConfirmButton: false
-      });
-    }, 1500);
-  }
-
-  /**
-   * Genera una descripción de producto usando IA (simulado).
-   */
-  async generarDescripcionIA(): Promise<void> {
-    const nombre = this.formularioProducto.get('nombre')?.value;
-    const categoria = this.formularioProducto.get('categoria')?.value;
-
-    if (!nombre || !categoria) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Completa los datos básicos',
-        text: 'Primero ingresa el nombre y categoría del producto',
-        confirmButtonText: 'Entendido'
-      });
-      return;
-    }
-
-    // Mostrar loading
-    Swal.fire({
-      title: 'Generando descripción con IA...',
-      html: 'Analizando características y beneficios del producto',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    // Simular delay de IA
-    setTimeout(() => {
-      const descripcionGenerada = this.generarDescripcionPorCategoria(nombre, categoria);
-      this.formularioProducto.patchValue({ descripcion: descripcionGenerada });
-      
-      Swal.fire({
-        icon: 'success',
-        title: '¡Descripción generada!',
-        text: 'Se creó una descripción optimizada para tu producto',
-        timer: 2000,
-        showConfirmButton: false
-      });
-    }, 2000);
-  }
-
-  /**
-   * Genera una URL de imagen usando IA (simulado).
-   */
-  async generarImagenIA(): Promise<void> {
-    const nombre = this.formularioProducto.get('nombre')?.value;
-    const categoria = this.formularioProducto.get('categoria')?.value;
-
-    if (!nombre) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Ingresa el nombre del producto',
-        text: 'Primero ingresa el nombre para generar una imagen apropiada',
-        confirmButtonText: 'Entendido'
-      });
-      return;
-    }
-
-    // Mostrar loading
-    Swal.fire({
-      title: 'Generando imagen con IA...',
-      html: 'Creando imagen optimizada para e-commerce',
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    // Simular delay de IA
-    setTimeout(() => {
-      // Generar URL de placeholder personalizada
-      const nombreEncoded = encodeURIComponent(nombre.slice(0, 20));
-      const colorCategoria = this.obtenerColorCategoria(categoria);
-      const imagenGenerada = `https://via.placeholder.com/400x300/${colorCategoria}/ffffff?text=${nombreEncoded}`;
-      
-      this.formularioProducto.patchValue({ imagen: imagenGenerada });
-      
-      Swal.fire({
-        icon: 'success',
-        title: '¡Imagen generada!',
-        text: 'Se creó una imagen placeholder personalizada',
-        timer: 2000,
-        showConfirmButton: false
-      });
-    }, 1800);
-  }
-
-  // --- MÉTODOS AUXILIARES DE IA ---
-
-  /**
-   * Genera una descripción personalizada según la categoría.
-   */
-  private generarDescripcionPorCategoria(nombre: string, categoria: string): string {
-    const plantillas = {
-      'Electrónicos': `${nombre} es un dispositivo electrónico de última generación que combina tecnología avanzada con diseño elegante. Cuenta con características premium que garantizan un rendimiento excepcional y durabilidad superior. Ideal para usuarios que buscan calidad y innovación en un solo producto.`,
-      
-      'Ropa': `${nombre} está confeccionado con materiales de alta calidad que ofrecen comodidad y estilo. Su diseño moderno y versátil lo convierte en la elección perfecta para cualquier ocasión. Disponible en diferentes tallas para adaptarse a todos los gustos y preferencias.`,
-      
-      'Hogar': `${nombre} es el complemento perfecto para tu hogar, combinando funcionalidad y estética. Fabricado con materiales resistentes y duraderos, este producto mejorará tu calidad de vida diaria. Fácil de usar y mantener, ideal para familias modernas.`,
-      
-      'Deportes': `${nombre} está diseñado para deportistas y entusiastas del fitness que buscan equipamiento de calidad profesional. Su construcción robusta y características técnicas avanzadas te ayudarán a alcanzar tus objetivos deportivos con seguridad y eficiencia.`,
-      
-      'Libros': `${nombre} es una obra imprescindible que ofrece conocimientos valiosos y entretenimiento de calidad. Con contenido cuidadosamente seleccionado y presentado de manera clara y atractiva, este libro se convertirá en un recurso valioso para tu biblioteca personal.`,
-      
-      'Juguetes': `${nombre} es un juguete educativo y divertido que estimula la creatividad y el desarrollo cognitivo. Fabricado con materiales seguros y no tóxicos, ofrece horas de entretenimiento saludable para niños de todas las edades.`,
-      
-      'Belleza': `${nombre} es un producto de belleza premium formulado con ingredientes de alta calidad. Su fórmula avanzada proporciona resultados visibles y duraderos, cuidando tu piel con la delicadeza que mereces. Dermatológicamente testado.`,
-      
-      'Automotriz': `${nombre} es un componente automotriz de calidad superior diseñado para mejorar el rendimiento y la seguridad de tu vehículo. Fabricado bajo estrictos estándares de calidad, garantiza durabilidad y confiabilidad en todas las condiciones de manejo.`
-    };
-
-    return plantillas[categoria as keyof typeof plantillas] || 
-           `${nombre} es un producto de excelente calidad que combina funcionalidad, durabilidad y diseño atractivo. Ideal para usuarios que buscan productos confiables y de alto rendimiento.`;
-  }
-
-  /**
-   * Obtiene un color representativo para cada categoría.
-   */
-  private obtenerColorCategoria(categoria: string): string {
-    const colores = {
-      'Electrónicos': '0077b6',
-      'Ropa': 'e63946',
-      'Hogar': '2d6a4f',
-      'Deportes': 'f77f00',
-      'Libros': '6f1d1b',
-      'Juguetes': 'e9c46a',
-      'Belleza': 'd63384',
-      'Automotriz': '495057'
-    };
-
-    return colores[categoria as keyof typeof colores] || '6c757d';
-  }
-
-  /**
-   * Simula el análisis de IA basado en el nombre del archivo y tipo.
-   */
-  private simularAnalisisIA(nombreArchivo: string, tipoArchivo: string): any {
-    const nombreLower = nombreArchivo.toLowerCase();
-    
-    // Base de datos de reconocimiento simulado
-    const patrones = {
-      // Electrónicos
-      'phone|smartphone|celular|móvil|iphone|samsung|galaxy': {
-        categoria: 'Electrónicos',
-        nombres: ['Smartphone Premium 128GB', 'Teléfono Inteligente Pro', 'Celular Ultra HD'],
-        precios: [89999, 125000, 67000]
-      },
-      'laptop|notebook|computer|pc|macbook': {
-        categoria: 'Electrónicos',
-        nombres: ['Laptop Gaming Pro', 'Notebook Ultrabook', 'Computadora Portátil'],
-        precios: [150000, 89000, 120000]
-      },
-      'headphone|auricular|audio|speaker': {
-        categoria: 'Electrónicos',
-        nombres: ['Auriculares Bluetooth Premium', 'Headphones Inalámbricos', 'Parlante Bluetooth'],
-        precios: [25000, 45000, 35000]
-      },
-      
-      // Ropa
-      'shirt|remera|camiseta|playera': {
-        categoria: 'Ropa',
-        nombres: ['Remera Premium Cotton', 'Camiseta Deportiva', 'Playera Casual'],
-        precios: [8500, 12000, 6500]
-      },
-      'jean|pantalon|pants|trouser': {
-        categoria: 'Ropa',
-        nombres: ['Jean Slim Fit', 'Pantalón Casual', 'Jeans Clásico'],
-        precios: [15000, 18000, 12500]
-      },
-      'shoe|zapato|zapatilla|sneaker': {
-        categoria: 'Ropa',
-        nombres: ['Zapatillas Running', 'Sneakers Urbanos', 'Zapatos Deportivos'],
-        precios: [22000, 28000, 35000]
-      },
-      
-      // Hogar
-      'coffee|cafetera|café': {
-        categoria: 'Hogar',
-        nombres: ['Cafetera Automática Express', 'Máquina de Café Premium', 'Cafetera Italiana'],
-        precios: [45000, 67000, 25000]
-      },
-      'lamp|lámpara|luz|light': {
-        categoria: 'Hogar',
-        nombres: ['Lámpara LED Regulable', 'Luz Decorativa', 'Iluminación Moderna'],
-        precios: [12000, 8500, 15000]
-      },
-      
-      // Deportes
-      'ball|pelota|fútbol|soccer': {
-        categoria: 'Deportes',
-        nombres: ['Pelota Fútbol Profesional', 'Balón Oficial', 'Pelota Deportiva'],
-        precios: [8500, 12000, 6500]
-      },
-      'bike|bicicleta|bicycle': {
-        categoria: 'Deportes',
-        nombres: ['Bicicleta Mountain Bike', 'Bike Urbana', 'Bicicleta Deportiva'],
-        precios: [85000, 120000, 65000]
-      }
-    };
-    
-    // Buscar coincidencias
-    for (const [patron, datos] of Object.entries(patrones)) {
-      const regex = new RegExp(patron, 'i');
-      if (regex.test(nombreLower)) {
-        const indiceAleatorio = Math.floor(Math.random() * datos.nombres.length);
-        return {
-          categoria: datos.categoria,
-          nombre: datos.nombres[indiceAleatorio],
-          precio: datos.precios[indiceAleatorio],
-          descripcion: this.generarDescripcionPorCategoria(datos.nombres[indiceAleatorio], datos.categoria)
-        };
-      }
-    }
-    
-    // Producto genérico si no se encuentra patrón
-    return {
-      categoria: 'Electrónicos',
-      nombre: 'Producto Detectado por IA',
-      precio: 25000,
-      descripcion: 'Producto de calidad detectado automáticamente por inteligencia artificial. Revisa y ajusta los detalles según corresponda.'
-    };
-  }
-
-  /**
-   * Aplica los resultados del análisis de Gemini al formulario.
-   */
-  private aplicarResultadosGemini(resultado: ResultadoAnalisisGemini): void {
-    this.formularioProducto.patchValue({
-      nombre: resultado.nombre,
-      categoria: resultado.categoria,
-      precio: resultado.precio,
-      descripcion: resultado.descripcion,
-      stock: 10, // Stock por defecto
-      activo: true,
-      esDestacado: resultado.confianza > 0.8 // Destacar si la confianza es alta
-    });
-  }
-
-  /**
-   * Muestra los resultados completos del análisis de Gemini 2.0 Flash.
-   */
-  private mostrarResultadosAnalisis(resultado: ResultadoAnalisisGemini): void {
-    const confianzaPorcentaje = Math.round(resultado.confianza * 100);
-    const iconoConfianza = resultado.confianza > 0.8 ? 'bi-check-circle text-success' : 
-                          resultado.confianza > 0.6 ? 'bi-exclamation-circle text-warning' : 
-                          'bi-question-circle text-info';
-    
-    const caracteristicasHtml = resultado.caracteristicas.length > 0 ? 
-      `<li class="mb-2"><i class="bi bi-list-check text-success me-2"></i><strong>Características:</strong> ${resultado.caracteristicas.join(', ')}</li>` : '';
-
-    const especificacionesHtml = resultado.especificaciones ? `
-      <div class="row mt-3">
-        <div class="col-md-6">
-          <h6 class="text-secondary mb-2"><i class="bi bi-gear me-1"></i>Especificaciones Detectadas:</h6>
-          <ul class="list-unstyled small">
-            ${resultado.especificaciones.color ? `<li><strong>Color:</strong> ${resultado.especificaciones.color}</li>` : ''}
-            ${resultado.especificaciones.material ? `<li><strong>Material:</strong> ${resultado.especificaciones.material}</li>` : ''}
-            ${resultado.especificaciones.tamaño ? `<li><strong>Tamaño:</strong> ${resultado.especificaciones.tamaño}</li>` : ''}
-            ${resultado.especificaciones.estado ? `<li><strong>Estado:</strong> ${resultado.especificaciones.estado}</li>` : ''}
-            ${resultado.especificaciones.marca ? `<li><strong>Marca:</strong> ${resultado.especificaciones.marca}</li>` : ''}
-          </ul>
-        </div>
-        <div class="col-md-6">
-          ${resultado.palabras_clave && resultado.palabras_clave.length > 0 ? `
-            <h6 class="text-secondary mb-2"><i class="bi bi-tags me-1"></i>Palabras Clave SEO:</h6>
-            <div class="d-flex flex-wrap gap-1">
-              ${resultado.palabras_clave.map(palabra => `<span class="badge bg-primary">${palabra}</span>`).join('')}
-            </div>
-          ` : ''}
-        </div>
-      </div>
-    ` : '';
-
-    const observacionesHtml = resultado.observaciones ? `
-      <div class="alert alert-secondary mt-3">
-        <i class="bi bi-info-circle me-2"></i>
-        <strong>Observaciones del análisis:</strong><br>
-        <small>${resultado.observaciones}</small>
-      </div>
-    ` : '';
-
+    // Método simplificado - solo notificar que la imagen está lista
     Swal.fire({
       icon: 'success',
-      title: '🚀 ¡Producto listo para publicar!',
-      html: `
-        <div class="text-start">
-          <div class="d-flex align-items-center mb-3">
-            <i class="bi bi-stars fs-4 text-warning me-2"></i>
-            <h6 class="text-primary mb-0">Análisis completo con Gemini 2.0 Flash:</h6>
-          </div>
-          
-          <div class="card border-0 bg-light mb-3">
-            <div class="card-body py-2">
-              <h6 class="card-title text-success mb-2">
-                <i class="bi bi-box-seam me-1"></i>${resultado.nombre}
-              </h6>
-              <p class="card-text small mb-1">${resultado.descripcion}</p>
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="badge bg-info">${resultado.categoria}</span>
-                <strong class="text-success">$${resultado.precio.toLocaleString()}</strong>
-              </div>
-            </div>
-          </div>
-
-          <ul class="list-unstyled">
-            ${caracteristicasHtml}
-            <li class="mb-2"><i class="${iconoConfianza} me-2"></i><strong>Precisión del análisis:</strong> ${confianzaPorcentaje}%</li>
-          </ul>
-
-          ${especificacionesHtml}
-          
-          <div class="alert alert-success mt-3">
-            <i class="bi bi-check-circle me-2"></i>
-            <strong>¡Producto analizado y listo!</strong><br>
-            <small>Gemini 2.0 Flash ha generado todo el contenido necesario para publicar. Puedes editar cualquier campo antes de guardar.</small>
-          </div>
-          
-          ${resultado.confianza < 0.7 ? 
-            '<div class="alert alert-warning mt-2"><i class="bi bi-exclamation-triangle me-2"></i><small>Confianza media. Te recomendamos revisar los datos generados.</small></div>' : 
-            '<div class="alert alert-info mt-2"><i class="bi bi-trophy me-2"></i><small>¡Excelente! Alta confianza en el análisis. El producto está listo para publicar.</small></div>'}
-          
-          ${observacionesHtml}
-        </div>
-      `,
-      confirmButtonText: '✅ Perfecto, guardar producto',
-      showCancelButton: true,
-      cancelButtonText: '✏️ Editar antes de guardar',
-      width: 800,
-      customClass: {
-        popup: 'swal-wide'
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Auto-guardar el producto si el usuario confirma
-        this.guardarProducto();
-      }
-      // Si cancela, el usuario puede seguir editando el formulario
+      title: '📸 ¡Imagen cargada!',
+      text: 'La imagen se ha cargado correctamente. Completa el resto del formulario manualmente.',
+      timer: 2000,
+      showConfirmButton: false,
+      toast: true,
+      position: 'top-end'
     });
   }
 
+  // --- MÉTODOS DE IA ELIMINADOS ---
+
   /**
-   * Muestra un error cuando el análisis de Gemini falla.
+   * MÉTODO ELIMINADO: generarNombreIA
+   * Funcionalidad de IA removida del sistema
    */
-  private mostrarErrorAnalisis(resultado: ResultadoAnalisisGemini): void {
+  async generarNombreIA(): Promise<void> {
     Swal.fire({
-      icon: 'warning',
-      title: '⚠️ Análisis en Modo Simulación',
-      html: `
-        <div class="text-start">
-          <p class="mb-3">El análisis de imagen no pudo completarse con Gemini AI.</p>
-          
-          <div class="alert alert-warning">
-            <h6><i class="bi bi-exclamation-triangle me-2"></i>Posibles causas:</h6>
-            <ul class="mb-0">
-              <li>API Key de Gemini inválida o expirada</li>
-              <li>Límite de cuota excedido</li>
-              <li>Problema de conectividad</li>
-              <li>Imagen no compatible</li>
-            </ul>
-          </div>
-
-          <div class="alert alert-info">
-            <h6><i class="bi bi-lightbulb me-2"></i>Soluciones:</h6>
-            <ul class="mb-0">
-              <li>Haz clic en "Probar conexión" para verificar Gemini</li>
-              <li>Revisa la consola (F12) para errores detallados</li>
-              <li>Verifica tu API Key en Google AI Studio</li>
-              <li>Intenta con una imagen diferente</li>
-            </ul>
-          </div>
-
-          <p><strong>Resultado actual:</strong> ${resultado.observaciones}</p>
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: '🔧 Probar conexión',
-      cancelButtonText: '✏️ Editar manualmente',
-      width: 600
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.probarConexionGemini();
-      }
+      icon: 'info',
+      title: 'Funcionalidad en desarrollo',
+      text: 'La generación automática con IA estará disponible en futuras versiones. Por ahora, ingresa el nombre manualmente.',
+      confirmButtonText: 'Entendido'
     });
+    return;
   }
 
   /**
-   * Prueba la conexión con Gemini AI.
+   * MÉTODO ELIMINADO: generarDescripcionIA
+   * Funcionalidad de IA removida del sistema
+   */
+  async generarDescripcionIA(): Promise<void> {
+    Swal.fire({
+      icon: 'info',
+      title: 'Funcionalidad en desarrollo',
+      text: 'La generación automática de descripciones con IA estará disponible en futuras versiones. Por ahora, ingresa la descripción manualmente.',
+      confirmButtonText: 'Entendido'
+    });
+    return;
+  }
+
+  /**
+   * MÉTODO ELIMINADO: generarImagenIA
+   * Funcionalidad de IA removida del sistema
+   */
+  async generarImagenIA(): Promise<void> {
+    Swal.fire({
+      icon: 'info',
+      title: 'Funcionalidad en desarrollo',
+      text: 'La generación automática de imágenes con IA estará disponible en futuras versiones. Por ahora, sube una imagen manualmente.',
+      confirmButtonText: 'Entendido'
+    });
+    return;
+  }
+
+  // --- MÉTODOS AUXILIARES DE IA ELIMINADOS ---
+
+  /**
+   * MÉTODO ELIMINADO: generarDescripcionPorCategoria
+   * Funcionalidad de IA removida del sistema
+   */
+  private generarDescripcionPorCategoria(nombre: string, categoria: string): string {
+    return `${nombre} - Descripción manual requerida.`;
+  }
+
+  /**
+   * MÉTODO ELIMINADO: obtenerColorCategoria
+   * Funcionalidad de IA removida del sistema
+   */
+  private obtenerColorCategoria(categoria: string): string {
+    return '6c757d'; // Color gris por defecto
+  }
+
+  /**
+   * MÉTODO ELIMINADO: simularAnalisisIA
+   * Funcionalidad de IA removida del sistema
+   */
+  private simularAnalisisIA(nombreArchivo: string, tipoArchivo: string): any {
+    return null; // Sin análisis IA
+  }
+
+  // --- MÉTODOS DE GEMINI ELIMINADOS ---
+
+  /**
+   * MÉTODO ELIMINADO: aplicarResultadosGemini
+   */
+  private aplicarResultadosGemini(resultado: any): void {
+    // Método obsoleto - removido
+  }
+
+  /**
+   * MÉTODO ELIMINADO: mostrarResultadosAnalisis
+   */
+  private mostrarResultadosAnalisis(resultado: any): void {
+    // Método obsoleto - removido
+  }
+
+  /**
+   * MÉTODO ELIMINADO: mostrarErrorAnalisis
+   */
+  private mostrarErrorAnalisis(resultado: any): void {
+    // Método obsoleto - removido
+  }
+
+  /**
+   * MÉTODO ELIMINADO: probarConexionGemini
    */
   async probarConexionGemini(): Promise<void> {
-    this.probandoConexion.set(true);
-    
-    try {
-      const conexionExitosa = await this.geminiService.probarConexion();
-      
-      if (conexionExitosa) {
-        Swal.fire({
-          icon: 'success',
-          title: '✅ ¡Conexión exitosa!',
-          text: 'Gemini AI está funcionando correctamente. El análisis de imágenes será real.',
-          timer: 3000,
-          showConfirmButton: false,
-          toast: true,
-          position: 'top-end'
-        });
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: '❌ Error de conexión',
-          text: 'No se pudo conectar con Gemini AI. Revisa la consola para más detalles.',
-          confirmButtonText: 'Entendido'
-        });
-      }
-    } catch (error) {
-      console.error('Error probando conexión:', error);
-      Swal.fire({
-        icon: 'error',
-        title: '❌ Error de conexión',
-        text: 'Ocurrió un error al probar la conexión con Gemini AI.',
-        confirmButtonText: 'Entendido'
-      });
-    } finally {
-      this.probandoConexion.set(false);
-    }
+    Swal.fire({
+      icon: 'info',
+      title: 'Funcionalidad en desarrollo',
+      text: 'El análisis automático con IA estará disponible en futuras versiones del sistema.',
+      confirmButtonText: 'Entendido'
+    });
   }
 
   /**
-   * Lista los modelos disponibles de Gemini AI.
+   * MÉTODO ELIMINADO: listarModelosGemini
    */
   async listarModelosGemini(): Promise<void> {
-    this.probandoConexion.set(true);
-    
-    try {
-      const modelos = await this.geminiService.listarModelosDisponibles();
-      
-      if (modelos.length > 0) {
-        const modelosHtml = modelos.map(modelo => `<li class="text-start">${modelo}</li>`).join('');
-        
-        Swal.fire({
-          icon: 'info',
-          title: '📋 Modelos Gemini Disponibles',
-          html: `
-            <div class="text-start">
-              <p class="mb-3">Modelos disponibles en tu región:</p>
-              <ul class="list-unstyled">
-                ${modelosHtml}
-              </ul>
-              <div class="alert alert-info mt-3">
-                <small><i class="bi bi-info-circle me-1"></i>
-                El sistema probará estos modelos automáticamente hasta encontrar uno que funcione.</small>
-              </div>
-            </div>
-          `,
-          confirmButtonText: 'Entendido',
-          width: 500
-        });
-      } else {
-        Swal.fire({
-          icon: 'warning',
-          title: '⚠️ No se pudieron obtener modelos',
-          text: 'No se pudo acceder a la lista de modelos. Verifica tu API Key y conexión.',
-          confirmButtonText: 'Entendido'
-        });
-      }
-    } catch (error) {
-      console.error('Error listando modelos:', error);
-      Swal.fire({
-        icon: 'error',
-        title: '❌ Error',
-        text: 'Ocurrió un error al obtener la lista de modelos.',
-        confirmButtonText: 'Entendido'
-      });
-    } finally {
-      this.probandoConexion.set(false);
-    }
+    // Método obsoleto - removido
   }
 
   /**
-   * Prueba modelos simples para diagnóstico.
+   * MÉTODO ELIMINADO: probarModelosSimples
    */
   async probarModelosSimples(): Promise<void> {
-    this.probandoConexion.set(true);
-    
-    try {
-      const modelosParaProbar = [
-        'gemini-1.5-pro',
-        'gemini-1.5-flash',
-        'gemini-pro',
-        'gemini-2.0-flash-exp',
-        'gemini-2.5-flash-exp'
-      ];
-      
-      console.log('🔧 Iniciando diagnóstico de modelos...');
-      const resultados: { modelo: string; funciona: boolean }[] = [];
-      
-      for (const modelo of modelosParaProbar) {
-        console.log(`🧪 Probando ${modelo}...`);
-        const funciona = await this.geminiService.probarModeloSimple(modelo);
-        resultados.push({ modelo, funciona });
-      }
-      
-      const modelosFuncionan = resultados.filter(r => r.funciona);
-      const modelosNoFuncionan = resultados.filter(r => !r.funciona);
-      
-      const funcionanHtml = modelosFuncionan.length > 0 ? 
-        `<div class="alert alert-success">
-          <h6><i class="bi bi-check-circle me-2"></i>Modelos que funcionan:</h6>
-          <ul class="mb-0">
-            ${modelosFuncionan.map(r => `<li>${r.modelo}</li>`).join('')}
-          </ul>
-        </div>` : '';
-      
-      const noFuncionanHtml = modelosNoFuncionan.length > 0 ? 
-        `<div class="alert alert-warning">
-          <h6><i class="bi bi-x-circle me-2"></i>Modelos que no funcionan:</h6>
-          <ul class="mb-0">
-            ${modelosNoFuncionan.map(r => `<li>${r.modelo}</li>`).join('')}
-          </ul>
-        </div>` : '';
-      
-      Swal.fire({
-        icon: modelosFuncionan.length > 0 ? 'success' : 'warning',
-        title: '🔧 Diagnóstico de Modelos Gemini',
-        html: `
-          <div class="text-start">
-            <p class="mb-3">Resultados del diagnóstico:</p>
-            ${funcionanHtml}
-            ${noFuncionanHtml}
-            <div class="alert alert-info mt-3">
-              <small><i class="bi bi-info-circle me-1"></i>
-              ${modelosFuncionan.length > 0 ? 
-                'El sistema usará automáticamente uno de los modelos que funcionan.' : 
-                'Ningún modelo funciona. Verifica tu API Key y conexión.'}</small>
-            </div>
-          </div>
-        `,
-        confirmButtonText: 'Entendido',
-        width: 600
-      });
-      
-    } catch (error) {
-      console.error('Error en diagnóstico:', error);
-      Swal.fire({
-        icon: 'error',
-        title: '❌ Error en Diagnóstico',
-        text: 'Ocurrió un error durante el diagnóstico de modelos.',
-        confirmButtonText: 'Entendido'
-      });
-    } finally {
-      this.probandoConexion.set(false);
-    }
+    // Método obsoleto - removido
   }
 }

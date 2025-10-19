@@ -108,48 +108,18 @@
             </button>
           </div>
 
-          <!-- Información del vendedor con datos reales -->
+          <!-- Información del vendedor -->
           <div class="vendedor-section">
-            <div class="vendedor-info">
+            <div class="vendedor-card">
               <div class="vendedor-avatar">
                 <i class="bi bi-shop"></i>
               </div>
               <div class="vendedor-datos">
                 <div class="vendedor-nombre">{{ configuracionService.configuracionSignal().titulo }}</div>
-                <div class="vendedor-reputacion">
-                  <span class="reputacion-badge">{{ estadisticasVendedor?.reputacion || 'MercadoLíder' }}</span>
-                  <div class="estrellas">
-                    @if (estadisticasVendedor) {
-                      @for (estrella of [1,2,3,4,5]; track estrella) {
-                        <i class="bi" 
-                           [class.bi-star-fill]="estrella <= Math.floor(estadisticasVendedor.calificacionPromedio)"
-                           [class.bi-star-half]="estrella === Math.ceil(estadisticasVendedor.calificacionPromedio) && estadisticasVendedor.calificacionPromedio % 1 !== 0"
-                           [class.bi-star]="estrella > Math.ceil(estadisticasVendedor.calificacionPromedio)">
-                        </i>
-                      }
-                      <span class="rating-text">{{ estadisticasVendedor.calificacionPromedio | number:'1.1-1' }} ({{ estadisticasVendedor.totalVentas | number }} ventas)</span>
-                    } @else {
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-half"></i>
-                      <span class="rating-text">Cargando...</span>
-                    }
-                  </div>
-                </div>
                 <div class="vendedor-detalles">
                   <small class="vendedor-experiencia">
                     <i class="bi bi-calendar"></i>
-                    @if (estadisticasVendedor && estadisticasVendedor.fechaRegistro) {
-                      Vendiendo desde {{ estadisticasVendedor.fechaRegistro | date:'MMMM yyyy':'':'es' }}
-                    } @else {
-                      Vendiendo desde marzo 2020
-                    }
-                  </small>
-                  <small class="vendedor-positivas">
-                    <i class="bi bi-hand-thumbs-up"></i>
-                    {{ estadisticasVendedor?.porcentajePositivas || 98.5 }}% de opiniones positivas
+                    Tienda oficial
                   </small>
                 </div>
               </div>
@@ -186,9 +156,6 @@
           </div>
         </div>
       }
-
-      <!-- Componente de reseñas -->
-      <app-resenas [productoId]="producto.id || ''"></app-resenas>
 
       <!-- Botón volver -->
       <div class="volver-section">

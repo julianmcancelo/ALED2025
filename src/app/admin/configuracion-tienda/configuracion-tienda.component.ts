@@ -2,7 +2,6 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ConfiguracionService, ConfiguracionSitio } from '../../servicios/configuracion';
-import { ResenasService } from '../../servicios/resenas.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -254,7 +253,6 @@ import Swal from 'sweetalert2';
 })
 export class ConfiguracionTiendaComponent implements OnInit {
   private configuracionService = inject(ConfiguracionService);
-  private resenasService = inject(ResenasService);
   private fb = inject(FormBuilder);
 
   configuracionForm!: FormGroup;
